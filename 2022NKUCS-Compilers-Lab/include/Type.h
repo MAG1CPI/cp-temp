@@ -1,7 +1,6 @@
 #ifndef __TYPE_H__
 #define __TYPE_H__
 
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -30,7 +29,7 @@ class Type {
 };
 
 class IntType : public Type {
-   private:
+   protected:
     int size;
 
    public:
@@ -47,19 +46,15 @@ class ConstIntType : public IntType {
 };
 
 class FloatType : public Type {
-   private:
-    int size;
-
    public:
-    FloatType(int size)
-        : Type(Type::FLOAT), size(size){};
+    FloatType()
+        : Type(Type::FLOAT){};
     std::string toStr();
 };
 
 class ConstFloatType : public FloatType {
    public:
-    ConstFloatType(int size)
-        : FloatType(size){};
+    ConstFloatType(){};
     std::string toStr();
 };
 
@@ -71,7 +66,7 @@ class VoidType : public Type {
 };
 
 class FunctionType : public Type {
-   private:
+   protected:
     Type* returnType;
     std::vector<Type*> paramsType;
 
@@ -83,7 +78,7 @@ class FunctionType : public Type {
 };
 
 class PointerType : public Type {
-   private:
+   protected:
     Type* valueType;
 
    public:
@@ -94,19 +89,19 @@ class PointerType : public Type {
 
 class TypeSystem {
    private:
-    static IntType commonInt;
     static IntType commonBool;
+    static IntType commonInt;
     static ConstIntType commonConstInt;
     static FloatType commonFloat;
     static ConstFloatType commonConstFloat;
     static VoidType commonVoid;
 
    public:
-    static Type* intType;
     static Type* boolType;
+    static Type* intType;
     static Type* constIntType;
-    static Type floatType;
-    static Type constFloatType;
+    static Type* floatType;
+    static Type* constFloatType;
     static Type* voidType;
 };
 

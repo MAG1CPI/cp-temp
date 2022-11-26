@@ -1,36 +1,50 @@
 #include "Type.h"
 
+IntType TypeSystem::commonBool = IntType(1);
 IntType TypeSystem::commonInt = IntType(32);
 ConstIntType TypeSystem::commonConstInt = ConstIntType(32);
-IntType TypeSystem::commonBool = IntType(1);
+FloatType TypeSystem::commonFloat = FloatType();
+ConstFloatType TypeSystem::commonConstFloat = ConstFloatType();
 VoidType TypeSystem::commonVoid = VoidType();
 
-Type* TypeSystem::intType = &commonInt;
-Type* TypeSystem::voidType = &commonVoid;
 Type* TypeSystem::boolType = &commonBool;
+Type* TypeSystem::intType = &commonInt;
+Type* TypeSystem::constIntType = &commonConstInt;
+Type* TypeSystem::floatType = &commonFloat;
+Type* TypeSystem::constFloatType = &commonConstFloat;
+Type* TypeSystem::voidType = &commonVoid;
 
-std::string IntType::toStr()
-{
-    std::ostringstream buffer;
-    buffer << "i" << size;
-    return buffer.str();
+std::string IntType::toStr() {
+    return "i" + std::to_string(size);
 }
 
-std::string VoidType::toStr()
-{
+std::string ConstIntType::toStr() {
+    return "i" + std::to_string(size);
+}
+
+std::string FloatType::toStr() {
+    return "float";
+}
+
+std::string ConstFloatType::toStr() {
+    return "float";
+}
+
+std::string VoidType::toStr() {
     return "void";
 }
 
-std::string FunctionType::toStr()
-{
-    std::ostringstream buffer;
-    buffer << returnType->toStr() << "()";
-    return buffer.str();
+std::string FunctionType::toStr() {
+    std::string str;
+    // buffer << returnType->toStr() << "()";
+    str = returnType->toStr() + "(";
+    for (uint32_t i = 0; i < paramsType.size(); i++) {
+        str += paramsType[i]->toStr() + ", ";
+    }
+    str += "\b\b)";
+    return str;
 }
 
-std::string PointerType::toStr()
-{
-    std::ostringstream buffer;
-    buffer << valueType->toStr() << "*";
-    return buffer.str();
+std::string PointerType::toStr() {
+    return valueType->toStr() + "*";
 }

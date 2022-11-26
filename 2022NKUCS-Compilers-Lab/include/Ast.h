@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include "Operand.h"
+#include "Unit.h"
 
 class SymbolEntry;
 class Unit;

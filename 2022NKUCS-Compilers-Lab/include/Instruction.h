@@ -1,7 +1,7 @@
 #ifndef __INSTRUCTION_H__
 #define __INSTRUCTION_H__
 
-#include <iostream>
+#include <fstream>
 #include <map>
 #include <vector>
 #include "Operand.h"

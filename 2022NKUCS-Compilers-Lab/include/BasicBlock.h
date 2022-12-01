@@ -1,5 +1,7 @@
 #ifndef __BASIC_BLOCK_H__
 #define __BASIC_BLOCK_H__
+
+#include <fstream>
 #include <set>
 #include <vector>
 #include "Instruction.h"
@@ -7,22 +9,15 @@
 class Function;
 
 class BasicBlock {
-    typedef std::vector<BasicBlock*>::iterator bb_iterator;
-
    private:
-    std::vector<BasicBlock*> pred, succ;
-    Instruction* head;
-    Function* parent;
     int no;
+    Function* parent;
+    Instruction* head;
+    std::vector<BasicBlock*> pred, succ;  // relation info
 
    public:
     BasicBlock(Function*);
     ~BasicBlock();
-
-    bb_iterator succ_begin() { return succ.begin(); }
-    bb_iterator succ_end() { return succ.end(); }
-    bb_iterator pred_begin() { return pred.begin(); }
-    bb_iterator pred_end() { return pred.end(); }
 
     Instruction* begin() { return head->getNext(); }
     Instruction* end() { return head; }
@@ -49,6 +44,15 @@ class BasicBlock {
     void remove(Instruction*);
 
     void output() const;
+
+   private:
+    typedef std::vector<BasicBlock*>::iterator bb_iterator;
+
+   public:
+    bb_iterator succ_begin() { return succ.begin(); }
+    bb_iterator succ_end() { return succ.end(); }
+    bb_iterator pred_begin() { return pred.begin(); }
+    bb_iterator pred_end() { return pred.end(); }
 };
 
 #endif

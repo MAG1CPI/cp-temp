@@ -1,22 +1,14 @@
 #ifndef __FUNCTION_H__
 #define __FUNCTION_H__
 
-#include <algorithm>
-#include <iostream>
-#include <list>
-#include <map>
+#include <fstream>
 #include <set>
 #include <vector>
 #include "BasicBlock.h"
-#include "SymbolTable.h"
-#include "Unit.h"
 
 class Unit;
 
 class Function {
-    typedef std::vector<BasicBlock*>::iterator iterator;
-    typedef std::vector<BasicBlock*>::reverse_iterator r_iterator;
-
    private:
     Unit* parent;
     SymbolEntry* sym_ptr;
@@ -27,18 +19,24 @@ class Function {
     Function(Unit*, SymbolEntry*);
     ~Function();
 
-    iterator begin() { return block_list.begin(); };
-    iterator end() { return block_list.end(); };
-    r_iterator rbegin() { return block_list.rbegin(); };
-    r_iterator rend() { return block_list.rend(); };
+    BasicBlock* getEntry() { return entry; }
+    SymbolEntry* getSymPtr() { return sym_ptr; }
+    std::vector<BasicBlock*>& getBlockList() { return block_list; }
 
-    BasicBlock* getEntry() { return entry; };
-    std::vector<BasicBlock*>& getBlockList() { return block_list; };
-    SymbolEntry* getSymPtr() { return sym_ptr; };
+    void insertBlock(BasicBlock* bb);
+    void removeBlock(BasicBlock* bb);
 
-    void insertBlock(BasicBlock* bb) { block_list.push_back(bb); };
-    void remove(BasicBlock* bb);
     void output() const;
+
+   private:
+    typedef std::vector<BasicBlock*>::iterator iterator;
+    typedef std::vector<BasicBlock*>::reverse_iterator r_iterator;
+
+   public:
+    iterator begin() { return block_list.begin(); }
+    iterator end() { return block_list.end(); }
+    r_iterator rbegin() { return block_list.rbegin(); }
+    r_iterator rend() { return block_list.rend(); }
 };
 
 #endif

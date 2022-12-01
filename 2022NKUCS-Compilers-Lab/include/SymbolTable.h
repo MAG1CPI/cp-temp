@@ -2,7 +2,7 @@
 #define __SYMBOLTABLE_H__
 
 #include <assert.h>
-#include <iostream>
+#include <fstream>
 #include <map>
 #include <string>
 #include "Type.h"

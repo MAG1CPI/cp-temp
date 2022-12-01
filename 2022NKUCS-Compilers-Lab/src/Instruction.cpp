@@ -1,6 +1,5 @@
 #include "Instruction.h"
 #include "BasicBlock.h"
-#include "Function.h"
 
 extern FILE* yyout;
 
@@ -24,6 +23,7 @@ BinaryInstruction::BinaryInstruction(unsigned opcode, Operand* dst, Operand* src
     operands.push_back(dst);
     operands.push_back(src1);
     operands.push_back(src2);
+
     dst->setDef(this);
     src1->addUse(this);
     src2->addUse(this);
@@ -50,10 +50,22 @@ void BinaryInstruction::output() const {
         case SUB:
             op = "sub";
             break;
+        case AND:
+            op = "and";
+            break;
+        case OR:
+            op = "or";
+            break;
         default:
+            op = "";
             break;
     }
-    fprintf(yyout, "  %s = %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
+    fprintf(yyout, "  %s = %s %s %s, %s\n",
+            s1.c_str(),
+            op.c_str(),
+            type.c_str(),
+            s2.c_str(),
+            s3.c_str());
 }
 
 CmpInstruction::CmpInstruction(unsigned opcode, Operand* dst, Operand* src1, Operand* src2, BasicBlock* insert_bb)
@@ -62,6 +74,7 @@ CmpInstruction::CmpInstruction(unsigned opcode, Operand* dst, Operand* src1, Ope
     operands.push_back(dst);
     operands.push_back(src1);
     operands.push_back(src2);
+
     dst->setDef(this);
     src1->addUse(this);
     src2->addUse(this);
@@ -104,8 +117,12 @@ void CmpInstruction::output() const {
             op = "";
             break;
     }
-
-    fprintf(yyout, "  %s = icmp %s %s %s, %s\n", s1.c_str(), op.c_str(), type.c_str(), s2.c_str(), s3.c_str());
+    fprintf(yyout, "  %s = icmp %s %s %s, %s\n",
+            s1.c_str(),
+            op.c_str(),
+            type.c_str(),
+            s2.c_str(),
+            s3.c_str());
 }
 
 UncondBrInstruction::UncondBrInstruction(BasicBlock* to, BasicBlock* insert_bb)
@@ -121,6 +138,7 @@ CondBrInstruction::CondBrInstruction(BasicBlock* true_branch, BasicBlock* false_
     : Instruction(COND, insert_bb) {
     this->true_branch = true_branch;
     this->false_branch = false_branch;
+
     cond->addUse(this);
     operands.push_back(cond);
 }
@@ -135,7 +153,11 @@ void CondBrInstruction::output() const {
     type = operands[0]->getType()->toStr();
     int true_label = true_branch->getNo();
     int false_label = false_branch->getNo();
-    fprintf(yyout, "  br %s %s, label %%B%d, label %%B%d\n", type.c_str(), cond.c_str(), true_label, false_label);
+    fprintf(yyout, "  br %s %s, label %%B%d, label %%B%d\n",
+            type.c_str(),
+            cond.c_str(),
+            true_label,
+            false_label);
 }
 
 RetInstruction::RetInstruction(Operand* src, BasicBlock* insert_bb)
@@ -158,7 +180,9 @@ void RetInstruction::output() const {
         std::string ret, type;
         ret = operands[0]->toStr();
         type = operands[0]->getType()->toStr();
-        fprintf(yyout, "  ret %s %s\n", type.c_str(), ret.c_str());
+        fprintf(yyout, "  ret %s %s\n",
+                type.c_str(),
+                ret.c_str());
     }
 }
 
@@ -179,13 +203,16 @@ void AllocaInstruction::output() const {
     std::string dst, type;
     dst = operands[0]->toStr();
     type = se->getType()->toStr();
-    fprintf(yyout, "  %s = alloca %s, align 4\n", dst.c_str(), type.c_str());
+    fprintf(yyout, "  %s = alloca %s, align 4\n",
+            dst.c_str(),
+            type.c_str());
 }
 
 LoadInstruction::LoadInstruction(Operand* dst, Operand* src_addr, BasicBlock* insert_bb)
     : Instruction(LOAD, insert_bb) {
     operands.push_back(dst);
     operands.push_back(src_addr);
+
     dst->setDef(this);
     src_addr->addUse(this);
 }
@@ -198,20 +225,24 @@ LoadInstruction::~LoadInstruction() {
 }
 
 void LoadInstruction::output() const {
-    std::string dst = operands[0]->toStr();
-    std::string src = operands[1]->toStr();
-    std::string src_type;
-    std::string dst_type;
+    std::string dst, src, src_type, dst_type;
+    dst = operands[0]->toStr();
+    src = operands[1]->toStr();
     dst_type = operands[0]->getType()->toStr();
     src_type = operands[1]->getType()->toStr();
-    
-    fprintf(yyout, "  %s = load %s, %s %s, align 4\n", dst.c_str(), dst_type.c_str(), src_type.c_str(), src.c_str());
+
+    fprintf(yyout, "  %s = load %s, %s %s, align 4\n",
+            dst.c_str(),
+            dst_type.c_str(),
+            src_type.c_str(),
+            src.c_str());
 }
 
 StoreInstruction::StoreInstruction(Operand* dst_addr, Operand* src, BasicBlock* insert_bb)
     : Instruction(STORE, insert_bb) {
     operands.push_back(dst_addr);
     operands.push_back(src);
+
     dst_addr->addUse(this);
     src->addUse(this);
 }
@@ -222,10 +253,15 @@ StoreInstruction::~StoreInstruction() {
 }
 
 void StoreInstruction::output() const {
-    std::string dst = operands[0]->toStr();
-    std::string src = operands[1]->toStr();
-    std::string dst_type = operands[0]->getType()->toStr();
-    std::string src_type = operands[1]->getType()->toStr();
+    std::string dst, src, dst_type, src_type;
+    dst = operands[0]->toStr();
+    src = operands[1]->toStr();
+    dst_type = operands[0]->getType()->toStr();
+    src_type = operands[1]->getType()->toStr();
 
-    fprintf(yyout, "  store %s %s, %s %s, align 4\n", src_type.c_str(), src.c_str(), dst_type.c_str(), dst.c_str());
+    fprintf(yyout, "  store %s %s, %s %s, align 4\n",
+            src_type.c_str(),
+            src.c_str(),
+            dst_type.c_str(),
+            dst.c_str());
 }

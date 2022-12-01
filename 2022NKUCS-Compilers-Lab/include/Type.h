@@ -95,7 +95,8 @@ class TypeSystem {
     static FloatType commonFloat;
     static ConstFloatType commonConstFloat;
     static VoidType commonVoid;
-
+    // FunctionType
+    // PointerType
    public:
     static Type* boolType;
     static Type* intType;

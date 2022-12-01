@@ -136,20 +136,24 @@ class TemporarySymbolEntry : public SymbolEntry {
 // symbol table managing identifier symbol entries
 class SymbolTable {
    private:
+    static int counter;
+
+   private:
     std::map<std::string, SymbolEntry*> symbolTable;
     SymbolTable* prev;
     int level;
-    static int counter;
 
    public:
     SymbolTable();
     SymbolTable(SymbolTable* prev);
     ~SymbolTable(){};
-    void install(std::string name, SymbolEntry* entry);
-    SymbolEntry* lookup(std::string name, bool current);
+
     SymbolTable* getPrev() { return prev; }
     int getLevel() { return level; }
     static int getLabel() { return counter++; }
+
+    void install(std::string name, SymbolEntry* entry);
+    SymbolEntry* lookup(std::string name, bool current);
 };
 
 extern SymbolTable* identifiers;

@@ -36,7 +36,6 @@ std::string VoidType::toStr() {
 
 std::string FunctionType::toStr() {
     std::string str;
-    // buffer << returnType->toStr() << "()";
     str = returnType->toStr() + "(";
     for (uint32_t i = 0; i < paramsType.size(); i++) {
         str += paramsType[i]->toStr() + ", ";

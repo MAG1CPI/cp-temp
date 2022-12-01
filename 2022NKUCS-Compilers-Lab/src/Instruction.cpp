@@ -1,8 +1,7 @@
 #include "Instruction.h"
-#include <iostream>
 #include "BasicBlock.h"
 #include "Function.h"
-#include "Type.h"
+
 extern FILE* yyout;
 
 Instruction::Instruction(unsigned instType, BasicBlock* insert_bb) {
@@ -17,30 +16,6 @@ Instruction::Instruction(unsigned instType, BasicBlock* insert_bb) {
 
 Instruction::~Instruction() {
     parent->remove(this);
-}
-
-BasicBlock* Instruction::getParent() {
-    return parent;
-}
-
-void Instruction::setParent(BasicBlock* bb) {
-    parent = bb;
-}
-
-void Instruction::setNext(Instruction* inst) {
-    next = inst;
-}
-
-void Instruction::setPrev(Instruction* inst) {
-    prev = inst;
-}
-
-Instruction* Instruction::getNext() {
-    return next;
-}
-
-Instruction* Instruction::getPrev() {
-    return prev;
 }
 
 BinaryInstruction::BinaryInstruction(unsigned opcode, Operand* dst, Operand* src1, Operand* src2, BasicBlock* insert_bb)
@@ -142,14 +117,6 @@ void UncondBrInstruction::output() const {
     fprintf(yyout, "  br label %%B%d\n", branch->getNo());
 }
 
-void UncondBrInstruction::setBranch(BasicBlock* bb) {
-    branch = bb;
-}
-
-BasicBlock* UncondBrInstruction::getBranch() {
-    return branch;
-}
-
 CondBrInstruction::CondBrInstruction(BasicBlock* true_branch, BasicBlock* false_branch, Operand* cond, BasicBlock* insert_bb)
     : Instruction(COND, insert_bb) {
     this->true_branch = true_branch;
@@ -169,22 +136,6 @@ void CondBrInstruction::output() const {
     int true_label = true_branch->getNo();
     int false_label = false_branch->getNo();
     fprintf(yyout, "  br %s %s, label %%B%d, label %%B%d\n", type.c_str(), cond.c_str(), true_label, false_label);
-}
-
-void CondBrInstruction::setFalseBranch(BasicBlock* bb) {
-    false_branch = bb;
-}
-
-BasicBlock* CondBrInstruction::getFalseBranch() {
-    return false_branch;
-}
-
-void CondBrInstruction::setTrueBranch(BasicBlock* bb) {
-    true_branch = bb;
-}
-
-BasicBlock* CondBrInstruction::getTrueBranch() {
-    return true_branch;
 }
 
 RetInstruction::RetInstruction(Operand* src, BasicBlock* insert_bb)
@@ -253,6 +204,7 @@ void LoadInstruction::output() const {
     std::string dst_type;
     dst_type = operands[0]->getType()->toStr();
     src_type = operands[1]->getType()->toStr();
+    
     fprintf(yyout, "  %s = load %s, %s %s, align 4\n", dst.c_str(), dst_type.c_str(), src_type.c_str(), src.c_str());
 }
 

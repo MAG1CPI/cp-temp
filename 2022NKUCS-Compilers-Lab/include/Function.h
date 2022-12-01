@@ -1,40 +1,44 @@
 #ifndef __FUNCTION_H__
 #define __FUNCTION_H__
 
-#include <vector>
-#include <map>
-#include <set>
 #include <algorithm>
 #include <iostream>
+#include <list>
+#include <map>
+#include <set>
+#include <vector>
 #include "BasicBlock.h"
 #include "SymbolTable.h"
+#include "Unit.h"
 
 class Unit;
 
-class Function
-{
-    typedef std::vector<BasicBlock *>::iterator iterator;
-    typedef std::vector<BasicBlock *>::reverse_iterator reverse_iterator;
+class Function {
+    typedef std::vector<BasicBlock*>::iterator iterator;
+    typedef std::vector<BasicBlock*>::reverse_iterator r_iterator;
 
-private:
-    std::vector<BasicBlock *> block_list;
-    SymbolEntry *sym_ptr;
-    BasicBlock *entry;
-    Unit *parent;
+   private:
+    Unit* parent;
+    SymbolEntry* sym_ptr;
+    BasicBlock* entry;
+    std::vector<BasicBlock*> block_list;
 
-public:
-    Function(Unit *, SymbolEntry *);
+   public:
+    Function(Unit*, SymbolEntry*);
     ~Function();
-    void insertBlock(BasicBlock *bb) { block_list.push_back(bb); };
-    BasicBlock *getEntry() { return entry; };
-    void remove(BasicBlock *bb);
-    void output() const;
-    std::vector<BasicBlock *> &getBlockList(){return block_list;};
+
     iterator begin() { return block_list.begin(); };
     iterator end() { return block_list.end(); };
-    reverse_iterator rbegin() { return block_list.rbegin(); };
-    reverse_iterator rend() { return block_list.rend(); };
-    SymbolEntry *getSymPtr() { return sym_ptr; };
+    r_iterator rbegin() { return block_list.rbegin(); };
+    r_iterator rend() { return block_list.rend(); };
+
+    BasicBlock* getEntry() { return entry; };
+    std::vector<BasicBlock*>& getBlockList() { return block_list; };
+    SymbolEntry* getSymPtr() { return sym_ptr; };
+
+    void insertBlock(BasicBlock* bb) { block_list.push_back(bb); };
+    void remove(BasicBlock* bb);
+    void output() const;
 };
 
 #endif

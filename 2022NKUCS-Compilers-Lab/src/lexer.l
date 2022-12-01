@@ -111,6 +111,15 @@ WHITE [\t ]
     return INTEGER;
 }
 
+{ID}/(WHITE*\[) {
+    if(dump_tokens)
+        DEBUG_FOR_LAB4(yytext);
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    return ARRAYID;
+}
 {ID} {
     if(dump_tokens)
         DEBUG_FOR_LAB4(yytext);

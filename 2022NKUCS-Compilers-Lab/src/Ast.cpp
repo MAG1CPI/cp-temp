@@ -6,6 +6,7 @@
 #include "Type.h"
 #include "Unit.h"
 
+extern Unit unit;
 extern FILE* yyout;
 int Node::counter = 0;
 IRBuilder* Node::builder = nullptr;
@@ -274,31 +275,50 @@ void SeqNode::genCode() {
 }
 
 void DeclStmt::genCode() {
-    IdentifierSymbolEntry* se = dynamic_cast<IdentifierSymbolEntry*>(id->getSymPtr());
-    if (se->isGlobal()) {
-        Operand* addr;
-        SymbolEntry* addr_se;
+    IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());
+    if(se->isGlobal())
+    {
+        Operand *addr;
+        SymbolEntry *addr_se;
         addr_se = new IdentifierSymbolEntry(*se);
         addr_se->setType(new PointerType(se->getType()));
         addr = new Operand(addr_se);
         se->setAddr(addr);
-        /*
         if(initval != nullptr)
-            dynamic_cast<IdentifierSymbolEntry *>(addr_se)->setIntValue();
-        */
-    } else if (se->isLocal()) {
-        Function* func = builder->getInsertBB()->getParent();
-        BasicBlock* entry = func->getEntry();
-        Instruction* alloca;
-        Operand* addr;
-        SymbolEntry* addr_se;
-        Type* type;
+        {
+            int value;
+            sscanf(initval->getOperand()->toStr().c_str(), "%d", &value);
+            dynamic_cast<IdentifierSymbolEntry *>(se)->setIntValue(value);
+            //std::cout << "add a global var value:" << value << std::endl;
+        }
+        else
+        {
+            dynamic_cast<IdentifierSymbolEntry *>(se)->setIntValue(0);
+            //std::cout << "add a global var value:" << 0 << std::endl;
+        }
+        unit.insertGlobalVar(se);
+    }
+    else if(se->isLocal())
+    {
+        Function *func = builder->getInsertBB()->getParent();
+        BasicBlock *entry = func->getEntry();
+        Instruction *alloca;
+        Operand *addr;
+        SymbolEntry *addr_se;
+        Type *type;
         type = new PointerType(se->getType());
         addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
         addr = new Operand(addr_se);
-        alloca = new AllocaInstruction(addr, se);  // allocate space for local id in function stack.
-        entry->insertFront(alloca);                // allocate instructions should be inserted into the begin of the entry block.
-        se->setAddr(addr);                         // set the addr operand in symbol entry so that we can use it in subsequent code generation.
+        alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
+        entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
+        se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
+        if(initval != nullptr)
+        {
+            BasicBlock* bb = builder->getInsertBB();
+            initval->genCode();
+            Operand* src = initval->getOperand();
+            new StoreInstruction(addr, src, bb);
+        }
     }
 
     if (HaveSibling())

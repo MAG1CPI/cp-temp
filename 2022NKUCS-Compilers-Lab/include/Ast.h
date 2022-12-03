@@ -269,8 +269,13 @@ class FunctionCall : public ExprNode {
    public:
     FunctionCall(SymbolEntry* se, ExprNode* rparam)
         : ExprNode(se), rparam(rparam) {
-        SymbolEntry* temp = new TemporarySymbolEntry(dynamic_cast<FunctionType*>(se->getType())->getRetType(), SymbolTable::getLabel());
-        dst = new Operand(temp);
+        Type* return_type = dynamic_cast<FunctionType*>(se->getType())->getRetType();
+        if (return_type->isVoid()) {
+            dst = nullptr;
+        } else {
+            SymbolEntry* temp = new TemporarySymbolEntry(return_type, SymbolTable::getLabel());
+            dst = new Operand(temp);
+        }
     };
     FunctionCall(SymbolEntry* se)
         : ExprNode(se), rparam(nullptr){};

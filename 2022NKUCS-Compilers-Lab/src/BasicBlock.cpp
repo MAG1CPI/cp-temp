@@ -73,29 +73,21 @@ void BasicBlock::insertBack(Instruction* inst) {
 
 // insert the instruction dst before src.
 void BasicBlock::insertBefore(Instruction* dst, Instruction* src) {
-    Instruction *inst = head, *prev_inst = nullptr;
-    do {
-        inst = inst->getNext();
-        if (inst == src) {
-            prev_inst = inst->getPrev();
-            dst->setPrev(prev_inst);
-            dst->setNext(inst);
-            dst->setParent(this);
+    // Todo
+    assert(src);
+    Instruction* before_src = src->getPrev();
+    before_src->setNext(dst);
+    dst->setNext(src);
+    src->setPrev(dst);
+    dst->setPrev(before_src);
 
-            prev_inst->setNext(dst);
-            inst->setPrev(dst);
-            return;
-        }
-    } while (inst != head);
-    assert(0);
+    dst->setParent(this);
 }
 
 // remove the instruction from intruction list.
 void BasicBlock::remove(Instruction* inst) {
-    Instruction *prev_inst = inst->getPrev(), *next_inst = inst->getNext();
-    prev_inst->setNext(next_inst);
-    next_inst->setPrev(prev_inst);
-    return;
+    inst->getPrev()->setNext(inst->getNext());
+    inst->getNext()->setPrev(inst->getPrev());
 }
 
 void BasicBlock::output() const {

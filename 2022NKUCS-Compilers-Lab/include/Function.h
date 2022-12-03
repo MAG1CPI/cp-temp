@@ -24,7 +24,7 @@ class Function {
     std::vector<BasicBlock*>& getBlockList() { return block_list; }
 
     void insertBlock(BasicBlock* bb);
-    void removeBlock(BasicBlock* bb);
+    void remove(BasicBlock* bb);
 
     void output() const;
 

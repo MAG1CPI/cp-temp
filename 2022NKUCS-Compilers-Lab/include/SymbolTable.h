@@ -20,8 +20,7 @@ class SymbolEntry {
     Type* type;
 
    public:
-    SymbolEntry(Type* type, int kind)
-        : type(type), kind(kind) {}
+    SymbolEntry(Type* type, int kind);
     virtual ~SymbolEntry(){};
 
     bool isConstant() const { return kind == CONSTANT; };
@@ -45,8 +44,7 @@ class ConstantSymbolEntry : public SymbolEntry {
     int value;
 
    public:
-    ConstantSymbolEntry(Type* type, int value)
-        : SymbolEntry(type, SymbolEntry::CONSTANT), value(value) {}
+    ConstantSymbolEntry(Type* type, int value);
     virtual ~ConstantSymbolEntry(){};
 
     int getValue() const { return value; }
@@ -86,8 +84,7 @@ class IdentifierSymbolEntry : public SymbolEntry {
                     // You can add any field you need here.
 
    public:
-    IdentifierSymbolEntry(Type* type, std::string name, int scope, Operand* addr = nullptr)
-        : SymbolEntry(type, SymbolEntry::VARIABLE), name(name), scope(scope), addr(addr) {}
+    IdentifierSymbolEntry(Type* type, std::string name, int scope);
     virtual ~IdentifierSymbolEntry(){};
 
     bool isGlobal() const { return scope == GLOBAL; }
@@ -124,8 +121,7 @@ class TemporarySymbolEntry : public SymbolEntry {
     int label;
 
    public:
-    TemporarySymbolEntry(Type* type, int label)
-        : SymbolEntry(type, SymbolEntry::TEMPORARY), label(label) {}
+    TemporarySymbolEntry(Type* type, int label);
     virtual ~TemporarySymbolEntry() {}
 
     int getLabel() const { return label; }

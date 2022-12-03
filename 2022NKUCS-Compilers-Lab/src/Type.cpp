@@ -9,9 +9,9 @@ VoidType TypeSystem::commonVoid = VoidType();
 
 Type* TypeSystem::boolType = &commonBool;
 Type* TypeSystem::intType = &commonInt;
-Type* TypeSystem::constIntType = &commonConstInt;
+Type* TypeSystem::constintType = &commonConstInt;
 Type* TypeSystem::floatType = &commonFloat;
-Type* TypeSystem::constFloatType = &commonConstFloat;
+Type* TypeSystem::constfloatType = &commonConstFloat;
 Type* TypeSystem::voidType = &commonVoid;
 
 std::string IntType::toStr() {

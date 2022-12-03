@@ -25,7 +25,7 @@ void Function::insertBlock(BasicBlock* bb) {
 }
 
 // remove the basicblock bb from its block_list.
-void Function::removeBlock(BasicBlock* bb) {
+void Function::remove(BasicBlock* bb) {
     block_list.erase(std::find(block_list.begin(), block_list.end(), bb));
 }
 
@@ -33,8 +33,8 @@ void Function::output() const {
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
     Type* retType = funcType->getRetType();
     fprintf(yyout, "define %s %s() {\n", 
-            retType->toStr().c_str(), 
-            sym_ptr->toStr().c_str());
+    retType->toStr().c_str(), 
+    sym_ptr->toStr().c_str());
 
     std::set<BasicBlock*> visited;
     std::vector<BasicBlock*> waiting;

@@ -45,17 +45,43 @@ void BinaryInstruction::output() const {
     type = operands[0]->getType()->toStr();
     switch (opcode) {
         case ADD:
-            op = "add";
+            if (type == "float")
+                op = "fadd";
+            else
+                op = "add";
             break;
         case SUB:
-            op = "sub";
+            if (type == "float")
+                op = "fsub";
+            else
+                op = "sub";
             break;
+        case MUL:
+            if (type == "float")
+                op = "fmul";
+            else
+                op = "mul";
+            break;
+        case DIV:
+            if (type == "float")
+                op = "fdiv";
+            else
+                op = "sdiv";
+            break;
+        case MOD:
+            if (type == "float")
+                op = "frem";
+            else
+                op = "srem";
+            break;
+        /*
         case AND:
             op = "and";
             break;
         case OR:
             op = "or";
             break;
+        */
         default:
             op = "";
             break;
@@ -95,22 +121,22 @@ void CmpInstruction::output() const {
     s3 = operands[2]->toStr();
     type = operands[1]->getType()->toStr();
     switch (opcode) {
-        case E:
+        case EQ:
             op = "eq";
             break;
-        case NE:
+        case NOTEQ:
             op = "ne";
             break;
-        case L:
+        case LESS:
             op = "slt";
             break;
-        case LE:
+        case LESSEQ:
             op = "sle";
             break;
-        case G:
+        case GREATER:
             op = "sgt";
             break;
-        case GE:
+        case GREATEREQ:
             op = "sge";
             break;
         default:
@@ -154,9 +180,9 @@ void CondBrInstruction::output() const {
     int true_label = true_branch->getNo();
     int false_label = false_branch->getNo();
     fprintf(yyout, "  br %s %s, label %%B%d, label %%B%d\n",
-            type.c_str(),
-            cond.c_str(),
-            true_label,
+            type.c_str(), 
+            cond.c_str(), 
+            true_label, 
             false_label);
 }
 

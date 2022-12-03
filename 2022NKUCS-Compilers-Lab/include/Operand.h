@@ -1,13 +1,11 @@
 #ifndef __OPERAND_H__
 #define __OPERAND_H__
 
-#include <fstream>
-#include <string>
+#include <algorithm>
 #include <vector>
 #include "SymbolTable.h"
 
 class Instruction;
-class Function;
 
 // class Operand - The operand of an instruction.
 class Operand {
@@ -20,7 +18,7 @@ class Operand {
 
    public:
     Operand(SymbolEntry* se)
-        : se(se) { def = nullptr; };
+        : se(se) { def = nullptr; }
 
     use_iterator use_begin() { return uses.begin(); }
     use_iterator use_end() { return uses.end(); }
@@ -29,7 +27,7 @@ class Operand {
     Type* getType() { return se->getType(); }
 
     void setDef(Instruction* inst) { def = inst; }
-    void addUse(Instruction* inst);
+    void addUse(Instruction* inst) { uses.push_back(inst); }
     void removeUse(Instruction* inst);
 
     std::string toStr() const;

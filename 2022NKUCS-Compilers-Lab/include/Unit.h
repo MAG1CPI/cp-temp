@@ -6,10 +6,10 @@
 #include "Function.h"
 
 class Unit {
-   private:
+private:
     std::vector<Function*> func_list;
 
-   public:
+public:
     Unit() = default;
     ~Unit();
 

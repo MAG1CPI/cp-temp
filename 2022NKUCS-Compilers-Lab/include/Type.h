@@ -101,9 +101,9 @@ class TypeSystem {
    public:
     static Type* boolType;
     static Type* intType;
-    static Type* constIntType;
+    static Type* constintType;
     static Type* floatType;
-    static Type* constFloatType;
+    static Type* constfloatType;
     static Type* voidType;
 };
 

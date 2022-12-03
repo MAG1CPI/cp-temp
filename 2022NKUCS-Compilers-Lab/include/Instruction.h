@@ -81,8 +81,11 @@ class StoreInstruction : public Instruction {
 
 class BinaryInstruction : public Instruction {
    public:
-    enum { SUB,
-           ADD,
+    enum { ADD,
+           SUB,
+           MUL,
+           DIV,
+           MOD,
            AND,
            OR };
 
@@ -95,13 +98,12 @@ class BinaryInstruction : public Instruction {
 
 class CmpInstruction : public Instruction {
    public:
-    enum { E,
-           NE,
-           L,
-           GE,
-           G,
-           LE };
-
+    enum { EQ,
+           NOTEQ,
+           LESS,
+           LESSEQ,
+           GREATER,
+           GREATEREQ };
    public:
     CmpInstruction(unsigned opcode, Operand* dst, Operand* src1, Operand* src2, BasicBlock* insert_bb = nullptr);
     ~CmpInstruction();

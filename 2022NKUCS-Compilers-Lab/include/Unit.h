@@ -9,7 +9,7 @@
 class Unit {
    private:
     std::vector<Function*> func_list;
-    std::vector<IdentifierSymbolEntry *> globalvar_list;
+    std::vector<IdentifierSymbolEntry*> globalvar_list;
 
    public:
     Unit() = default;
@@ -17,7 +17,7 @@ class Unit {
 
     void insertFunc(Function*);
     void removeFunc(Function*);
-    void insertGlobalVar(IdentifierSymbolEntry *);
+    void insertGlobalVar(IdentifierSymbolEntry*);
     void output() const;
 
    private:

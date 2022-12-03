@@ -1,7 +1,14 @@
 int global = 1;
-int T(int a){
-    return 0;
+void T(int a)
+{
+    return;
 }
+/*
+void test(int a)
+{
+    return;
+}
+*/
 int main()
 {
     int a, c = 2 + 5;
@@ -10,7 +17,8 @@ int main()
     a = 1 + 2 + 3;
     b = 2 + 3 + 4;
     global = c;
-    a = T(b);
+    //a = T(b);
+    T(b);
     if (a < b)
         min = a;
     else

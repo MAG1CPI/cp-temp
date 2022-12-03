@@ -187,7 +187,7 @@ void CondBrInstruction::output() const {
 }
 
 CallInstruction::CallInstruction(SymbolEntry* func, std::vector<Operand*> rparams, Operand* dst, BasicBlock* insert_bb)
-    : Instruction(CALL, insert_bb), dst(dst), func(func) {
+    : Instruction(CALL, insert_bb), func(func), dst(dst) {
     if (dst)
         dst->setDef(this);
     for (auto rparam : rparams) {
@@ -202,7 +202,7 @@ CallInstruction::~CallInstruction() {
         if (dst->usersNum() == 0)
             delete dst;
     }
-    for (int i = 0; i < operands.size(); i++)
+    for (unsigned int i = 0; i < operands.size(); i++)
         operands[i]->removeUse(this);
 }
 
@@ -220,7 +220,7 @@ void CallInstruction::output() const {
         fprintf(yyout, "%s %s",
                 operands[0]->getType()->toStr().c_str(),
                 operands[0]->toStr().c_str());
-    for (int i = 1; i < operands.size(); i++)
+    for (unsigned int i = 1; i < operands.size(); i++)
         fprintf(yyout, ", %s %s",
                 operands[i]->getType()->toStr().c_str(),
                 operands[i]->toStr().c_str());

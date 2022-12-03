@@ -6,6 +6,9 @@
     #define YY_NO_UNPUT
     #define YY_NO_INPUT
     #define YYSTYPE void *
+
+    extern Unit unit;
+    #include "Unit.h"
     /*
     "float"         { return FLOAT; }
 
@@ -94,6 +97,7 @@ CommentBody         ([^\r\n|\n|\r])
     Type* funcType = new FunctionType(TypeSystem::voidType, paramstype);
     SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
     global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
     return ID;
 }
 
@@ -112,6 +116,7 @@ CommentBody         ([^\r\n|\n|\r])
     Type* funcType = new FunctionType(TypeSystem::intType, paramstype);
     SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
     global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
     return ID;
 }
 
@@ -131,6 +136,7 @@ CommentBody         ([^\r\n|\n|\r])
     Type* funcType = new FunctionType(TypeSystem::voidType, paramstype);
     SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
     global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
     return ID;
 }
 
@@ -149,6 +155,7 @@ CommentBody         ([^\r\n|\n|\r])
     Type* funcType = new FunctionType(TypeSystem::intType, paramstype);
     SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
     global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
     return ID;
 }
 

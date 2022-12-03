@@ -13,10 +13,12 @@ Function::Function(Unit* u, SymbolEntry* s) {
 
 Function::~Function() {
     // why?
+    /*
     auto delete_list = block_list;
     for (auto& i : delete_list)
         delete i;
     parent->removeFunc(this);
+    */
 }
 
 // insert the basicblock bb from its block_list.

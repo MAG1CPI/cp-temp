@@ -62,7 +62,8 @@ void FunctionDef::genCode() {
     BasicBlock* entry = func->getEntry();
     // set the insert point to the entry basicblock of this function.
     builder->setInsertBB(entry);
-
+    if(fparam != nullptr)
+        fparam->genCode();
     stmt->genCode();
 
     /**
@@ -380,6 +381,22 @@ void WhileStmt::genCode() {
 
 void FuncFParam::genCode() {
     // Todo
+    IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());
+    Function *func = builder->getInsertBB()->getParent();
+    BasicBlock *entry = func->getEntry();
+    Instruction *alloca;
+    Operand *addr;
+    SymbolEntry *addr_se;
+    Type *type;
+    type = new PointerType(se->getType());
+    addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+    addr = new Operand(addr_se);
+    alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
+    entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
+    se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
+
+    if (HaveSibling())
+        GetSibling()->genCode();
 }
 
 void FunctionCall::genCode() {

@@ -34,13 +34,26 @@ std::string VoidType::toStr() {
     return "void";
 }
 
+std::string FunctionType::paramTypeToStr() {
+    std::string str = "";
+    if (paramsType.size()) {
+        str += paramsType[0]->toStr();
+    }
+    for (uint32_t i = 1; i < paramsType.size(); i++) {
+        str += ", " + paramsType[i]->toStr();
+    }
+    return str;
+}
 std::string FunctionType::toStr() {
     std::string str;
     str = returnType->toStr() + "(";
-    for (uint32_t i = 0; i < paramsType.size(); i++) {
-        str += paramsType[i]->toStr() + ", ";
+    if (paramsType.size()) {
+        str += paramsType[0]->toStr();
     }
-    str += "\b\b)";
+    for (uint32_t i = 1; i < paramsType.size(); i++) {
+        str += ", " + paramsType[i]->toStr();
+    }
+    str += ")";
     return str;
 }
 

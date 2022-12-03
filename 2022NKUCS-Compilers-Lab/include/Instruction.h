@@ -21,6 +21,7 @@ class Instruction {
     enum { BINARY,
            COND,
            UNCOND,
+           CALL,
            RET,
            LOAD,
            STORE,
@@ -104,6 +105,7 @@ class CmpInstruction : public Instruction {
            LESSEQ,
            GREATER,
            GREATEREQ };
+
    public:
     CmpInstruction(unsigned opcode, Operand* dst, Operand* src1, Operand* src2, BasicBlock* insert_bb = nullptr);
     ~CmpInstruction();
@@ -139,6 +141,18 @@ class CondBrInstruction : public Instruction {
     BasicBlock* getFalseBranch() { return false_branch; }
     void setTrueBranch(BasicBlock* bb) { true_branch = bb; }
     void setFalseBranch(BasicBlock* bb) { false_branch = bb; }
+
+    void output() const;
+};
+
+class CallInstruction : public Instruction {
+   protected:
+    SymbolEntry* func;
+    Operand* dst;
+
+   public:
+    CallInstruction(SymbolEntry*, std::vector<Operand*>, Operand*, BasicBlock* insert_bb = nullptr);
+    ~CallInstruction();
 
     void output() const;
 };

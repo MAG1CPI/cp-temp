@@ -50,6 +50,10 @@ app:$(LEXER) $(PARSER) $(BINARY)
 run:app
 	@$(BINARY) -o example.ll -i example.sy
 
+get:app
+	@clang example.ll -o example.out
+	@./example.out
+
 gdb:app
 	@gdb $(BINARY)
 

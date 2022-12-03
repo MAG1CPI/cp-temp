@@ -32,10 +32,13 @@ void Function::remove(BasicBlock* bb) {
 void Function::output() const {
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
     Type* retType = funcType->getRetType();
-    fprintf(yyout, "define %s %s() {\n", 
-    retType->toStr().c_str(), 
-    sym_ptr->toStr().c_str());
-
+    /*fprintf(yyout, "define %s %s() {\n",
+    retType->toStr().c_str(),
+    sym_ptr->toStr().c_str());*/
+    fprintf(yyout, "define %s %s(%s) {\n",
+            retType->toStr().c_str(),
+            sym_ptr->toStr().c_str(),
+            funcType->paramTypeToStr().c_str());
     std::set<BasicBlock*> visited;
     std::vector<BasicBlock*> waiting;
     visited.insert(entry);

@@ -186,6 +186,47 @@ void CondBrInstruction::output() const {
             false_label);
 }
 
+CallInstruction::CallInstruction(SymbolEntry* func, std::vector<Operand*> rparams, Operand* dst, BasicBlock* insert_bb)
+    : Instruction(CALL, insert_bb), dst(dst), func(func) {
+    if (dst)
+        dst->setDef(this);
+    for (auto rparam : rparams) {
+        operands.push_back(rparam);
+        rparam->addUse(this);
+    }
+}
+
+CallInstruction::~CallInstruction() {
+    if (dst) {
+        dst->setDef(nullptr);
+        if (dst->usersNum() == 0)
+            delete dst;
+    }
+    for (int i = 0; i < operands.size(); i++)
+        operands[i]->removeUse(this);
+}
+
+void CallInstruction::output() const {
+    fprintf(yyout, "  ");
+    if (dst)
+        fprintf(yyout, "%s = ", 
+                dst->toStr().c_str());
+
+    FunctionType* type = (FunctionType*)(func->getType());
+    fprintf(yyout, "call %s %s(",
+            type->getRetType()->toStr().c_str(),
+            func->toStr().c_str());
+    if(operands.size())
+        fprintf(yyout, "%s %s",
+                operands[0]->getType()->toStr().c_str(),
+                operands[0]->toStr().c_str());
+    for (int i = 1; i < operands.size(); i++)
+        fprintf(yyout, ", %s %s",
+                operands[i]->getType()->toStr().c_str(),
+                operands[i]->toStr().c_str());
+    fprintf(yyout, ")\n");
+}
+
 RetInstruction::RetInstruction(Operand* src, BasicBlock* insert_bb)
     : Instruction(RET, insert_bb) {
     if (src != nullptr) {

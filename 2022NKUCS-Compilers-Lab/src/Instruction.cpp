@@ -180,9 +180,9 @@ void CondBrInstruction::output() const {
     int true_label = true_branch->getNo();
     int false_label = false_branch->getNo();
     fprintf(yyout, "  br %s %s, label %%B%d, label %%B%d\n",
-            type.c_str(), 
-            cond.c_str(), 
-            true_label, 
+            type.c_str(),
+            cond.c_str(),
+            true_label,
             false_label);
 }
 
@@ -209,14 +209,14 @@ CallInstruction::~CallInstruction() {
 void CallInstruction::output() const {
     fprintf(yyout, "  ");
     if (dst)
-        fprintf(yyout, "%s = ", 
+        fprintf(yyout, "%s = ",
                 dst->toStr().c_str());
 
     FunctionType* type = (FunctionType*)(func->getType());
     fprintf(yyout, "call %s %s(",
             type->getRetType()->toStr().c_str(),
             func->toStr().c_str());
-    if(operands.size())
+    if (operands.size())
         fprintf(yyout, "%s %s",
                 operands[0]->getType()->toStr().c_str(),
                 operands[0]->toStr().c_str());

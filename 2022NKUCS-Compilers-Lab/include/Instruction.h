@@ -151,7 +151,7 @@ class CallInstruction : public Instruction {
     Operand* dst;
 
    public:
-    CallInstruction(SymbolEntry*, std::vector<Operand*>, Operand*, BasicBlock* insert_bb = nullptr);
+    CallInstruction(SymbolEntry* func, std::vector<Operand*> rparams, Operand* dst, BasicBlock* insert_bb = nullptr);
     ~CallInstruction();
 
     void output() const;

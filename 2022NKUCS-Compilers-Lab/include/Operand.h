@@ -9,7 +9,7 @@ class Instruction;
 
 // class Operand - The operand of an instruction.
 class Operand {
-    typedef std::vector<Instruction*>::iterator use_iterator;
+   typedef std::vector<Instruction*>::iterator use_iterator;
 
    private:
     Instruction* def;                // The instruction where this operand is defined.

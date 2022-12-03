@@ -7,11 +7,11 @@
 #include "SymbolTable.h"
 
 class Unit {
-  private:
+   private:
     std::vector<Function*> func_list;
     std::vector<IdentifierSymbolEntry *> globalvar_list;
 
-  public:
+   public:
     Unit() = default;
     ~Unit();
 

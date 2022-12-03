@@ -3,12 +3,10 @@ void T(int a)
 {
     return;
 }
-/*
 void test(int a)
 {
     return;
 }
-*/
 int main()
 {
     int a, c = 2 + 5;
@@ -19,6 +17,7 @@ int main()
     global = c;
     //a = T(b);
     T(b);
+    putint(9987);
     if (a < b)
         min = a;
     else

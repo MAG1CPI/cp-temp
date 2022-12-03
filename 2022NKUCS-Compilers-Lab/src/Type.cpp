@@ -44,6 +44,7 @@ std::string FunctionType::paramTypeToStr() {
     }
     return str;
 }
+
 std::string FunctionType::toStr() {
     std::string str;
     str = returnType->toStr() + "(";

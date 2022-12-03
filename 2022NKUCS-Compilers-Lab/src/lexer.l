@@ -54,7 +54,8 @@ CommentBody         ([^\r\n|\n|\r])
 "if"            { return IF; }
 "else"          { return ELSE; }
 "while"         { return WHILE; }
-
+"break"         { return BREAK; }
+"continue"      { return CONTINUE; }
 
 "return"        { return RETURN; }
 "||"            { return OR; }

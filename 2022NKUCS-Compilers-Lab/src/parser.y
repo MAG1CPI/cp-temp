@@ -1,5 +1,6 @@
 %code top{
     #include <iostream>
+    #include <stack>
     #include <assert.h>
     #include "parser.h"
     extern Ast ast;
@@ -10,6 +11,8 @@
     bool current_symtab = true;
     bool all_parent_symtab = false;
     std::vector<Type*> func_fparam_type;
+    StmtNode* while_stmt_node;
+    std::stack<StmtNode*> while_stmt_stack;
 }
 
 %code requires {
@@ -35,9 +38,9 @@
 %token INT VOID
 %token L_PAREN R_PAREN L_BRACE R_BRACE L_SQUARE R_SQUARE SEMI COMMA
 %token ADD SUB MUL DIV MOD OR AND LESS LESSEQ GREATER GREATEREQ ASSIGN EQ NOTEQ NOT
-%token RETURN
+%token RETURN BREAK CONTINUE
 
-%nterm <stmttype> Stmts Stmt AssignStmt ExprStmt BlockStmt IfStmt WhileStmt ReturnStmt /*DeclStmt*/ /*FuncDef*/ NullStmt
+%nterm <stmttype> Stmts Stmt AssignStmt ExprStmt BlockStmt IfStmt WhileStmt ReturnStmt BreakStmt ContinueStmt /*DeclStmt*/ /*FuncDef*/ NullStmt
 %nterm <stmttype> DeclStmt VarDecl VarList VarDef ConstDecl ConstList ConstDef FuncDef FuncFParams FuncFParam
 
 %nterm <exprtype> Exp Cond LVal PrimaryExp UnaryExp FuncRParams MulExp AddExp RelExp EqExp LAndExp LOrExp ConstExp
@@ -66,6 +69,8 @@ Stmt
     | BlockStmt { $$ = $1; }
     | IfStmt { $$ = $1; }
     | WhileStmt { $$ = $1; }
+    | BreakStmt { $$ = $1; }
+    | ContinueStmt { $$ = $1; }
     | ReturnStmt { $$ = $1; }
     | DeclStmt { $$ = $1; }
     | FuncDef { $$ = $1; }
@@ -107,9 +112,29 @@ IfStmt
     }
     ;
 WhileStmt
-    : WHILE L_PAREN Cond R_PAREN Stmt
+    : WHILE 
     {
-        $$ = new WhileStmt($3, $5);
+        while_stmt_node = new WhileStmt();
+        while_stmt_stack.push(while_stmt_node);
+    }
+    L_PAREN Cond R_PAREN Stmt
+    {
+        $$ = while_stmt_stack.top();
+        while_stmt_stack.pop();
+        dynamic_cast<WhileStmt*>($$)->setCond($4);
+        dynamic_cast<WhileStmt*>($$)->setStmt($6);
+    }
+BreakStmt
+    : BREAK SEMI
+    {
+        if(!while_stmt_stack.empty())
+            $$ = new BreakStmt(while_stmt_stack.top());
+    }
+ContinueStmt
+    : CONTINUE SEMI
+    {
+        if(!while_stmt_stack.empty())
+            $$ = new ContinueStmt(while_stmt_stack.top());
     }
 ReturnStmt
     : RETURN Exp SEMI

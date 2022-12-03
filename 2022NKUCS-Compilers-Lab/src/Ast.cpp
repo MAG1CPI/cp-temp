@@ -353,16 +353,12 @@ void ExprStmt::genCode() {
 }
 
 void WhileStmt::genCode() {
-    // Todo
-    Function* func;
-    BasicBlock *now_bb, *cond_bb, *stmt_bb, *end_bb;
-
-    func = builder->getInsertBB()->getParent();
+    BasicBlock* now_bb = builder->getInsertBB();
+    Function* func = now_bb->getParent();
     cond_bb = new BasicBlock(func);
-    stmt_bb = new BasicBlock(func);
+    BasicBlock* stmt_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
 
-    now_bb = builder->getInsertBB();
     new UncondBrInstruction(cond_bb, now_bb);
 
     builder->setInsertBB(cond_bb);
@@ -377,6 +373,24 @@ void WhileStmt::genCode() {
     new UncondBrInstruction(cond_bb, stmt_bb);
 
     builder->setInsertBB(end_bb);
+}
+
+void BreakStmt::genCode() {
+    BasicBlock* bb = builder->getInsertBB();
+    Function* func = bb->getParent();
+    new UncondBrInstruction(((WhileStmt*)whileStmt)->getEndBB(), bb);
+
+    BasicBlock* next_bb = new BasicBlock(func);
+    builder->setInsertBB(next_bb);
+}
+
+void ContinueStmt::genCode() {
+    BasicBlock* bb = builder->getInsertBB();
+    Function* func = bb->getParent();
+    new UncondBrInstruction(((WhileStmt*)whileStmt)->getCondBB(), bb);
+
+    BasicBlock* next_bb = new BasicBlock(func);
+    builder->setInsertBB(next_bb);
 }
 
 void FuncFParam::genCode() {
@@ -473,6 +487,14 @@ void ExprStmt::typeCheck() {
 }
 
 void WhileStmt::typeCheck() {
+    // Todo
+}
+
+void BreakStmt::typeCheck() {
+    // Todo
+}
+
+void ContinueStmt::typeCheck() {
     // Todo
 }
 
@@ -657,6 +679,14 @@ void WhileStmt::output(int level) {
     fprintf(yyout, "%*cWhileStmt\n", level, ' ');
     cond->output(level + 4);
     stmt->output(level + 4);
+}
+
+void BreakStmt::output(int level) {
+    fprintf(yyout, "%*cBreakStmt\n", level, ' ');
+}
+
+void ContinueStmt::output(int level) {
+    fprintf(yyout, "%*cContinueStmt\n", level, ' ');
 }
 
 void FunctionCall::output(int level) {

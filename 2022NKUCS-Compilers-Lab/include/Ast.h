@@ -253,10 +253,42 @@ class WhileStmt : public StmtNode {
    private:
     ExprNode* cond;
     StmtNode* stmt;
+    BasicBlock* cond_bb;
+    BasicBlock* end_bb;
 
    public:
-    WhileStmt(ExprNode* cond, StmtNode* stmt)
-        : cond(cond), stmt(stmt){};
+    WhileStmt(ExprNode* cond = nullptr, StmtNode* stmt = nullptr)
+        : cond(cond), stmt(stmt) {}
+
+    BasicBlock* getCondBB() { return cond_bb; }
+    BasicBlock* getEndBB() { return end_bb; }
+
+    void setCond(ExprNode* cond) { this->cond = cond; }
+    void setStmt(StmtNode* stmt) { this->stmt = stmt; }
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class BreakStmt : public StmtNode {
+   private:
+    StmtNode* whileStmt;
+
+   public:
+    BreakStmt(StmtNode* whileStmt)
+        : whileStmt(whileStmt) {}
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
+class ContinueStmt : public StmtNode {
+   private:
+    StmtNode* whileStmt;
+
+   public:
+    ContinueStmt(StmtNode* whileStmt)
+        : whileStmt(whileStmt) {}
     void output(int level);
     void typeCheck();
     void genCode();

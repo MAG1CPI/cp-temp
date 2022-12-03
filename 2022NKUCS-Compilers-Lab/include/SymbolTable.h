@@ -82,6 +82,7 @@ class IdentifierSymbolEntry : public SymbolEntry {
     int scope;
     Operand* addr;  // The address of the identifier.
                     // You can add any field you need here.
+    int int_value;
 
    public:
     IdentifierSymbolEntry(Type* type, std::string name, int scope);
@@ -97,6 +98,9 @@ class IdentifierSymbolEntry : public SymbolEntry {
     Operand* getAddr() { return addr; }
 
     std::string toStr();
+
+    void setIntValue(int int_value) {this->int_value = int_value;}
+    int getIntValue() {return int_value;}
 };
 
 /*  Symbol entry for temporary variable created by compiler. Example:

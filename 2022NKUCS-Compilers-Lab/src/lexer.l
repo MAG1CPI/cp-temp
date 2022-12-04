@@ -175,6 +175,13 @@ CommentBody         ([^\r\n|\n|\r])
     yylval.ftype = num;
     return FLOAT_NUM;
 }
+{Ident}/({EndLine}|{BlankChar})*\[ {
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    return ARRAYID;
+}
 {Ident} {
     char *lexeme;
     lexeme = new char[strlen(yytext) + 1];

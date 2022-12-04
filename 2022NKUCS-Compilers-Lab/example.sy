@@ -6,5 +6,7 @@ int main() {
             break;
         a = b + a;
     }
+    putint(a);
+    putint(b);
     return a;
 }

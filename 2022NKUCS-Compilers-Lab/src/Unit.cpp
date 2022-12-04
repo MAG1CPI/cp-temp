@@ -24,7 +24,7 @@ void Unit::insertSysYFunc(IdentifierSymbolEntry *func_se)
     bool not_insert = true;
     for (auto se : SysY_func)
     {
-        if(func_se == se)
+        if(func_se->toStr() == se->toStr())
         {
             not_insert = false;
             break;

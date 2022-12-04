@@ -7,8 +7,8 @@
     #define YY_NO_INPUT
     #define YYSTYPE void *
 
-    extern Unit unit;
     #include "Unit.h"
+    extern Unit unit;
 %}
 
 Decimial            ([1-9][0-9]*|0)

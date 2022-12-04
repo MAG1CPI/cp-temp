@@ -103,3 +103,16 @@ void BasicBlock::output() const {
     for (auto i = head->getNext(); i != head; i = i->getNext())
         i->output();
 }
+
+bool BasicBlock::havePred(BasicBlock* bb) {
+    if(std::find(pred.begin(), pred.end(), bb) != pred.end())
+        return true;
+    else
+        return false;
+}
+bool BasicBlock::haveSucc(BasicBlock* bb) {
+    if(std::find(succ.begin(), succ.end(), bb) != pred.end())
+        return true;
+    else
+        return false;
+}

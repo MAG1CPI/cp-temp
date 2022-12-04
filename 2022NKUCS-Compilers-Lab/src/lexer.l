@@ -48,7 +48,7 @@ CommentBody         ([^\r\n|\n|\r])
 {BlankChar}     { /*do nothing*/ }
 {EndLine}       { yylineno++; }
 "int"           { return INT; }
-
+"float"         { return FLOAT; }
 "void"          { return VOID; }
 "const"         { return CONST; }
 "if"            { return IF; }
@@ -56,7 +56,6 @@ CommentBody         ([^\r\n|\n|\r])
 "while"         { return WHILE; }
 "break"         { return BREAK; }
 "continue"      { return CONTINUE; }
-
 "return"        { return RETURN; }
 "||"            { return OR; }
 "&&"            { return AND; }
@@ -180,8 +179,7 @@ CommentBody         ([^\r\n|\n|\r])
     float num;
     sscanf(yytext, "%f", &num);
     yylval.ftype = num;
-    //return FLOAT_NUM;
-    return INT_NUM;
+    return FLOAT_NUM;
 }
 {Ident} {
     char *lexeme;

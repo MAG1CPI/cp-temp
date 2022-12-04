@@ -33,14 +33,15 @@
 %start Program
 %token <strtype> ID 
 %token <itype> INT_NUM
+%token <ftype> FLOAT_NUM
 %token IF ELSE WHILE
 %token CONST
-%token INT VOID
+%token INT FLOAT VOID
 %token L_PAREN R_PAREN L_BRACE R_BRACE L_SQUARE R_SQUARE SEMI COMMA
 %token ADD SUB MUL DIV MOD OR AND LESS LESSEQ GREATER GREATEREQ ASSIGN EQ NOTEQ NOT
 %token RETURN BREAK CONTINUE
 
-%nterm <stmttype> Stmts Stmt AssignStmt ExprStmt BlockStmt IfStmt WhileStmt ReturnStmt BreakStmt ContinueStmt /*DeclStmt*/ /*FuncDef*/ NullStmt
+%nterm <stmttype> Stmts Stmt AssignStmt ExprStmt BlockStmt IfStmt WhileStmt ReturnStmt BreakStmt ContinueStmt NullStmt
 %nterm <stmttype> DeclStmt VarDecl VarList VarDef ConstDecl ConstList ConstDef FuncDef FuncFParams FuncFParam
 
 %nterm <exprtype> Exp Cond LVal PrimaryExp UnaryExp FuncRParams MulExp AddExp RelExp EqExp LAndExp LOrExp ConstExp
@@ -185,6 +186,11 @@ PrimaryExp
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, $1);
         $$ = new Constant(se);
     }
+    | FLOAT_NUM
+    {
+        SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::floatType, $1);
+        $$ = new Constant(se);
+    }
     ;
 UnaryExp
     : PrimaryExp { $$ = $1; }
@@ -316,6 +322,11 @@ Type
     {
         $$ = TypeSystem::intType;
         decl_type = TypeSystem::intType;
+    }
+    | FLOAT
+    {
+        $$ = TypeSystem::floatType;
+        decl_type = TypeSystem::floatType;
     }
     | VOID
     {

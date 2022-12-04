@@ -73,7 +73,9 @@ class FunctionType : public Type {
 
    public:
     FunctionType(Type* returnType, std::vector<Type*> paramsType)
-        : Type(Type::FUNC), returnType(returnType), paramsType(paramsType){};
+        : Type(Type::FUNC), returnType(returnType), paramsType(paramsType) {}
+
+    std::vector<Type*> getParamType() { return paramsType; };
     Type* getRetType() { return returnType; };
     std::string paramTypeToStr();
     std::string toStr();

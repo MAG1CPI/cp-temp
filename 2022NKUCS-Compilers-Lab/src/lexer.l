@@ -9,12 +9,6 @@
 
     extern Unit unit;
     #include "Unit.h"
-    /*
-    "float"         { return FLOAT; }
-
-    "break"         { return BREAK; }
-    "continue"      { return CONTINUE; }
-    */
 %}
 
 Decimial            ([1-9][0-9]*|0)
@@ -180,6 +174,13 @@ CommentBody         ([^\r\n|\n|\r])
     sscanf(yytext, "%f", &num);
     yylval.ftype = num;
     return FLOAT_NUM;
+}
+{Ident}/({EndLine}|{BlankChar})*\[ {
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    return ARRAYID;
 }
 {Ident} {
     char *lexeme;

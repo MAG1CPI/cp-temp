@@ -128,12 +128,14 @@ WhileStmt
 BreakStmt
     : BREAK SEMI
     {
+        /*CHACK: break in while*/
         if(!while_stmt_stack.empty())
             $$ = new BreakStmt(while_stmt_stack.top());
     }
 ContinueStmt
     : CONTINUE SEMI
     {
+        /*CHACK: continue in while*/
         if(!while_stmt_stack.empty())
             $$ = new ContinueStmt(while_stmt_stack.top());
     }
@@ -168,6 +170,7 @@ LVal
     {
         SymbolEntry *se;
         se = identifiers->lookup($1, all_parent_symtab);
+        /*CHACK: undefined id*/
         if(se == nullptr)
         {
             fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
@@ -198,6 +201,7 @@ UnaryExp
     {
         SymbolEntry *se;
         se = identifiers->lookup($1, all_parent_symtab);
+        /*CHACK: undefined id*/
         if(se == nullptr)
         {
             fprintf(stderr, "function \"%s\" is undefined\n", (char*)$1);
@@ -354,6 +358,7 @@ VarDef
     {
         SymbolEntry *se;
         se = identifiers->lookup($1, current_symtab);
+        /*CHACK: duplicate defined id*/
         if(se != nullptr)
         {
             fprintf(stderr, "identifier \"%s\" duplicate defined\n", (char*)$1);
@@ -369,6 +374,7 @@ VarDef
     {
         SymbolEntry *se;
         se = identifiers->lookup($1, current_symtab);
+        /*CHACK: duplicate defined id*/
         if(se != nullptr)
         {
             fprintf(stderr, "identifier \"%s\" duplicate defined\n", (char*)$1);
@@ -400,6 +406,7 @@ ConstDef
     {
         SymbolEntry *se;
         se = identifiers->lookup($1, current_symtab);
+        /*CHACK: duplicate defined id*/
         if(se != nullptr)
         {
             fprintf(stderr, "identifier \"%s\" duplicate defined\n", (char*)$1);

@@ -26,7 +26,9 @@ class Instruction {
            LOAD,
            STORE,
            CMP,
-           ALLOCA };
+           ALLOCA,
+           UNSIGNEDEXT,
+           NEG };
 
    public:
     Instruction(unsigned instType, BasicBlock* insert_bb = nullptr);
@@ -161,6 +163,22 @@ class RetInstruction : public Instruction {
    public:
     RetInstruction(Operand* src, BasicBlock* insert_bb = nullptr);
     ~RetInstruction();
+
+    void output() const;
+};
+
+class UnSignedExtInstruction : public Instruction {
+   public:
+    UnSignedExtInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr);
+    ~UnSignedExtInstruction();
+
+    void output() const;
+};
+
+class NEGInstruction : public Instruction {
+   public:
+    NEGInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr);
+    ~NEGInstruction();
 
     void output() const;
 };

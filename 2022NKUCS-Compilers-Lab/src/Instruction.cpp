@@ -332,3 +332,58 @@ void StoreInstruction::output() const {
             dst_type.c_str(),
             dst.c_str());
 }
+
+
+UnSignedExtInstruction::UnSignedExtInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr)
+    : Instruction(UNSIGNEDEXT, insert_bb) {
+    operands.push_back(dst);
+    operands.push_back(src);
+
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+UnSignedExtInstruction::~UnSignedExtInstruction() {
+    operands[0]->setDef(nullptr);
+    if (operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void UnSignedExtInstruction::output() const {
+    Operand* dst = operands[0];
+    Operand* src = operands[1];
+    
+    std::string dst_str, src_str;
+    dst_str = dst->toStr();
+    src_str = src->toStr();
+    if (src->getType()->toStr() == "i1" && dst->getType()->toStr() == "i32")
+        fprintf(yyout, "  %s = zext i1 %s to i32\n", dst_str.c_str(), src_str.c_str());
+}
+
+NEGInstruction::NEGInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb)
+    : Instruction(NEG, insert_bb) {
+    operands.push_back(dst);
+    operands.push_back(src);
+
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+NEGInstruction::~NEGInstruction() {
+    operands[0]->setDef(nullptr);
+    if (operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void NEGInstruction::output() const {
+    Operand* dst = operands[0];
+    Operand* src = operands[1];
+    
+    std::string dst_str, src_str;
+    dst_str = dst->toStr();
+    src_str = src->toStr();
+    if (src->getType()->toStr() == "i1")
+        fprintf(yyout, "  %s = xor i1 %s, true\n", dst_str.c_str(), src_str.c_str());
+}

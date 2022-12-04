@@ -1,12 +1,15 @@
-int main() {
-    int a = 0, b = 0;
-    while (a < b) {
-        a;
-        if (a < b)
-            break;
+int main()
+{
+    int a = 2, b = 5, c = 7;
+    /*
+    while (a < b && b < c)
+    {
+        //if (a < b)
+        //    break;
         a = b + a;
     }
-    putint(a);
-    putint(b);
+    */
+    if(a < b && b < c)
+        a = b + a;
     return a;
 }

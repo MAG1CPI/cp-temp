@@ -334,7 +334,7 @@ void StoreInstruction::output() const {
 }
 
 
-UnSignedExtInstruction::UnSignedExtInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr)
+UnSignedExtInstruction::UnSignedExtInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb)
     : Instruction(UNSIGNEDEXT, insert_bb) {
     operands.push_back(dst);
     operands.push_back(src);

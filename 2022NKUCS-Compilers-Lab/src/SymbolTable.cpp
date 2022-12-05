@@ -14,6 +14,8 @@ IdentifierSymbolEntry::IdentifierSymbolEntry(Type* type, std::string name, int s
     : SymbolEntry(type, SymbolEntry::VARIABLE), name(name) {
     this->scope = scope;
     addr = nullptr;
+    overload = false;
+    next_overload = nullptr;
 }
 std::string IdentifierSymbolEntry::toStr() {
     return "@" + name;

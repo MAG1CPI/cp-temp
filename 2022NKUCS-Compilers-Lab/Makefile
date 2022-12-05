@@ -1,7 +1,7 @@
 SRC_PATH ?= src
 INC_PATH += include
 BUILD_PATH ?= build
-TEST_PATH ?= test/level1-2
+TEST_PATH ?= test/level1-1
 OBJ_PATH ?= $(BUILD_PATH)/obj
 BINARY ?= $(BUILD_PATH)/compiler
 SYSLIB_PATH ?= sysyruntimelibrary
@@ -68,7 +68,7 @@ $(TEST_PATH)/%.ast:$(TEST_PATH)/%.sy
 
 $(TEST_PATH)/%.ll:$(TEST_PATH)/%.sy
 	@timeout 5s $(BINARY) $< -o $@ -i 2>$(addsuffix .log, $(basename $@))
-	@[ $$? != 0 ] && echo -e "\033[31mFAIL:\033[0m $(notdir $<)" || echo -e "\033[32mSUCCESS:\033[0m $(notdir $<)"
+	@[ $$? != 0 ] && echo "\033[1;31mFAIL:\033[0m $(notdir $<)" || echo "\033[1;32mSUCCESS:\033[0m $(notdir $<)"
 
 $(TEST_PATH)/%_std.ll:$(TEST_PATH)/%.sy
 	@clang -x c $< -S -m32 -emit-llvm -o $@ 
@@ -82,7 +82,7 @@ testlab5:app $(OUTPUT_LAB5)
 testlab6:app $(OUTPUT_LAB6)
 
 .ONESHELL:
-ztest:app
+test:app
 	@success=0
 	@for file in $(sort $(TESTCASE))
 	do

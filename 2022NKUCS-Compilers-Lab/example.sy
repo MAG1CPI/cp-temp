@@ -1,9 +1,10 @@
+void a(){
+    return 1;
+}
 int main()
 {
-    //if (1 < 8 != 7 % 2) { putch(67); }
-    //if (3 > 4 == 0) { putch(68); }
-    if (1 == 0x66 <= 077) putch(69);
-    if (5 - 6 == -!0) putch(70);
+    int a;
+    a();
     putch(10);
 
     return 0;

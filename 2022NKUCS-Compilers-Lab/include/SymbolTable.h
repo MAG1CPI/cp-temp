@@ -83,6 +83,8 @@ class IdentifierSymbolEntry : public SymbolEntry {
     Operand* addr;  // The address of the identifier.
                     // You can add any field you need here.
     int int_value;
+    bool overload;               // Function overloading.
+    SymbolEntry* next_overload;  // Next overloading function
 
    public:
     IdentifierSymbolEntry(Type* type, std::string name, int scope);
@@ -91,16 +93,21 @@ class IdentifierSymbolEntry : public SymbolEntry {
     bool isGlobal() const { return scope == GLOBAL; }
     bool isParam() const { return scope == PARAM; }
     bool isLocal() const { return scope >= LOCAL; }
+    bool isOverload() const { return overload; }
 
     int getScope() const { return scope; }
+
+    void setOverload(int overload) { this->overload = overload; }
+    void setOverloadFunc(SymbolEntry* next_overload) { this->next_overload = next_overload; }
+    SymbolEntry* getOverloadFunc() const { return next_overload; }
 
     void setAddr(Operand* addr) { this->addr = addr; }
     Operand* getAddr() { return addr; }
 
-    std::string toStr();
+    void setIntValue(int int_value) { this->int_value = int_value; }
+    int getIntValue() { return int_value; }
 
-    void setIntValue(int int_value) {this->int_value = int_value;}
-    int getIntValue() {return int_value;}
+    std::string toStr();
 };
 
 /*  Symbol entry for temporary variable created by compiler. Example:

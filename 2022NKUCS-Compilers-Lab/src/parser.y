@@ -6,7 +6,7 @@
     extern Ast ast;
     int yylex();
     int yyerror( char const * );
-
+    extern int yylineno;
     Type* decl_type;
     bool current_symtab = true;
     bool all_parent_symtab = false;
@@ -128,16 +128,27 @@ WhileStmt
 BreakStmt
     : BREAK SEMI
     {
-        /*CHECK: break in while*/
-        if(!while_stmt_stack.empty())
+        /*CHECK: break not in while*/
+        if(while_stmt_stack.empty()){
+            fprintf(stderr, "[CHECKINFO][L%d]break not in while.\n", yylineno);
+            $$ = new NullStmt();
+        }
+        else{
             $$ = new BreakStmt(while_stmt_stack.top());
+        }
+
     }
 ContinueStmt
     : CONTINUE SEMI
     {
-        /*CHECK: continue in while*/
-        if(!while_stmt_stack.empty())
+        /*CHECK: continue not in while*/
+        if(while_stmt_stack.empty()){
+            fprintf(stderr, "[CHECKINFO][L%d]continue not in while.\n", yylineno);
+            $$ = new NullStmt();
+        }
+        else{
             $$ = new ContinueStmt(while_stmt_stack.top());
+        }
     }
 ReturnStmt
     : RETURN Exp SEMI
@@ -173,7 +184,7 @@ LVal
         /*CHECK: undefined id*/
         if(se == nullptr)
         {
-            fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
+            fprintf(stderr, "[CHECKINFO][L%d]identifier \"%s\" is undefined.\n", yylineno, (char*)$1);
             delete [](char*)$1;
             assert(se != nullptr);
         }
@@ -188,7 +199,7 @@ LVal
         /*CHECK: undefined id*/
         if(se == nullptr)
         {
-            fprintf(stderr, "identifier \"%s\" is undefined\n", (char*)$1);
+            fprintf(stderr, "[CHECKINFO][L%d]identifier \"%s\" is undefined.\n", yylineno, (char*)$1);
             delete [](char*)$1;
             assert(se != nullptr);
         }
@@ -219,7 +230,7 @@ UnaryExp
         /*CHECK: undefined id*/
         if(se == nullptr)
         {
-            fprintf(stderr, "function \"%s\" is undefined\n", (char*)$1);
+            fprintf(stderr, "[CHECKINFO][L%d]function \"%s\" is undefined\n", yylineno, (char*)$1);
             delete [](char*)$1;
             assert(se != nullptr);
         }
@@ -376,7 +387,7 @@ VarDef
         /*CHECK: duplicate defined id*/
         if(se != nullptr)
         {
-            fprintf(stderr, "identifier \"%s\" duplicate defined\n", (char*)$1);
+            fprintf(stderr, "[CHECKINFO][L%d]identifier \"%s\" duplicate defined\n", yylineno, (char*)$1);
             delete [](char*)$1;
             assert(se == nullptr);
         }
@@ -392,7 +403,7 @@ VarDef
         /*CHECK: duplicate defined id*/
         if(se != nullptr)
         {
-            fprintf(stderr, "identifier \"%s\" duplicate defined\n", (char*)$1);
+            fprintf(stderr, "[CHECKINFO][L%d]identifier \"%s\" duplicate defined\n", yylineno, (char*)$1);
             delete [](char*)$1;
             assert(se == nullptr);
         }
@@ -424,7 +435,7 @@ ConstDef
         /*CHECK: duplicate defined id*/
         if(se != nullptr)
         {
-            fprintf(stderr, "identifier \"%s\" duplicate defined\n", (char*)$1);
+            fprintf(stderr, "[CHECKINFO][L%d]identifier \"%s\" duplicate defined\n", yylineno, (char*)$1);
             delete [](char*)$1;
             assert(se == nullptr);
         }

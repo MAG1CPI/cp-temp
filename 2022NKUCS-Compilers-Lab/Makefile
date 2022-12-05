@@ -1,7 +1,7 @@
 SRC_PATH ?= src
 INC_PATH += include
 BUILD_PATH ?= build
-TEST_PATH ?= test/level1-2
+TEST_PATH ?= test/level1-1
 OBJ_PATH ?= $(BUILD_PATH)/obj
 BINARY ?= $(BUILD_PATH)/compiler
 SYSLIB_PATH ?= sysyruntimelibrary
@@ -140,7 +140,7 @@ clean-app:
 	@rm -rf $(BUILD_PATH) $(PARSER) $(LEXER) $(PARSERH)
 
 clean-test:
-	@rm -rf $(OUTPUT_LAB4) $(OUTPUT_LAB5) $(OUTPUT_LAB6) $(OUTPUT_LOG) $(OUTPUT_BIN) $(OUTPUT_RES) $(LLVM_IR) ./example.ast ./example.ll ./example.s
+	@rm -rf $(OUTPUT_LAB4) $(OUTPUT_LAB5) $(OUTPUT_LAB6) $(OUTPUT_LOG) $(OUTPUT_BIN) $(OUTPUT_RES) $(LLVM_IR) ./example.ast ./example.ll ./example.s ./example.out
 
 clean-all:clean-test clean-app
 

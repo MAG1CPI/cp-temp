@@ -1,16 +1,14 @@
 /*
-int main()
-{
-    int a = 2, b = 5, c = 7;
-    while (a < b && b < c)
-    {
-        //if (a < b)
-        //    break;
-        a = b + a;
-    }
-    if(!a)
-        a = b + a;
-    return a;
+int a;
+int func(int p){
+	p = p - 1;
+	return p;
+}
+int main(){
+	int b;
+	a = 10;
+	b = func(a);
+	return b;
 }
 */
 int a;

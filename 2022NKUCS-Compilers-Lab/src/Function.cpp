@@ -21,6 +21,14 @@ Function::~Function() {
     */
 }
 
+bool Function::inBlockList(BasicBlock* bb)
+{
+    if(std::find(block_list.begin(), block_list.end(), bb) != block_list.end())
+        return true;
+    else
+        return false;
+}
+
 // insert the basicblock bb from its block_list.
 void Function::insertBlock(BasicBlock* bb) {
     block_list.push_back(bb);
@@ -54,10 +62,13 @@ void Function::output() const {
         fprintf(yyout, "define %s %s(", retType->toStr().c_str(), sym_ptr->toStr().c_str());
         for( auto se : fparams_symtab)
         {
+            std::string type, se_string;
+            type = se->getType()->toStr();
+            se_string = se->toStr();
             if(se != *(fparams_symtab.begin()))
-                fprintf(yyout, ", %s %s", se->getType()->toStr().c_str(), se->toStr().c_str());
+                fprintf(yyout, ", %s %s", type.c_str(), se_string.c_str());
             else
-                fprintf(yyout, "%s %s", se->getType()->toStr().c_str(), se->toStr().c_str());
+                fprintf(yyout, "%s %s", type.c_str(), se_string.c_str());
         }
         fprintf(yyout, ") {\n");
     }

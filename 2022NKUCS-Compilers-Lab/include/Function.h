@@ -23,6 +23,7 @@ class Function {
     BasicBlock* getEntry() { return entry; }
     SymbolEntry* getSymPtr() { return sym_ptr; }
     std::vector<BasicBlock*>& getBlockList() { return block_list; }
+    bool inBlockList(BasicBlock* bb);
 
     void insertBlock(BasicBlock* bb);
     void remove(BasicBlock* bb);

@@ -31,16 +31,36 @@ void Function::remove(BasicBlock* bb) {
     block_list.erase(std::find(block_list.begin(), block_list.end(), bb));
 }
 
+void Function::insertFParamSE(TemporarySymbolEntry *se) {
+    fparams_symtab.push_back(se);
+}
+
 void Function::output() const {
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
     Type* retType = funcType->getRetType();
     /*fprintf(yyout, "define %s %s() {\n",
     retType->toStr().c_str(),
     sym_ptr->toStr().c_str());*/
+    /*
     fprintf(yyout, "define %s %s(%s) {\n",
             retType->toStr().c_str(),
             sym_ptr->toStr().c_str(),
             funcType->paramTypeToStr().c_str());
+    */
+    if (fparams_symtab.empty())
+        fprintf(yyout, "define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
+    else
+    {
+        fprintf(yyout, "define %s %s(", retType->toStr().c_str(), sym_ptr->toStr().c_str());
+        for( auto se : fparams_symtab)
+        {
+            if(se != *(fparams_symtab.begin()))
+                fprintf(yyout, ", %s %s", se->getType()->toStr().c_str(), se->toStr().c_str());
+            else
+                fprintf(yyout, "%s %s", se->getType()->toStr().c_str(), se->toStr().c_str());
+        }
+        fprintf(yyout, ") {\n");
+    }
     std::set<BasicBlock*> visited;
     std::vector<BasicBlock*> waiting;
     visited.insert(entry);

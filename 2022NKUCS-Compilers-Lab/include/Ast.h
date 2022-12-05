@@ -37,6 +37,8 @@ class Node {
     virtual void genCode() = 0;
     std::vector<Instruction*>& trueList() { return true_list; }
     std::vector<Instruction*>& falseList() { return false_list; }
+
+    void insertCondBrInst(Function *func, Node *cond, BasicBlock *insert_bb);
 };
 
 class ExprNode : public Node {
@@ -49,6 +51,9 @@ class ExprNode : public Node {
     Operand* getOperand() { return dst; };
     Type* getOperandType() { return dst->getType(); };
     SymbolEntry* getSymPtr() { return symbolEntry; };
+
+    void int2bool(BasicBlock* insert_bb);
+    void bool2int(BasicBlock* insert_bb);
 };
 
 class UnaryExpr : public ExprNode {

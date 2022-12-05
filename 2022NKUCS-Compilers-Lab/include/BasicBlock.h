@@ -45,6 +45,9 @@ class BasicBlock {
 
     void output() const;
 
+    bool havePred(BasicBlock* bb);
+    bool haveSucc(BasicBlock* bb);
+
    private:
     typedef std::vector<BasicBlock*>::iterator bb_iterator;
 

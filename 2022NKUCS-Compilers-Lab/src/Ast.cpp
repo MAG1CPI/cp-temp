@@ -479,13 +479,13 @@ void FuncFParam::genCode() {
     Function *func = builder->getInsertBB()->getParent();
     BasicBlock *entry = func->getEntry();
     Instruction *alloca;
-    Operand *addr;
-    SymbolEntry *addr_se;
-    Type *type;
+    Operand *param, *addr;
+    SymbolEntry *param_se, *addr_se;
+    Type *param_type, *type;
 
-    Type *param_type = se->getType();
-    SymbolEntry * param_se = new TemporarySymbolEntry(param_type, SymbolTable::getLabel());
-    Operand * param = new Operand(param_se);
+    param_type = se->getType();
+    param_se = new TemporarySymbolEntry(param_type, SymbolTable::getLabel());
+    param = new Operand(param_se);
 
     type = new PointerType(se->getType());
     addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
@@ -493,7 +493,8 @@ void FuncFParam::genCode() {
     alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
     entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
     se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
-
+    
+    func->insertFParamSE(dynamic_cast<TemporarySymbolEntry *>(param_se));
     BasicBlock* bb = builder->getInsertBB();
     new StoreInstruction(addr, param, bb);
 

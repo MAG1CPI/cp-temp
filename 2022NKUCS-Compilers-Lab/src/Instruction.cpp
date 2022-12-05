@@ -359,6 +359,7 @@ void UnSignedExtInstruction::output() const {
     src_str = src->toStr();
     if (src->getType()->toStr() == "i1" && dst->getType()->toStr() == "i32")
         fprintf(yyout, "  %s = zext i1 %s to i32\n", dst_str.c_str(), src_str.c_str());
+    // more
 }
 
 NEGInstruction::NEGInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb)
@@ -386,4 +387,5 @@ void NEGInstruction::output() const {
     src_str = src->toStr();
     if (src->getType()->toStr() == "i1")
         fprintf(yyout, "  %s = xor i1 %s, true\n", dst_str.c_str(), src_str.c_str());
+    // more
 }

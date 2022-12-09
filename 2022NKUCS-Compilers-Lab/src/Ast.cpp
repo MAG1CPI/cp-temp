@@ -118,7 +118,7 @@ void FunctionDef::genCode() {
             (*basicblock)->addSucc(truebranch);
             (*basicblock)->addSucc(falsebranch);
         }
-        else if ((*basicblock)->empty() == false && lastinst->isRet() == false)
+        else if (/*(*basicblock)->empty() == false &&*/lastinst->isRet() == false)
         {
             FunctionType* funcType = dynamic_cast<FunctionType*>(func->getSymPtr()->getType());
             Type* retType = funcType->getRetType();

@@ -1,8 +1,12 @@
 /* Missing return stmt */
 
-int func(int a, int b)
+void func(int a, int b)
 {
 	int sum = a + b;
+    if(a < 10)
+        sum = sum + 1;
+    else
+        sum = sum + 1;
 }
 
 int main()

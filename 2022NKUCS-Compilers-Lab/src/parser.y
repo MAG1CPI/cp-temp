@@ -19,6 +19,7 @@
     /* function in use*/
     bool is_void_func = false;
     bool is_doing_culc = false;
+    bool no_ret = true;
 }
 
 %code requires {
@@ -134,6 +135,7 @@ ContinueStmt
             $$ = new ContinueStmt(while_stmt_stack.top()); } }
 ReturnStmt
     : RETURN Exp SEMI {
+        no_ret = false;
         /* CHECK: return not in function - replace with NullStmt */
         if(func_ret_type == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]return not in function!\n", yylineno);
@@ -147,6 +149,7 @@ ReturnStmt
         else{
             $$ = new ReturnStmt($2); } }
     | RETURN SEMI {
+        no_ret = false;
         /* CHECK: return not in function - replace with NullStmt */
         if(func_ret_type == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]return not in function!\n", yylineno);
@@ -502,7 +505,8 @@ ConstInitVal
 FuncDef
     : Type ID {
         identifiers = new SymbolTable(identifiers);
-        func_ret_type = $1; }
+        func_ret_type = $1; 
+        no_ret = true; }
     L_PAREN FuncFParams R_PAREN {
         /* CHECK: function overload  TODO*/
         // actural params type
@@ -555,6 +559,15 @@ FuncDef
         while(func_se->isOverload())
             func_se = func_se->getOverloadFunc();
         $$ = new FunctionDef(func_se, $5, $8);
+        /* CHECK: no return stmt - add return stmt(return; or return 0;) */
+        if(no_ret)
+        {
+            //fprintf(stderr, "[CHECKINFO][L%d]function %s has no return statement!\n", yylineno, se->toStr().c_str());
+            if(func_ret_type == TypeSystem::voidType)
+                fprintf(stderr, "[CHECKINFO][L%d]function %s has no return statement! add return;\n", yylineno, se->toStr().c_str());
+            else if(func_ret_type == TypeSystem::intType)
+                fprintf(stderr, "[CHECKINFO][L%d]function %s has no return statement! add return 0;\n", yylineno, se->toStr().c_str());
+        }
         SymbolTable *top = identifiers;
         identifiers = identifiers->getPrev();
         func_ret_type = nullptr;

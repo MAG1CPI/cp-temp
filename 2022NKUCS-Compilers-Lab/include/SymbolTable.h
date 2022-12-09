@@ -97,8 +97,7 @@ class IdentifierSymbolEntry : public SymbolEntry {
 
     int getScope() const { return scope; }
 
-    void setOverload(int overload) { this->overload = overload; }
-    void setOverloadFunc(IdentifierSymbolEntry* next_overload) { this->next_overload = next_overload; }
+    void setOverloadFunc(IdentifierSymbolEntry*);
     IdentifierSymbolEntry* getOverloadFunc() const { return next_overload; }
 
     void setAddr(Operand* addr) { this->addr = addr; }
@@ -157,7 +156,7 @@ class SymbolTable {
 
     SymbolTable* getPrev() { return prev; }
     int getLevel() { return level; }
-    
+
     static int getLabel() { return counter++; }
 
     void install(std::string name, SymbolEntry* entry);

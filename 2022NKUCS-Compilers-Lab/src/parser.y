@@ -509,16 +509,17 @@ FuncDef
         SymbolEntry *se;
         se = identifiers->lookup($2, all_parent_symtab);
         if(se){ // Yes!
+            int count = 1;  // use for overload name
             // get its fparams type
             IdentifierSymbolEntry* func_se = dynamic_cast<IdentifierSymbolEntry*>(se);
             std::vector<Type*> *fparams_type = dynamic_cast<FunctionType*>(func_se->getType())->getParamsType();
             // compare
             while(true){
-                if(fparams_type->size() != paramstype.size()){
+                if(fparams_type->size() != paramstype.size()) {
                     //param num not match
                     goto NextFunction_FuncDef_New;
                 }
-                for(uint32_t i=0; i<fparams_type->size();i++){
+                for(uint32_t i = 0; i < fparams_type->size(); i++) {
                     if((*fparams_type)[i] != paramstype[i]){
                         //param type not match
                         goto NextFunction_FuncDef_New;
@@ -528,15 +529,17 @@ FuncDef
                 assert(0);
                 NextFunction_FuncDef_New:
                 if(func_se->isOverload()){
+                    count++;
                     func_se = func_se->getOverloadFunc();
-                } else{
+                } else {
                     break;
                 }
             }
             Type *funcType = new FunctionType(func_ret_type, paramstype);
-            IdentifierSymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getPrev()->getLevel());
+            std::string funcName = $2 + std::to_string(count);
+            IdentifierSymbolEntry *se = new IdentifierSymbolEntry(funcType, funcName, identifiers->getPrev()->getLevel());
             func_se->setOverloadFunc(se);
-        } else{
+        } else {
             Type *funcType = new FunctionType(func_ret_type, paramstype);
             SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getPrev()->getLevel());
             identifiers->getPrev()->install($2, se); } }

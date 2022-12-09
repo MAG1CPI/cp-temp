@@ -1,13 +1,12 @@
-void a(int x){
-    return ;
+/* Missing return stmt */
+
+int func(int a, int b)
+{
+	int sum = a + b;
 }
-int T(int x){
-    return 1;
-}
+
 int main()
 {
-    a(T());
-    putch(10);
-
-    return 0;
+	func(1,2);
+	return 0;
 }

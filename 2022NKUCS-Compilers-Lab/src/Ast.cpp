@@ -118,6 +118,19 @@ void FunctionDef::genCode() {
             (*basicblock)->addSucc(truebranch);
             (*basicblock)->addSucc(falsebranch);
         }
+        else if ((*basicblock)->empty() == false && lastinst->isRet() == false)
+        {
+            FunctionType* funcType = dynamic_cast<FunctionType*>(func->getSymPtr()->getType());
+            Type* retType = funcType->getRetType();
+            if (retType->isVoid())
+                new RetInstruction(nullptr, *basicblock);
+            else if(retType->isInt())
+            {
+                SymbolEntry* zero_se = new ConstantSymbolEntry(TypeSystem::intType, 0);
+                Operand* zero = new Operand(zero_se);
+                new RetInstruction(zero, *basicblock);
+            }
+        }
     }
     for (auto basicblock = func->begin(); basicblock != func->end(); basicblock++)
     {

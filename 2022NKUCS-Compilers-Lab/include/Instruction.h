@@ -36,6 +36,7 @@ class Instruction {
 
     bool isUncond() const { return instType == UNCOND; }
     bool isCond() const { return instType == COND; }
+    bool isRet() const { return instType == RET; }
     BasicBlock* getParent() { return parent; }
     Instruction* getNext() { return next; }
     Instruction* getPrev() { return prev; }

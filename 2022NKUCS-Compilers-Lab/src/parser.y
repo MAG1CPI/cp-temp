@@ -240,23 +240,51 @@ UnaryExp
             delete [](char*)$1;
             $$ = new Id(se); }
         else {
-            if(is_void_func == false)
-                is_void_func = dynamic_cast<FunctionType*>(se->getType())->getRetType()->isVoid(); // attention info: this is a void function
-            /* CHECK: function overload  TODO*/
-            /*IdentifierSymbolEntry* func_se = dynamic_cast<IdentifierSymbolEntry*>(se);
-            FunctionType* func_type = dynamic_cast<FunctionType*>(func_se->getType());
-            std::vector<Type*> fparams_type = func_type->getParamsType();
-            ExprNode* rparam = $3;
-            do{
-                for(auto& fparam_type: fparams_type){
-                    if(rparam = nullptr){
-                        //rparam less
+            /* CHECK: function overload TODO*/
+            IdentifierSymbolEntry* func_se = dynamic_cast<IdentifierSymbolEntry*>(se);
+            std::vector<Type*> *fparams_type = dynamic_cast<FunctionType*>(func_se->getType())->getParamsType();
+            ExprNode *rparam;
+            /* int count = 0;
+            rparam = rparams_begin;
+            while(rparam){
+                count++;
+                rparam = dynamic_cast<ExprNode*>(rparam->GetSibling());
+            }
+            fprintf(stderr, "[CHECKINFO][L%d]%d\n", yylineno,count); */
+            while(true){
+                rparam = $3;
+                for(auto& fparam_type: *fparams_type){
+                    if(rparam == nullptr){
+                        //rparam too less
+                        //fprintf(stderr, "[CHECKINFO][L%d]%srparam too less!\n", yylineno,func_se->getType()->toStr().c_str());
+                        goto NextFunction_UnaryExp;
+                    } else if(fparam_type != (rparam->getOperandType())){
+                        // rparam not match
+                        //fprintf(stderr, "[CHECKINFO][L%d]%srparam not match!\n", yylineno,func_se->getType()->toStr().c_str());
+                        goto NextFunction_UnaryExp;
                     }
-                    else if(fparam_type == rparam->getOperandType()
+                    rparam = dynamic_cast<ExprNode*>(rparam->GetSibling());
                 }
-            }while(0)
-            if (func_se->getType()){ }*/
-            $$ = new FunctionCall(se, $3);
+                if(rparam != nullptr){
+                    //rparam too more
+                    //fprintf(stderr, "[CHECKINFO][L%d]%srparam too more!\n", yylineno,func_se->getType()->toStr().c_str());
+                    goto NextFunction_UnaryExp;
+                } else{
+                    break;
+                }
+                NextFunction_UnaryExp:
+                if(func_se->isOverload()) {
+                    func_se = func_se->getOverloadFunc();
+                    fparams_type = dynamic_cast<FunctionType*>(func_se->getType())->getParamsType();
+                    continue;
+                } else{
+                    fprintf(stderr, "[CHECKINFO][L%d]cannot find the function with these params!\n", yylineno);
+                    assert(func_se->isOverload());
+                }
+            }
+            if(is_void_func == false)
+                is_void_func = dynamic_cast<FunctionType*>(func_se->getType())->getRetType()->isVoid(); // attention info: this is a void function
+            $$ = new FunctionCall(func_se, $3);
         } }
     | ADD UnaryExp {
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
@@ -474,18 +502,53 @@ FuncDef
         func_ret_type = $1; }
     L_PAREN FuncFParams R_PAREN {
         /* CHECK: function overload  TODO*/
-        Type *funcType;
+        // actural params type
         std::vector<Type*> paramstype;
         paramstype.swap(func_fparam_type);
-        funcType = new FunctionType(func_ret_type, paramstype);
-        SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getPrev()->getLevel());
-        identifiers->getPrev()->install($2, se); }
+        // already had?
+        SymbolEntry *se;
+        se = identifiers->lookup($2, all_parent_symtab);
+        if(se){ // Yes!
+            // get its fparams type
+            IdentifierSymbolEntry* func_se = dynamic_cast<IdentifierSymbolEntry*>(se);
+            std::vector<Type*> *fparams_type = dynamic_cast<FunctionType*>(func_se->getType())->getParamsType();
+            // compare
+            while(true){
+                if(fparams_type->size() != paramstype.size()){
+                    //param num not match
+                    goto NextFunction_FuncDef_New;
+                }
+                for(uint32_t i=0; i<fparams_type->size();i++){
+                    if((*fparams_type)[i] != paramstype[i]){
+                        //param type not match
+                        goto NextFunction_FuncDef_New;
+                    }
+                }
+                fprintf(stderr, "[CHECKINFO][L%d]function duplicate defined!\n", yylineno);
+                assert(0);
+                NextFunction_FuncDef_New:
+                if(func_se->isOverload()){
+                    func_se = func_se->getOverloadFunc();
+                } else{
+                    break;
+                }
+            }
+            Type *funcType = new FunctionType(func_ret_type, paramstype);
+            IdentifierSymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getPrev()->getLevel());
+            func_se->setOverloadFunc(se);
+        } else{
+            Type *funcType = new FunctionType(func_ret_type, paramstype);
+            SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getPrev()->getLevel());
+            identifiers->getPrev()->install($2, se); } }
     BlockStmt {
         /* CHECK: function overload  TODO*/
         SymbolEntry *se;
         se = identifiers->lookup($2, all_parent_symtab);
         assert(se != nullptr);
-        $$ = new FunctionDef(se, $5, $8);
+        IdentifierSymbolEntry* func_se = dynamic_cast<IdentifierSymbolEntry*>(se);
+        while(func_se->isOverload())
+            func_se = func_se->getOverloadFunc();
+        $$ = new FunctionDef(func_se, $5, $8);
         SymbolTable *top = identifiers;
         identifiers = identifiers->getPrev();
         func_ret_type = nullptr;

@@ -22,6 +22,11 @@ IdentifierSymbolEntry::IdentifierSymbolEntry(Type* type, std::string name, int s
     next_overload = nullptr;
 }
 
+void IdentifierSymbolEntry::setOverloadFunc(IdentifierSymbolEntry* func_se) {
+    next_overload = func_se;
+    overload = func_se;
+}
+
 std::string IdentifierSymbolEntry::toStr() {
     return "@" + name;
 }

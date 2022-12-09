@@ -19,24 +19,26 @@ class BasicBlock {
     BasicBlock(Function*);
     ~BasicBlock();
 
+    Function* getParent() { return parent; }
+    int getNo() { return no; }
+
+    bool predEmpty() const { return pred.empty(); }
+    bool succEmpty() const { return succ.empty(); }
+    bool havePred(BasicBlock* bb) { return std::find(pred.begin(), pred.end(), bb) != pred.end(); }
+    bool haveSucc(BasicBlock* bb) { return std::find(succ.begin(), succ.end(), bb) != pred.end(); }
+    int getNumOfPred() const { return pred.size(); }
+    int getNumOfSucc() const { return succ.size(); }
+
+    void addPred(BasicBlock*);
+    void removePred(BasicBlock*);
+    void addSucc(BasicBlock*);
+    void removeSucc(BasicBlock*);
+
+    bool empty() const { return head->getNext() == head; }
     Instruction* begin() { return head->getNext(); }
     Instruction* end() { return head; }
     Instruction* rbegin() { return head->getPrev(); }
     Instruction* rend() { return head; }
-
-    bool succEmpty() const { return succ.empty(); }
-    bool predEmpty() const { return pred.empty(); }
-    int getNumOfPred() const { return pred.size(); }
-    int getNumOfSucc() const { return succ.size(); }
-
-    Function* getParent() { return parent; }
-    int getNo() { return no; }
-    bool empty() const { return head->getNext() == head; }
-
-    void addSucc(BasicBlock*);
-    void removeSucc(BasicBlock*);
-    void addPred(BasicBlock*);
-    void removePred(BasicBlock*);
 
     void insertFront(Instruction*);
     void insertBack(Instruction*);
@@ -44,9 +46,6 @@ class BasicBlock {
     void remove(Instruction*);
 
     void output() const;
-
-    bool havePred(BasicBlock* bb);
-    bool haveSucc(BasicBlock* bb);
 
    private:
     typedef std::vector<BasicBlock*>::iterator bb_iterator;

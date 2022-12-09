@@ -316,6 +316,7 @@ class FunctionCall : public ExprNode {
     };
     FunctionCall(SymbolEntry* se)
         : ExprNode(se), rparam(nullptr){};
+    ExprNode* getRparam() const { return rparam; }
     void output(int level);
     void typeCheck();
     void genCode();

@@ -27,16 +27,6 @@ BasicBlock::~BasicBlock() {
     parent->remove(this);
 }
 
-// add the successor basicclock bb.
-void BasicBlock::addSucc(BasicBlock* bb) {
-    succ.push_back(bb);
-}
-
-// remove the successor basicclock bb.
-void BasicBlock::removeSucc(BasicBlock* bb) {
-    succ.erase(std::find(succ.begin(), succ.end(), bb));
-}
-
 // add the predecessor basicclock bb.
 void BasicBlock::addPred(BasicBlock* bb) {
     pred.push_back(bb);
@@ -45,6 +35,16 @@ void BasicBlock::addPred(BasicBlock* bb) {
 // remove the predecessor basicblock bb.
 void BasicBlock::removePred(BasicBlock* bb) {
     pred.erase(std::find(pred.begin(), pred.end(), bb));
+}
+
+// add the successor basicclock bb.
+void BasicBlock::addSucc(BasicBlock* bb) {
+    succ.push_back(bb);
+}
+
+// remove the successor basicclock bb.
+void BasicBlock::removeSucc(BasicBlock* bb) {
+    succ.erase(std::find(succ.begin(), succ.end(), bb));
 }
 
 // insert the instruction to the front of the basicblock.
@@ -75,13 +75,13 @@ void BasicBlock::insertBack(Instruction* inst) {
 void BasicBlock::insertBefore(Instruction* dst, Instruction* src) {
     // Todo
     assert(src);
-    Instruction* before_src = src->getPrev();
-    before_src->setNext(dst);
+    Instruction* prev_src = src->getPrev();
+    dst->setPrev(prev_src);
     dst->setNext(src);
-    src->setPrev(dst);
-    dst->setPrev(before_src);
-
     dst->setParent(this);
+
+    prev_src->setNext(dst);
+    src->setPrev(dst);
 }
 
 // remove the instruction from intruction list.
@@ -102,17 +102,4 @@ void BasicBlock::output() const {
     fprintf(yyout, "\n");
     for (auto i = head->getNext(); i != head; i = i->getNext())
         i->output();
-}
-
-bool BasicBlock::havePred(BasicBlock* bb) {
-    if(std::find(pred.begin(), pred.end(), bb) != pred.end())
-        return true;
-    else
-        return false;
-}
-bool BasicBlock::haveSucc(BasicBlock* bb) {
-    if(std::find(succ.begin(), succ.end(), bb) != pred.end())
-        return true;
-    else
-        return false;
 }

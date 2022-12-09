@@ -13,9 +13,12 @@
     /* while statment */
     StmtNode* while_stmt_node;
     std::stack<StmtNode*> while_stmt_stack;
-    /* function type */
+    /* function in decl */
     Type* func_ret_type;
     std::vector<Type*> func_fparam_type;
+    /* function in use*/
+    bool is_void_func = false;
+    bool is_doing_culc = false;
 }
 
 %code requires {
@@ -78,11 +81,16 @@ Stmt
     ;
 AssignStmt
     : LVal ASSIGN Exp SEMI {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
         $$ = new AssignStmt($1, $3); }
     ;
 ExprStmt
     : Exp SEMI {
-        $$ = new ExprStmt($1); }
+        $$ = new ExprStmt($1);
+        is_void_func = false; }
     ;
 BlockStmt
     : L_BRACE  {
@@ -160,7 +168,12 @@ Exp
     : AddExp { $$ = $1; }
     ;
 Cond
-    : LOrExp { $$ = $1; }
+    : LOrExp { 
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
+        $$ = $1; }
     ;
 LVal
     : ID {
@@ -198,7 +211,12 @@ LVal
     ;
 PrimaryExp
     : LVal { $$ = $1; }
-    | L_PAREN Exp R_PAREN { $$ = $2; }
+    | L_PAREN Exp R_PAREN { 
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
+        $$ = $2; }
     | INT_NUM {
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, $1);
         $$ = new Constant(se); }
@@ -221,45 +239,100 @@ UnaryExp
             fprintf(stderr, "[CHECKINFO][L%d]\"%s\" is not a function!\n", yylineno, (char*)$1);
             delete [](char*)$1;
             $$ = new Id(se); }
-       /* CHECK: function overload  TODO*/
-        else if (0){
-             }
-        else{
-            $$ = new FunctionCall(se, $3); } }
+        else {
+            if(is_void_func == false)
+                is_void_func = dynamic_cast<FunctionType*>(se->getType())->getRetType()->isVoid(); // attention info: this is a void function
+            /* CHECK: function overload  TODO*/
+            /*IdentifierSymbolEntry* func_se = dynamic_cast<IdentifierSymbolEntry*>(se);
+            FunctionType* func_type = dynamic_cast<FunctionType*>(func_se->getType());
+            std::vector<Type*> fparams_type = func_type->getParamsType();
+            ExprNode* rparam = $3;
+            do{
+                for(auto& fparam_type: fparams_type){
+                    if(rparam = nullptr){
+                        //rparam less
+                    }
+                    else if(fparam_type == rparam->getOperandType()
+                }
+            }while(0)
+            if (func_se->getType()){ }*/
+            $$ = new FunctionCall(se, $3);
+        } }
     | ADD UnaryExp {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new UnaryExpr(se, UnaryExpr::ADD, $2); }
     | SUB UnaryExp {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new UnaryExpr(se, UnaryExpr::SUB, $2); }
     | NOT UnaryExp {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
         $$ = new UnaryExpr(se, UnaryExpr::NOT, $2); }
     ;
 FuncRParams
-    : Exp { $$ = $1; }
+    : Exp { 
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
+            $$ = $1; }
     | Exp COMMA FuncRParams {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
         $1->SetSibling($3);
         $$ = $1; }
     | %empty { $$ = nullptr; }
 MulExp
     : UnaryExp { $$ = $1; }
     | MulExp MUL UnaryExp {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3); }
     | MulExp DIV UnaryExp {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3); }
     | MulExp MOD UnaryExp {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::MOD, $1, $3); }
     ;
 AddExp
     : MulExp {$$ = $1;}
     | AddExp ADD MulExp {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3); }
     | AddExp SUB MulExp {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
         SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3); }
     ;
@@ -353,7 +426,12 @@ VarDef
         delete []$1; }
     ;
 InitVal 
-    : Exp { $$ = $1; }
+    : Exp { 
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
+        $$ = $1; }
     ;
 ConstDecl
     : CONST Type ConstList SEMI { $$ = $3; }
@@ -383,7 +461,12 @@ ConstDef
         delete []$1; }
     ;
 ConstInitVal
-    : ConstExp { $$ = $1; }
+    : ConstExp { 
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(is_void_func){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(is_void_func == false); }
+        $$ = $1; }
     ;
 FuncDef
     : Type ID {
@@ -398,6 +481,7 @@ FuncDef
         SymbolEntry *se = new IdentifierSymbolEntry(funcType, $2, identifiers->getPrev()->getLevel());
         identifiers->getPrev()->install($2, se); }
     BlockStmt {
+        /* CHECK: function overload  TODO*/
         SymbolEntry *se;
         se = identifiers->lookup($2, all_parent_symtab);
         assert(se != nullptr);
@@ -418,6 +502,10 @@ FuncFParams
 FuncFParam
     : Type ID {
         SymbolEntry *se;
+        /* CHECK: void fparam - cannot fix it, quit */
+        if($1->isVoid()){
+            fprintf(stderr, "[CHECKINFO][L%d]illegal parameter type!\n", yylineno);
+            assert($1->isVoid() == false); }
         se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
         identifiers->install($2, se);
         $$ = new FuncFParam(new Id(se));

@@ -18,15 +18,16 @@ class Type {
 
    public:
     Type(int kind)
-        : kind(kind){};
-    virtual ~Type(){};
-    virtual std::string toStr() = 0;
+        : kind(kind){}
+    virtual ~Type(){}
 
-    bool isInt() const { return kind == INT; };
-    bool isFloat() const { return kind == FLOAT; };
-    bool isVoid() const { return kind == VOID; };
-    bool isFunc() const { return kind == FUNC; };
-    bool isPTR() const { return kind == PTR; };
+    bool isInt() const { return kind == INT; }
+    bool isFloat() const { return kind == FLOAT; }
+    bool isVoid() const { return kind == VOID; }
+    bool isFunc() const { return kind == FUNC; }
+    bool isPTR() const { return kind == PTR; }
+    
+    virtual std::string toStr() = 0;
 };
 
 class IntType : public Type {
@@ -35,34 +36,39 @@ class IntType : public Type {
 
    public:
     IntType(int size)
-        : Type(Type::INT), size(size){};
+        : Type(Type::INT), size(size){}
+
     std::string toStr();
 };
 
 class ConstIntType : public IntType {
    public:
     ConstIntType(int size)
-        : IntType(size){};
+        : IntType(size){}
+
     std::string toStr();
 };
 
 class FloatType : public Type {
    public:
     FloatType()
-        : Type(Type::FLOAT){};
+        : Type(Type::FLOAT){}
+        
     std::string toStr();
 };
 
 class ConstFloatType : public FloatType {
    public:
-    ConstFloatType(){};
+    ConstFloatType(){}
+
     std::string toStr();
 };
 
 class VoidType : public Type {
    public:
     VoidType()
-        : Type(Type::VOID){};
+        : Type(Type::VOID){}
+
     std::string toStr();
 };
 
@@ -75,9 +81,9 @@ class FunctionType : public Type {
     FunctionType(Type* returnType, std::vector<Type*> paramsType)
         : Type(Type::FUNC), returnType(returnType), paramsType(paramsType) {}
 
-    std::vector<Type*> getParamType() { return paramsType; };
-    Type* getRetType() { return returnType; };
-    std::string paramTypeToStr();
+    Type* getRetType() { return returnType; }
+    std::vector<Type*>* getParamsType() { return &paramsType; }
+    
     std::string toStr();
 };
 
@@ -87,7 +93,8 @@ class PointerType : public Type {
 
    public:
     PointerType(Type* valueType)
-        : Type(Type::PTR), valueType(valueType){};
+        : Type(Type::PTR), valueType(valueType){}
+
     std::string toStr();
 };
 
@@ -99,8 +106,7 @@ class TypeSystem {
     static FloatType commonFloat;
     static ConstFloatType commonConstFloat;
     static VoidType commonVoid;
-    // FunctionType
-    // PointerType
+    
    public:
     static Type* boolType;
     static Type* intType;

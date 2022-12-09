@@ -21,9 +21,8 @@ Function::~Function() {
     */
 }
 
-bool Function::inBlockList(BasicBlock* bb)
-{
-    if(std::find(block_list.begin(), block_list.end(), bb) != block_list.end())
+bool Function::inBlockList(BasicBlock* bb) {
+    if (std::find(block_list.begin(), block_list.end(), bb) != block_list.end())
         return true;
     else
         return false;
@@ -39,33 +38,22 @@ void Function::remove(BasicBlock* bb) {
     block_list.erase(std::find(block_list.begin(), block_list.end(), bb));
 }
 
-void Function::insertFParamSE(TemporarySymbolEntry *se) {
+void Function::insertFParamSE(TemporarySymbolEntry* se) {
     fparams_symtab.push_back(se);
 }
 
 void Function::output() const {
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
     Type* retType = funcType->getRetType();
-    /*fprintf(yyout, "define %s %s() {\n",
-    retType->toStr().c_str(),
-    sym_ptr->toStr().c_str());*/
-    /*
-    fprintf(yyout, "define %s %s(%s) {\n",
-            retType->toStr().c_str(),
-            sym_ptr->toStr().c_str(),
-            funcType->paramTypeToStr().c_str());
-    */
     if (fparams_symtab.empty())
         fprintf(yyout, "define %s %s() {\n", retType->toStr().c_str(), sym_ptr->toStr().c_str());
-    else
-    {
+    else {
         fprintf(yyout, "define %s %s(", retType->toStr().c_str(), sym_ptr->toStr().c_str());
-        for( auto se : fparams_symtab)
-        {
+        for (auto se : fparams_symtab) {
             std::string type, se_string;
             type = se->getType()->toStr();
             se_string = se->toStr();
-            if(se != *(fparams_symtab.begin()))
+            if (se != *(fparams_symtab.begin()))
                 fprintf(yyout, ", %s %s", type.c_str(), se_string.c_str());
             else
                 fprintf(yyout, "%s %s", type.c_str(), se_string.c_str());

@@ -2,7 +2,6 @@
 #define __SYMBOLTABLE_H__
 
 #include <assert.h>
-#include <fstream>
 #include <map>
 #include <string>
 #include "Type.h"
@@ -21,14 +20,14 @@ class SymbolEntry {
 
    public:
     SymbolEntry(Type* type, int kind);
-    virtual ~SymbolEntry(){};
+    virtual ~SymbolEntry() {}
 
-    bool isConstant() const { return kind == CONSTANT; };
-    bool isTemporary() const { return kind == TEMPORARY; };
-    bool isVariable() const { return kind == VARIABLE; };
+    bool isConstant() const { return kind == CONSTANT; }
+    bool isTemporary() const { return kind == TEMPORARY; }
+    bool isVariable() const { return kind == VARIABLE; }
 
-    Type* getType() { return type; };
-    void setType(Type* type) { this->type = type; };
+    Type* getType() { return type; }
+    void setType(Type* type) { this->type = type; }
 
     virtual std::string toStr() = 0;
 };
@@ -45,7 +44,7 @@ class ConstantSymbolEntry : public SymbolEntry {
 
    public:
     ConstantSymbolEntry(Type* type, int value);
-    virtual ~ConstantSymbolEntry(){};
+    virtual ~ConstantSymbolEntry() {}
 
     int getValue() const { return value; }
 
@@ -82,13 +81,14 @@ class IdentifierSymbolEntry : public SymbolEntry {
     int scope;
     Operand* addr;  // The address of the identifier.
                     // You can add any field you need here.
-    int int_value;
-    bool overload;               // Function overloading.
-    SymbolEntry* next_overload;  // Next overloading function
+    int int_value;  // TODO
+
+    bool overload;                         // Function overloading.
+    IdentifierSymbolEntry* next_overload;  // Next overloading function
 
    public:
     IdentifierSymbolEntry(Type* type, std::string name, int scope);
-    virtual ~IdentifierSymbolEntry(){};
+    virtual ~IdentifierSymbolEntry() {}
 
     bool isGlobal() const { return scope == GLOBAL; }
     bool isParam() const { return scope == PARAM; }
@@ -98,8 +98,8 @@ class IdentifierSymbolEntry : public SymbolEntry {
     int getScope() const { return scope; }
 
     void setOverload(int overload) { this->overload = overload; }
-    void setOverloadFunc(SymbolEntry* next_overload) { this->next_overload = next_overload; }
-    SymbolEntry* getOverloadFunc() const { return next_overload; }
+    void setOverloadFunc(IdentifierSymbolEntry* next_overload) { this->next_overload = next_overload; }
+    IdentifierSymbolEntry* getOverloadFunc() const { return next_overload; }
 
     void setAddr(Operand* addr) { this->addr = addr; }
     Operand* getAddr() { return addr; }
@@ -157,6 +157,7 @@ class SymbolTable {
 
     SymbolTable* getPrev() { return prev; }
     int getLevel() { return level; }
+    
     static int getLabel() { return counter++; }
 
     void install(std::string name, SymbolEntry* entry);

@@ -1,15 +1,19 @@
 #include "SymbolTable.h"
+
 SymbolEntry::SymbolEntry(Type* type, int kind) {
     this->type = type;
     this->kind = kind;
 }
+
 ConstantSymbolEntry::ConstantSymbolEntry(Type* type, int value)
     : SymbolEntry(type, SymbolEntry::CONSTANT) {
     this->value = value;
 }
+
 std::string ConstantSymbolEntry::toStr() {
     return std::to_string(value);
 }
+
 IdentifierSymbolEntry::IdentifierSymbolEntry(Type* type, std::string name, int scope)
     : SymbolEntry(type, SymbolEntry::VARIABLE), name(name) {
     this->scope = scope;
@@ -17,13 +21,16 @@ IdentifierSymbolEntry::IdentifierSymbolEntry(Type* type, std::string name, int s
     overload = false;
     next_overload = nullptr;
 }
+
 std::string IdentifierSymbolEntry::toStr() {
     return "@" + name;
 }
+
 TemporarySymbolEntry::TemporarySymbolEntry(Type* type, int label)
     : SymbolEntry(type, SymbolEntry::TEMPORARY) {
     this->label = label;
 }
+
 std::string TemporarySymbolEntry::toStr() {
     return "%t" + std::to_string(label);
 }
@@ -46,12 +53,13 @@ SymbolEntry* SymbolTable::lookup(std::string name, bool current) {
     if (current) {
         if (scope->symbolTable.count(name))
             return scope->symbolTable[name];
-    } else
+    } else {
         while (scope != nullptr) {
             if (scope->symbolTable.count(name))
                 return scope->symbolTable[name];
             scope = scope->prev;
         }
+    }
     return nullptr;
 }
 

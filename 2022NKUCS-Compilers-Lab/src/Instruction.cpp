@@ -187,9 +187,11 @@ void CondBrInstruction::output() const {
 }
 
 CallInstruction::CallInstruction(SymbolEntry* func, std::vector<Operand*> rparams, Operand* dst, BasicBlock* insert_bb)
-    : Instruction(CALL, insert_bb), func(func), dst(dst) {
+    : Instruction(CALL, insert_bb), func(func) {
+    operands.push_back(dst);
     if (dst)
         dst->setDef(this);
+
     for (auto rparam : rparams) {
         operands.push_back(rparam);
         rparam->addUse(this);
@@ -197,30 +199,31 @@ CallInstruction::CallInstruction(SymbolEntry* func, std::vector<Operand*> rparam
 }
 
 CallInstruction::~CallInstruction() {
-    if (dst) {
-        dst->setDef(nullptr);
-        if (dst->usersNum() == 0)
-            delete dst;
+    if (operands[0]) {
+        operands[0]->setDef(nullptr);
+        if (operands[0]->usersNum() == 0)
+            delete operands[0];
     }
-    for (unsigned int i = 0; i < operands.size(); i++)
+    for (uint32_t i = 1; i < operands.size(); i++)
         operands[i]->removeUse(this);
 }
 
 void CallInstruction::output() const {
     fprintf(yyout, "  ");
-    if (dst)
+    // get ret
+    if (operands[0])
         fprintf(yyout, "%s = ",
-                dst->toStr().c_str());
-
+                operands[0]->toStr().c_str());
+    // body
     FunctionType* type = (FunctionType*)(func->getType());
     fprintf(yyout, "call %s %s(",
             type->getRetType()->toStr().c_str(),
             func->toStr().c_str());
-    if (operands.size())
+    if (operands.size() > 1)
         fprintf(yyout, "%s %s",
-                operands[0]->getType()->toStr().c_str(),
-                operands[0]->toStr().c_str());
-    for (unsigned int i = 1; i < operands.size(); i++)
+                operands[1]->getType()->toStr().c_str(),
+                operands[1]->toStr().c_str());
+    for (uint32_t i = 2; i < operands.size(); i++)
         fprintf(yyout, ", %s %s",
                 operands[i]->getType()->toStr().c_str(),
                 operands[i]->toStr().c_str());
@@ -333,7 +336,6 @@ void StoreInstruction::output() const {
             dst.c_str());
 }
 
-
 UnSignedExtInstruction::UnSignedExtInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb)
     : Instruction(UNSIGNEDEXT, insert_bb) {
     operands.push_back(dst);
@@ -353,7 +355,7 @@ UnSignedExtInstruction::~UnSignedExtInstruction() {
 void UnSignedExtInstruction::output() const {
     Operand* dst = operands[0];
     Operand* src = operands[1];
-    
+
     std::string dst_str, src_str;
     dst_str = dst->toStr();
     src_str = src->toStr();
@@ -381,7 +383,7 @@ NEGInstruction::~NEGInstruction() {
 void NEGInstruction::output() const {
     Operand* dst = operands[0];
     Operand* src = operands[1];
-    
+
     std::string dst_str, src_str;
     dst_str = dst->toStr();
     src_str = src->toStr();

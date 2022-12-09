@@ -4,7 +4,6 @@
 #include <fstream>
 #include <vector>
 #include "Function.h"
-#include "SymbolTable.h"
 
 class Unit {
    private:

@@ -10,13 +10,13 @@ class BasicBlock;
 
 class Instruction {
    protected:
-    unsigned instType;
-    unsigned opcode;
-
     BasicBlock* parent;
     Instruction* prev;
     Instruction* next;
     std::vector<Operand*> operands;
+
+    unsigned instType;
+    unsigned opcode;
 
     enum { BINARY,
            COND,
@@ -34,15 +34,15 @@ class Instruction {
     Instruction(unsigned instType, BasicBlock* insert_bb = nullptr);
     virtual ~Instruction();
 
+    bool isUncond() const { return instType == UNCOND; }
+    bool isCond() const { return instType == COND; }
     BasicBlock* getParent() { return parent; }
     Instruction* getNext() { return next; }
     Instruction* getPrev() { return prev; }
-    bool isUncond() const { return instType == UNCOND; }
-    bool isCond() const { return instType == COND; }
-
     void setParent(BasicBlock* bb) { parent = bb; }
     void setNext(Instruction* inst) { next = inst; }
     void setPrev(Instruction* inst) { prev = inst; }
+
     virtual void output() const = 0;
 };
 
@@ -122,6 +122,7 @@ class UncondBrInstruction : public Instruction {
 
    public:
     UncondBrInstruction(BasicBlock*, BasicBlock* insert_bb = nullptr);
+    ~UncondBrInstruction() {}
 
     BasicBlock* getBranch() { return branch; }
     void setBranch(BasicBlock* bb) { branch = bb; }
@@ -150,7 +151,6 @@ class CondBrInstruction : public Instruction {
 class CallInstruction : public Instruction {
    protected:
     SymbolEntry* func;
-    Operand* dst;
 
    public:
     CallInstruction(SymbolEntry* func, std::vector<Operand*> rparams, Operand* dst, BasicBlock* insert_bb = nullptr);

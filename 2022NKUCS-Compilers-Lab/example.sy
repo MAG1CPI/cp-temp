@@ -1,10 +1,12 @@
-void a(){
+void a(int x){
+    return ;
+}
+int T(int x){
     return 1;
 }
 int main()
 {
-    int a;
-    a();
+    a(T());
     putch(10);
 
     return 0;

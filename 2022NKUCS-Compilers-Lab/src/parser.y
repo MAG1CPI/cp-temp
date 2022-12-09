@@ -536,7 +536,7 @@ FuncDef
                 }
             }
             Type *funcType = new FunctionType(func_ret_type, paramstype);
-            std::string funcName = $2 + std::to_string(count);
+            std::string funcName = std::string($2) + "_x_ol" + std::to_string(count) + "lo_x";
             IdentifierSymbolEntry *se = new IdentifierSymbolEntry(funcType, funcName, identifiers->getPrev()->getLevel());
             func_se->setOverloadFunc(se);
         } else {

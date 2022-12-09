@@ -255,12 +255,15 @@ UnaryExp
                 rparam = $3;
                 for(auto& fparam_type: *fparams_type){
                     if(rparam == nullptr){
-                        //rparam too less
+                        // rparam too less
                         //fprintf(stderr, "[CHECKINFO][L%d]%srparam too less!\n", yylineno,func_se->getType()->toStr().c_str());
                         goto NextFunction_UnaryExp;
-                    } else if(fparam_type != (rparam->getOperandType())){
+                    } else if(fparam_type->toStr() != rparam->getOperandType()->toStr()){
                         // rparam not match
-                        //fprintf(stderr, "[CHECKINFO][L%d]%srparam not match!\n", yylineno,func_se->getType()->toStr().c_str());
+                        //fprintf(stderr, "[CHECKINFO][L%d]%s not match %s!\n",
+                        //        yylineno, 
+                        //        rparam->getOperandType()->toStr().c_str(), 
+                        //        fparam_type->toStr().c_str());
                         goto NextFunction_UnaryExp;
                     }
                     rparam = dynamic_cast<ExprNode*>(rparam->GetSibling());

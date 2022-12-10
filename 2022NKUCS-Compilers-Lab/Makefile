@@ -136,60 +136,6 @@ test:app
 	[ $(TESTCASE_NUM) = $${success} ] && echo "\033[5;32mAll Accepted. Congratulations!\033[0m"
 	:
 
-mtest:app
-	@success=0
-	@for file in $(sort $(TESTCASE))
-	do
-		IR=$${file%.*}.ll
-		LOG=$${file%.*}.log
-		BIN=$${file%.*}.bin
-		RES=$${file%.*}.res
-		IN=$${file%.*}.in
-		OUT=$${file%.*}.out
-		FILE=$${file##*/}
-		FILE=$${FILE%.*}
-		timeout 5s $(BINARY) $${file} -o $${IR} -i 2>$${LOG}
-		RETURN_VALUE=$$?
-		if [ $$RETURN_VALUE = 124 ]; then
-			echo -e "\033[31mFAIL:\033[0m $${FILE}\t\033[31mCompile Timeout\033[0m"
-			continue
-		else if [ $$RETURN_VALUE != 0 ]; then
-			echo -e "\033[31mFAIL:\033[0m $${FILE}\t\033[31mCompile Error\033[0m"
-			continue
-			fi
-		fi
-		clang -o $${BIN} $${IR} $(SYSLIB_PATH)/sylib.c >>$${LOG} 2>&1
-		if [ $$? != 0 ]; then
-			echo -e "\033[31mFAIL:\033[0m $${FILE}\t\033[31mAssemble Error\033[0m"
-		else
-			if [ -f "$${IN}" ]; then
-				timeout 2s $${BIN} <$${IN} >$${RES} 2>>$${LOG}
-			else
-				timeout 2s $${BIN} >$${RES} 2>>$${LOG}
-			fi
-			RETURN_VALUE=$$?
-			FINAL=`tail -c 1 $${RES}`
-			[ $${FINAL} ] && echo -e "\n$${RETURN_VALUE}" >> $${RES} || echo -e "$${RETURN_VALUE}" >> $${RES}
-			if [ "$${RETURN_VALUE}" = "124" ]; then
-				echo -e "\033[31mFAIL:\033[0m $${FILE}\t\033[31mExecute Timeout\033[0m"
-			else if [ "$${RETURN_VALUE}" = "127" ]; then
-				echo -e "\033[31mFAIL:\033[0m $${FILE}\t\033[31mExecute Error\033[0m"
-				else
-					diff -Z $${RES} $${OUT} >/dev/null 2>&1
-					if [ $$? != 0 ]; then
-						echo -e "\033[31mFAIL:\033[0m $${FILE}\t\033[31mWrong Answer\033[0m"
-					else
-						success=$$((success + 1))
-						echo -e "\033[32mPASS:\033[0m $${FILE}"
-					fi
-				fi
-			fi
-		fi
-	done
-	echo -e "\033[33mTotal: $(TESTCASE_NUM)\t\033[32mAccept: $${success}\t\033[31mFail: $$(($(TESTCASE_NUM) - $${success}))\033[0m"
-	[ $(TESTCASE_NUM) = $${success} ] && echo -e "\033[5;32mAll Accepted. Congratulations!\033[0m"
-	:
-
 clean-app:
 	@rm -rf $(BUILD_PATH) $(PARSER) $(LEXER) $(PARSERH)
 

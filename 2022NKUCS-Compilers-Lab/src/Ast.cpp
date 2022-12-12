@@ -817,3 +817,39 @@ void FunctionCall::output(int level) {
 void NullStmt::output(int level) {
     fprintf(yyout, "%*cNullStmt\n", level, ' ');
 }
+
+/******************************
+    type:
+        1:UnaryExpr
+        2:NotExpr
+        3:BinaryExpr
+        4:logicalExpr
+    ******************************/
+TemporarySymbolEntry* NewTempSE(int type, ExprNode* expr1, ExprNode* expr2/* =nullptr */) {
+    if (expr1->getOperand() == nullptr)
+        return nullptr;
+    switch (type) {
+        case 1: /*UnaryExpr*/
+            if (expr1->getOperandType() == TypeSystem::floatType)
+                return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            else
+                return new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        case 2: /*NotExpr*/
+            return new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        case 3: /*BinaryExpr*/
+            if (expr2->getOperand() == nullptr)
+                return nullptr;
+
+            if (expr1->getOperandType() == TypeSystem::floatType || expr2->getOperandType() == TypeSystem::floatType)
+                return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            else
+                return new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        case 4: /*logicalExpr*/
+            if (expr2->getOperand() == nullptr)
+                return nullptr;
+
+            return new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        default:
+            return nullptr;
+    }
+}

@@ -154,25 +154,25 @@ CommentBody         ([^\r\n|\n|\r])
 }
 
 {Decimial} {
-    yylval.itype = atoi(yytext);
+    yylval.vtype.i = atoi(yytext);
     return INT_NUM;
 }
 {Octonary} {
     int num;
     sscanf(yytext, "%o", &num);
-    yylval.itype = num;
+    yylval.vtype.i = num;
     return INT_NUM;
 }
 {Hexadecimal} {
     int num;
     sscanf(yytext, "%x", &num);
-    yylval.itype = num;
+    yylval.vtype.i = num;
     return INT_NUM;
 }
 {Float} {
     float num;
     sscanf(yytext, "%f", &num);
-    yylval.ftype = num;
+    yylval.vtype.f = num;
     return FLOAT_NUM;
 }
 {Ident}/({EndLine}|{BlankChar})*\[ {

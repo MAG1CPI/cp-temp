@@ -5,13 +5,18 @@ SymbolEntry::SymbolEntry(Type* type, int kind) {
     this->kind = kind;
 }
 
-ConstantSymbolEntry::ConstantSymbolEntry(Type* type, int value)
+ConstantSymbolEntry::ConstantSymbolEntry(Type* type, ValueType value)
     : SymbolEntry(type, SymbolEntry::CONSTANT) {
     this->value = value;
 }
 
 std::string ConstantSymbolEntry::toStr() {
-    return std::to_string(value);
+    if (type->isInt())
+        return std::to_string(value.i);
+    else if (type->isFloat())
+        return std::to_string(value.f);
+    else
+        assert(false);
 }
 
 IdentifierSymbolEntry::IdentifierSymbolEntry(Type* type, std::string name, int scope)

@@ -37,7 +37,7 @@ void Unit::output() const {
             std::string name, type;
             name = id_se->toStr();
             type = id_se->getType()->toStr();
-            int value = id_se->getIntValue();
+            int value = id_se->getValue().i;
             fprintf(yyout, "%s = global %s %d, align 4\n", name.c_str(), type.c_str(), value);
         }
     }

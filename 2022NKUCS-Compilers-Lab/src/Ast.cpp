@@ -52,7 +52,7 @@ void Node::swapList(std::vector<Instruction*>& truelist, std::vector<Instruction
 
 void ExprNode::int2bool(BasicBlock* insert_bb) {
     Operand* new_dst = new Operand(new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel()));
-    Operand* zero = new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0));
+    Operand* zero = new Operand(new ConstantSymbolEntry(TypeSystem::intType, kZERO));
     new CmpInstruction(CmpInstruction::NOTEQ, new_dst, this->dst, zero, insert_bb);
     this->dst = new_dst;
 }
@@ -116,7 +116,11 @@ void FunctionDef::genCode() {
             if (retType->isVoid())
                 new RetInstruction(nullptr, *basicblock);
             else if (retType->isInt()) {
-                SymbolEntry* zero_se = new ConstantSymbolEntry(TypeSystem::intType, 0);
+                SymbolEntry* zero_se = new ConstantSymbolEntry(TypeSystem::intType, kZERO);
+                Operand* zero = new Operand(zero_se);
+                new RetInstruction(zero, *basicblock);
+            } else if (retType->isFloat()) {
+                SymbolEntry* zero_se = new ConstantSymbolEntry(TypeSystem::floatType, kZERO);
                 Operand* zero = new Operand(zero_se);
                 new RetInstruction(zero, *basicblock);
             }
@@ -148,7 +152,7 @@ void UnaryExpr::genCode() {
         expr->genCode();
         if (expr->getOperandType()->toStr() == "i1")
             expr->bool2int(bb);
-        SymbolEntry* se = new ConstantSymbolEntry(dst->getType(), 0);
+        SymbolEntry* se = new ConstantSymbolEntry(dst->getType(), kZERO);
         Operand* src1 = new Operand(se);
         Operand* src2 = expr->getOperand();
         int opcode;
@@ -387,12 +391,12 @@ void DeclStmt::genCode() {
         addr = new Operand(addr_se);
         se->setAddr(addr);
         if (initval != nullptr) {
-            int value;
-            sscanf(initval->getOperand()->toStr().c_str(), "%d", &value);
-            dynamic_cast<IdentifierSymbolEntry*>(se)->setIntValue(value);
+            ValueType value;
+            sscanf(initval->getOperand()->toStr().c_str(), "%d", &value.i);
+            dynamic_cast<IdentifierSymbolEntry*>(se)->setValue(value);
             // std::cout << "add a global var value:" << value << std::endl;
         } else {
-            dynamic_cast<IdentifierSymbolEntry*>(se)->setIntValue(0);
+            dynamic_cast<IdentifierSymbolEntry*>(se)->setValue(kZERO);
             // std::cout << "add a global var value:" << 0 << std::endl;
         }
         unit.insertGlobalVar(se);
@@ -825,7 +829,7 @@ void NullStmt::output(int level) {
         3:BinaryExpr
         4:logicalExpr
     ******************************/
-TemporarySymbolEntry* NewTempSE(int type, ExprNode* expr1, ExprNode* expr2/* =nullptr */) {
+TemporarySymbolEntry* NewTempSE(int type, ExprNode* expr1, ExprNode* expr2 /* =nullptr */) {
     if (expr1->getOperand() == nullptr)
         return nullptr;
     switch (type) {

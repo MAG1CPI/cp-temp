@@ -25,8 +25,7 @@
 }
 
 %union {
-    int itype;
-    float ftype;
+    ValueType vtype;
     char* strtype;
     StmtNode* stmttype;
     ExprNode* exprtype;
@@ -35,8 +34,8 @@
 
 %start Program
 %token <strtype> ID ARRAYID
-%token <itype> INT_NUM
-%token <ftype> FLOAT_NUM
+%token <vtype> INT_NUM
+%token <vtype> FLOAT_NUM
 %token IF ELSE WHILE
 %token CONST
 %token INT FLOAT VOID

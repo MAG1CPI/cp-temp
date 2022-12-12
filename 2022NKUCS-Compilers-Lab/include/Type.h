@@ -1,6 +1,7 @@
 #ifndef __TYPE_H__
 #define __TYPE_H__
 
+#include <assert.h>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -13,20 +14,22 @@ class Type {
     enum { INT,
            FLOAT,
            VOID,
+           ARRAY,
            FUNC,
            PTR };
 
    public:
     Type(int kind)
-        : kind(kind){}
-    virtual ~Type(){}
+        : kind(kind) {}
+    virtual ~Type() {}
 
     bool isInt() const { return kind == INT; }
     bool isFloat() const { return kind == FLOAT; }
     bool isVoid() const { return kind == VOID; }
+    bool isArray() const { return kind == ARRAY; }
     bool isFunc() const { return kind == FUNC; }
     bool isPTR() const { return kind == PTR; }
-    
+
     virtual std::string toStr() = 0;
 };
 
@@ -36,7 +39,7 @@ class IntType : public Type {
 
    public:
     IntType(int size)
-        : Type(Type::INT), size(size){}
+        : Type(Type::INT), size(size) {}
 
     std::string toStr();
 };
@@ -44,7 +47,7 @@ class IntType : public Type {
 class ConstIntType : public IntType {
    public:
     ConstIntType(int size)
-        : IntType(size){}
+        : IntType(size) {}
 
     std::string toStr();
 };
@@ -52,14 +55,14 @@ class ConstIntType : public IntType {
 class FloatType : public Type {
    public:
     FloatType()
-        : Type(Type::FLOAT){}
-        
+        : Type(Type::FLOAT) {}
+
     std::string toStr();
 };
 
 class ConstFloatType : public FloatType {
    public:
-    ConstFloatType(){}
+    ConstFloatType() {}
 
     std::string toStr();
 };
@@ -67,7 +70,24 @@ class ConstFloatType : public FloatType {
 class VoidType : public Type {
    public:
     VoidType()
-        : Type(Type::VOID){}
+        : Type(Type::VOID) {}
+
+    std::string toStr();
+};
+
+class ArrayType : public Type {
+   private:
+    Type* elementType;
+    int length;
+    bool is_const;
+
+   public:
+    ArrayType(Type* elementType, int length, bool is_const = false)
+        : Type(Type::ARRAY), elementType(elementType), length(length), is_const(is_const) {}
+
+    bool isConst() const { return is_const; }
+    Type* getElementType() const { return elementType; }
+    int getLength() const { return length; }
 
     std::string toStr();
 };
@@ -83,7 +103,7 @@ class FunctionType : public Type {
 
     Type* getRetType() { return returnType; }
     std::vector<Type*>* getParamsType() { return &paramsType; }
-    
+
     std::string toStr();
 };
 
@@ -93,7 +113,7 @@ class PointerType : public Type {
 
    public:
     PointerType(Type* valueType)
-        : Type(Type::PTR), valueType(valueType){}
+        : Type(Type::PTR), valueType(valueType) {}
 
     std::string toStr();
 };
@@ -106,7 +126,7 @@ class TypeSystem {
     static FloatType commonFloat;
     static ConstFloatType commonConstFloat;
     static VoidType commonVoid;
-    
+
    public:
     static Type* boolType;
     static Type* intType;

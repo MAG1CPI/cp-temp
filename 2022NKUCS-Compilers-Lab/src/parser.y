@@ -17,20 +17,15 @@
     Type* func_ret_type;
     std::vector<Type*> func_fparam_type;
     /* function in use*/
-    bool is_void_func = false;
-    bool is_doing_culc = false;
     bool no_ret = true;
 }
 
 %code requires {
     #include "Ast.h"
-    #include "SymbolTable.h"
-    #include "Type.h"
 }
 
 %union {
-    int itype;
-    float ftype;
+    ValueType vtype;
     char* strtype;
     StmtNode* stmttype;
     ExprNode* exprtype;
@@ -39,8 +34,8 @@
 
 %start Program
 %token <strtype> ID ARRAYID
-%token <itype> INT_NUM
-%token <ftype> FLOAT_NUM
+%token <vtype> INT_NUM
+%token <vtype> FLOAT_NUM
 %token IF ELSE WHILE
 %token CONST
 %token INT FLOAT VOID
@@ -83,15 +78,14 @@ Stmt
 AssignStmt
     : LVal ASSIGN Exp SEMI {
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if($3->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
+            assert(false); }
         $$ = new AssignStmt($1, $3); }
     ;
 ExprStmt
     : Exp SEMI {
-        $$ = new ExprStmt($1);
-        is_void_func = false; }
+        $$ = new ExprStmt($1); }
     ;
 BlockStmt
     : L_BRACE  {
@@ -135,6 +129,11 @@ ContinueStmt
             $$ = new ContinueStmt(while_stmt_stack.top()); } }
 ReturnStmt
     : RETURN Exp SEMI {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if($2->getOperand() == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
+
         no_ret = false;
         /* CHECK: return not in function - replace with NullStmt */
         if(func_ret_type == nullptr){
@@ -173,9 +172,9 @@ Exp
 Cond
     : LOrExp { 
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if($1->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
+            assert(false); }
         $$ = $1; }
     ;
 LVal
@@ -216,9 +215,9 @@ PrimaryExp
     : LVal { $$ = $1; }
     | L_PAREN Exp R_PAREN { 
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if($2->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
+            assert(false); }
         $$ = $2; }
     | INT_NUM {
         SymbolEntry *se = new ConstantSymbolEntry(TypeSystem::intType, $1);
@@ -288,122 +287,148 @@ UnaryExp
                     assert(func_se->isOverload());
                 }
             }
-            if(is_void_func == false)
-                is_void_func = dynamic_cast<FunctionType*>(func_se->getType())->getRetType()->isVoid(); // attention info: this is a void function
             $$ = new FunctionCall(func_se, $3);
         } }
     | ADD UnaryExp {
+        SymbolEntry *se = NewTempSE(1,$2);
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if(se == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            assert(false); }
         $$ = new UnaryExpr(se, UnaryExpr::ADD, $2); }
     | SUB UnaryExp {
+        SymbolEntry *se = NewTempSE(1,$2);
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if(se == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            assert(false); }
         $$ = new UnaryExpr(se, UnaryExpr::SUB, $2); }
     | NOT UnaryExp {
+        SymbolEntry *se = NewTempSE(2,$2);
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if(se == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+            assert(false); }
         $$ = new UnaryExpr(se, UnaryExpr::NOT, $2); }
     ;
 FuncRParams
     : Exp { 
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if($1->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
-            $$ = $1; }
+            assert(false); }
+        $$ = $1; }
     | Exp COMMA FuncRParams {
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if($1->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
+            assert(false); }
         $1->SetSibling($3);
         $$ = $1; }
-    | %empty { $$ = nullptr; }
+    | %empty { $$ = nullptr; }//TODO
 MulExp
     : UnaryExp { $$ = $1; }
     | MulExp MUL UnaryExp {
+        SymbolEntry *se = NewTempSE(3,$1,$3);
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if(se == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::MUL, $1, $3); }
     | MulExp DIV UnaryExp {
+        SymbolEntry *se = NewTempSE(3,$1,$3);
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if(se == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::DIV, $1, $3); }
     | MulExp MOD UnaryExp {
+        SymbolEntry *se = NewTempSE(3,$1,$3);
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if(se == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::MOD, $1, $3); }
     ;
 AddExp
     : MulExp {$$ = $1;}
     | AddExp ADD MulExp {
+        SymbolEntry *se = NewTempSE(3,$1,$3);
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if(se == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::ADD, $1, $3); }
     | AddExp SUB MulExp {
+        SymbolEntry *se = NewTempSE(3,$1,$3);
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if(se == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::SUB, $1, $3); }
     ;
 RelExp
     : AddExp { $$ = $1; }
     | RelExp LESS AddExp {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        SymbolEntry *se = NewTempSE(4,$1,$3);
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(se == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::LESS, $1, $3); }
     | RelExp GREATER AddExp {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        SymbolEntry *se = NewTempSE(4,$1,$3);
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(se == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::GREATER, $1, $3); }
     | RelExp LESSEQ AddExp {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        SymbolEntry *se = NewTempSE(4,$1,$3);
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(se == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::LESSEQ, $1, $3); }                                               
     | RelExp GREATEREQ AddExp {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        SymbolEntry *se = NewTempSE(4,$1,$3);
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(se == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::GREATEREQ, $1, $3); }
     ;
 EqExp
     : RelExp { $$ = $1; }
     | EqExp EQ RelExp {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        SymbolEntry *se = NewTempSE(4,$1,$3);
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(se == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::EQ, $1, $3); }
     | EqExp NOTEQ RelExp {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        SymbolEntry *se = NewTempSE(4,$1,$3);
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(se == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::NOTEQ, $1, $3); }
     ;
 LAndExp
     : EqExp { $$ = $1; }
     | LAndExp AND EqExp {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        SymbolEntry *se = NewTempSE(4,$1,$3);
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if(se == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
         $$ = new BinaryExpr(se, BinaryExpr::AND, $1, $3); }
     ;
 LOrExp
     : LAndExp { $$ = $1; }
     | LOrExp OR LAndExp {
-        SymbolEntry *se = new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        SymbolEntry *se = NewTempSE(4,$1,$3);
         $$ = new BinaryExpr(se, BinaryExpr::OR, $1, $3); }
     ;
 ConstExp
@@ -462,9 +487,9 @@ VarDef
 InitVal 
     : Exp { 
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if($1->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
+            assert(false); }
         $$ = $1; }
     ;
 ConstDecl
@@ -497,9 +522,9 @@ ConstDef
 ConstInitVal
     : ConstExp { 
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
-        if(is_void_func){
+        if($1->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
-            assert(is_void_func == false); }
+            assert(false); }
         $$ = $1; }
     ;
 FuncDef

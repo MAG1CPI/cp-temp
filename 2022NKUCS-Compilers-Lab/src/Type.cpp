@@ -30,6 +30,33 @@ std::string ConstFloatType::toStr() {
     return "float";
 }
 
+std::string ArrayType::toStr() {
+    // not sure
+    std::string str = "";
+    bool is_fparam = false;
+    Type* part_type = this;
+    int part_len;
+    // fparam
+    if (getLength() == -1) {
+        is_fparam = true;
+        part_type = getElementType();
+    }
+    // iterate all dim
+    while (part_type && part_type->isArray()) {
+        part_len = ((ArrayType*)part_type)->getLength();
+        str += "[" + std::to_string(part_len) + "]";
+        part_type = ((ArrayType*)part_type)->getElementType();
+    }
+    // basic type
+    if (!(part_type->isInt() || part_type->isFloat()))
+        assert(false);
+    str += part_type->toStr();
+    // fparam
+    if (is_fparam)
+        str += "*";
+    return str + part_type->toStr();
+}
+
 std::string VoidType::toStr() {
     return "void";
 }

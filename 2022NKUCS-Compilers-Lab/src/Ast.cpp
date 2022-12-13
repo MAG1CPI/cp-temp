@@ -50,28 +50,25 @@ void Node::swapList(std::vector<Instruction*>& truelist, std::vector<Instruction
     truelist.swap(falselist);
 }
 
-void ExprNode::int2bool(BasicBlock* insert_bb)
-{
+void ExprNode::int2bool(BasicBlock* insert_bb) {
     Operand* new_dst = new Operand(new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel()));
-    Operand* zero = new Operand(new ConstantSymbolEntry(TypeSystem::intType, 0));
+    Operand* zero = new Operand(new ConstantSymbolEntry(TypeSystem::intType, kZERO));
     new CmpInstruction(CmpInstruction::NOTEQ, new_dst, this->dst, zero, insert_bb);
     this->dst = new_dst;
 }
 
-void ExprNode::bool2int(BasicBlock* insert_bb)
-{
+void ExprNode::bool2int(BasicBlock* insert_bb) {
     Operand* new_dst = new Operand(new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel()));
     new UnSignedExtInstruction(new_dst, this->dst, insert_bb);
     this->dst = new_dst;
 }
 
-void Node::insertCondBrInst(Function *func, Node *cond, BasicBlock *insert_bb)
-{
+void Node::insertCondBrInst(Function* func, Node* cond, BasicBlock* insert_bb) {
     BasicBlock *truebranch, *falsebranch;
     truebranch = new BasicBlock(func);
     falsebranch = new BasicBlock(func);
 
-    Operand *dst = dynamic_cast<ExprNode*>(cond)->getOperand();
+    Operand* dst = dynamic_cast<ExprNode*>(cond)->getOperand();
     Instruction* branch = new CondBrInstruction(truebranch, falsebranch, dst, insert_bb);
     cond->trueList().push_back(branch);
     cond->falseList().push_back(branch);
@@ -89,7 +86,7 @@ void FunctionDef::genCode() {
     BasicBlock* entry = func->getEntry();
     // set the insert point to the entry basicblock of this function.
     builder->setInsertBB(entry);
-    if(fparam != nullptr)
+    if (fparam != nullptr)
         fparam->genCode();
     stmt->genCode();
 
@@ -97,18 +94,14 @@ void FunctionDef::genCode() {
      * Construct control flow graph. You need do set successors and predecessors for each basic block.
      * Todo
      */
-    for (auto basicblock = func->begin(); basicblock != func->end(); basicblock++)
-    {
+    for (auto basicblock = func->begin(); basicblock != func->end(); basicblock++) {
         Instruction* lastinst = (*basicblock)->rbegin();
-        if (lastinst->isUncond())
-        {
+        if (lastinst->isUncond()) {
             BasicBlock* branch = dynamic_cast<UncondBrInstruction*>(lastinst)->getBranch();
 
             branch->addPred(*basicblock);
             (*basicblock)->addSucc(branch);
-        }
-        else if (lastinst->isCond())
-        {
+        } else if (lastinst->isCond()) {
             BasicBlock *truebranch, *falsebranch;
             truebranch = dynamic_cast<CondBrInstruction*>(lastinst)->getTrueBranch();
             falsebranch = dynamic_cast<CondBrInstruction*>(lastinst)->getFalseBranch();
@@ -117,41 +110,37 @@ void FunctionDef::genCode() {
             falsebranch->addPred(*basicblock);
             (*basicblock)->addSucc(truebranch);
             (*basicblock)->addSucc(falsebranch);
-        }
-        else if (/*(*basicblock)->empty() == false &&*/lastinst->isRet() == false)
-        {
+        } else if (/*(*basicblock)->empty() == false &&*/ lastinst->isRet() == false) {
             FunctionType* funcType = dynamic_cast<FunctionType*>(func->getSymPtr()->getType());
             Type* retType = funcType->getRetType();
             if (retType->isVoid())
                 new RetInstruction(nullptr, *basicblock);
-            else if(retType->isInt())
-            {
-                SymbolEntry* zero_se = new ConstantSymbolEntry(TypeSystem::intType, 0);
+            else if (retType->isInt()) {
+                SymbolEntry* zero_se = new ConstantSymbolEntry(TypeSystem::intType, kZERO);
+                Operand* zero = new Operand(zero_se);
+                new RetInstruction(zero, *basicblock);
+            } else if (retType->isFloat()) {
+                SymbolEntry* zero_se = new ConstantSymbolEntry(TypeSystem::floatType, kZERO);
                 Operand* zero = new Operand(zero_se);
                 new RetInstruction(zero, *basicblock);
             }
         }
     }
-    for (auto basicblock = func->begin(); basicblock != func->end(); basicblock++)
-    {
-        if((*basicblock)->empty())
-        {
-            for (auto bb = (*basicblock)->pred_begin(); bb != (*basicblock)->pred_end(); bb++)
-            {
+    for (auto basicblock = func->begin(); basicblock != func->end(); basicblock++) {
+        if ((*basicblock)->empty()) {
+            for (auto bb = (*basicblock)->pred_begin(); bb != (*basicblock)->pred_end(); bb++) {
                 //(*basicblock)->removePred(*bb);
                 (*bb)->removeSucc(*basicblock);
                 (*bb)->remove((*bb)->rbegin());
             }
         }
-        for(auto inst = (*basicblock)->begin(); inst != (*basicblock)->end()->getPrev(); inst = inst->getNext())
-        {
-            if(inst->isCond())
-            {
-                BasicBlock *truebb = dynamic_cast<CondBrInstruction*>(inst)->getTrueBranch();
-                BasicBlock *falsebb = dynamic_cast<CondBrInstruction*>(inst)->getFalseBranch();
-                if(func->inBlockList(truebb) == false || func->inBlockList(falsebb))
+        for (auto inst = (*basicblock)->begin(); inst != (*basicblock)->end()->getPrev(); inst = inst->getNext()) {
+            if (inst->isCond()) {
+                BasicBlock* truebb = dynamic_cast<CondBrInstruction*>(inst)->getTrueBranch();
+                BasicBlock* falsebb = dynamic_cast<CondBrInstruction*>(inst)->getFalseBranch();
+                if (func->inBlockList(truebb) == false || func->inBlockList(falsebb))
                     (*basicblock)->remove(inst);
-            }   
+            }
         }
     }
 }
@@ -161,9 +150,9 @@ void UnaryExpr::genCode() {
     // Function *func = bb->getParent();
     if (op == ADD || op == SUB) {
         expr->genCode();
-        if(expr->getOperandType()->toStr() == "i1")
+        if (expr->getOperandType()->toStr() == "i1")
             expr->bool2int(bb);
-        SymbolEntry* se = new ConstantSymbolEntry(dst->getType(), 0);
+        SymbolEntry* se = new ConstantSymbolEntry(dst->getType(), kZERO);
         Operand* src1 = new Operand(se);
         Operand* src2 = expr->getOperand();
         int opcode;
@@ -179,7 +168,7 @@ void UnaryExpr::genCode() {
         if (expr->getOperandType()->toStr() == "i32")
             expr->int2bool(bb);
         new NEGInstruction(dst, expr->getOperand(), bb);
-        
+
         /*
         Function* func = bb->getParent();
         BasicBlock *truebranch, *falsebranch;
@@ -200,20 +189,18 @@ void BinaryExpr::genCode() {
         BasicBlock* trueBB = new BasicBlock(func);  // if the result of lhs is true, jump to the trueBB.
         expr1->genCode();
         BasicBlock* expr1_bb = builder->getInsertBB();
-        if(expr1->getOperandType()->toStr() == "i32")
-        {
+        if (expr1->getOperandType()->toStr() == "i32") {
             expr1->int2bool(expr1_bb);
-            insertCondBrInst(func, expr1, expr1_bb);  
+            insertCondBrInst(func, expr1, expr1_bb);
         }
 
         backPatch(expr1->trueList(), trueBB, true);
         builder->setInsertBB(trueBB);  // set the insert point to the trueBB so that intructions generated by expr2 will be inserted into it.
         expr2->genCode();
         BasicBlock* expr2_bb = builder->getInsertBB();
-        if(expr2->getOperandType()->toStr() == "i32")
-        {
+        if (expr2->getOperandType()->toStr() == "i32") {
             expr2->int2bool(expr2_bb);
-            insertCondBrInst(func, expr2, expr2_bb);  
+            insertCondBrInst(func, expr2, expr2_bb);
         }
 
         true_list = expr2->trueList();
@@ -224,20 +211,18 @@ void BinaryExpr::genCode() {
         BasicBlock* trueBB = new BasicBlock(func);
         expr1->genCode();
         BasicBlock* expr1_bb = builder->getInsertBB();
-        if(expr1->getOperandType()->toStr() == "i32")
-        {
+        if (expr1->getOperandType()->toStr() == "i32") {
             expr1->int2bool(expr1_bb);
-            insertCondBrInst(func, expr1, expr1_bb);  
+            insertCondBrInst(func, expr1, expr1_bb);
         }
 
         backPatch(expr1->falseList(), trueBB, false);
         builder->setInsertBB(trueBB);
         expr2->genCode();
         BasicBlock* expr2_bb = builder->getInsertBB();
-        if(expr2->getOperandType()->toStr() == "i32")
-        {
+        if (expr2->getOperandType()->toStr() == "i32") {
             expr2->int2bool(expr2_bb);
-            insertCondBrInst(func, expr2, expr2_bb);  
+            insertCondBrInst(func, expr2, expr2_bb);
         }
 
         true_list = merge(expr1->trueList(), expr2->trueList());
@@ -282,7 +267,7 @@ void BinaryExpr::genCode() {
         // false_list = merge(expr1->falseList(), expr2->falseList());
 
         this->insertCondBrInst(func, this, bb);
-        
+
     } else if (op >= ADD && op <= MOD) {
         expr1->genCode();
         if (expr1->getOperandType()->toStr() == "i1")
@@ -336,10 +321,9 @@ void IfStmt::genCode() {
 
     cond->genCode();
     cond_bb = builder->getInsertBB();
-    if(cond->getOperandType()->toStr() == "i32")
-    {
+    if (cond->getOperandType()->toStr() == "i32") {
         cond->int2bool(cond_bb);
-        insertCondBrInst(func, cond, cond_bb);  
+        insertCondBrInst(func, cond, cond_bb);
     }
 
     backPatch(cond->trueList(), then_bb, true);
@@ -365,10 +349,9 @@ void IfElseStmt::genCode() {
 
     cond->genCode();
     cond_bb = builder->getInsertBB();
-    if(cond->getOperandType()->toStr() == "i32")
-    {
+    if (cond->getOperandType()->toStr() == "i32") {
         cond->int2bool(cond_bb);
-        insertCondBrInst(func, cond, cond_bb);  
+        insertCondBrInst(func, cond, cond_bb);
     }
 
     backPatch(cond->trueList(), then_bb, true);
@@ -399,45 +382,38 @@ void SeqNode::genCode() {
 }
 
 void DeclStmt::genCode() {
-    IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());
-    if(se->isGlobal())
-    {
-        Operand *addr;
-        SymbolEntry *addr_se;
+    IdentifierSymbolEntry* se = dynamic_cast<IdentifierSymbolEntry*>(id->getSymPtr());
+    if (se->isGlobal()) {
+        Operand* addr;
+        SymbolEntry* addr_se;
         addr_se = new IdentifierSymbolEntry(*se);
         addr_se->setType(new PointerType(se->getType()));
         addr = new Operand(addr_se);
         se->setAddr(addr);
-        if(initval != nullptr)
-        {
-            int value;
-            sscanf(initval->getOperand()->toStr().c_str(), "%d", &value);
-            dynamic_cast<IdentifierSymbolEntry *>(se)->setIntValue(value);
-            //fprintf(stderr, "add a global var value:%s %d\n", initval->getOperand()->toStr().c_str(), value);
-        }
-        else
-        {
-            dynamic_cast<IdentifierSymbolEntry *>(se)->setIntValue(0);
-            //fprintf(stderr, "add a global var value:%d\n", 0);
+        if (initval != nullptr) {
+            ValueType value;
+            sscanf(initval->getOperand()->toStr().c_str(), "%d", &value.i);
+            dynamic_cast<IdentifierSymbolEntry*>(se)->setValue(value);
+            // std::cout << "add a global var value:" << value << std::endl;
+        } else {
+            dynamic_cast<IdentifierSymbolEntry*>(se)->setValue(kZERO);
+            // std::cout << "add a global var value:" << 0 << std::endl;
         }
         unit.insertGlobalVar(se);
-    }
-    else if(se->isLocal())
-    {
-        Function *func = builder->getInsertBB()->getParent();
-        BasicBlock *entry = func->getEntry();
-        Instruction *alloca;
-        Operand *addr;
-        SymbolEntry *addr_se;
-        Type *type;
+    } else if (se->isLocal()) {
+        Function* func = builder->getInsertBB()->getParent();
+        BasicBlock* entry = func->getEntry();
+        Instruction* alloca;
+        Operand* addr;
+        SymbolEntry* addr_se;
+        Type* type;
         type = new PointerType(se->getType());
         addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
         addr = new Operand(addr_se);
-        alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
-        entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
-        se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
-        if(initval != nullptr)
-        {
+        alloca = new AllocaInstruction(addr, se);  // allocate space for local id in function stack.
+        entry->insertFront(alloca);                // allocate instructions should be inserted into the begin of the entry block.
+        se->setAddr(addr);                         // set the addr operand in symbol entry so that we can use it in subsequent code generation.
+        if (initval != nullptr) {
             BasicBlock* bb = builder->getInsertBB();
             initval->genCode();
             Operand* src = initval->getOperand();
@@ -487,10 +463,9 @@ void WhileStmt::genCode() {
     builder->setInsertBB(cond_bb);
     cond->genCode();
     cond_bb = builder->getInsertBB();
-    if(cond->getOperandType()->toStr() == "i32")
-    {
+    if (cond->getOperandType()->toStr() == "i32") {
         cond->int2bool(cond_bb);
-        insertCondBrInst(func, cond, cond_bb);  
+        insertCondBrInst(func, cond, cond_bb);
     }
 
     backPatch(cond->trueList(), stmt_bb, true);
@@ -525,10 +500,10 @@ void ContinueStmt::genCode() {
 
 void FuncFParam::genCode() {
     // Todo !!!
-    IdentifierSymbolEntry *se = dynamic_cast<IdentifierSymbolEntry *>(id->getSymPtr());
-    Function *func = builder->getInsertBB()->getParent();
-    BasicBlock *entry = func->getEntry();
-    Instruction *alloca;
+    IdentifierSymbolEntry* se = dynamic_cast<IdentifierSymbolEntry*>(id->getSymPtr());
+    Function* func = builder->getInsertBB()->getParent();
+    BasicBlock* entry = func->getEntry();
+    Instruction* alloca;
     Operand *param, *addr;
     SymbolEntry *param_se, *addr_se;
     Type *param_type, *type;
@@ -540,11 +515,11 @@ void FuncFParam::genCode() {
     type = new PointerType(se->getType());
     addr_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
     addr = new Operand(addr_se);
-    alloca = new AllocaInstruction(addr, se);                   // allocate space for local id in function stack.
-    entry->insertFront(alloca);                                 // allocate instructions should be inserted into the begin of the entry block.
-    se->setAddr(addr);                                          // set the addr operand in symbol entry so that we can use it in subsequent code generation.
-    
-    func->insertFParamSE(dynamic_cast<TemporarySymbolEntry *>(param_se));
+    alloca = new AllocaInstruction(addr, se);  // allocate space for local id in function stack.
+    entry->insertFront(alloca);                // allocate instructions should be inserted into the begin of the entry block.
+    se->setAddr(addr);                         // set the addr operand in symbol entry so that we can use it in subsequent code generation.
+
+    func->insertFParamSE(dynamic_cast<TemporarySymbolEntry*>(param_se));
     BasicBlock* bb = builder->getInsertBB();
     new StoreInstruction(addr, param, bb);
 
@@ -744,11 +719,6 @@ void CompoundStmt::output(int level) {
 }
 
 void SeqNode::output(int level) {
-    /*
-    fprintf(yyout, "%*cSequence\n", level, ' ');
-    stmt1->output(level + 4);
-    stmt2->output(level + 4);
-    */
     stmt1->output(level);
     stmt2->output(level);
 }
@@ -850,4 +820,40 @@ void FunctionCall::output(int level) {
 
 void NullStmt::output(int level) {
     fprintf(yyout, "%*cNullStmt\n", level, ' ');
+}
+
+/******************************
+    type:
+        1:UnaryExpr
+        2:NotExpr
+        3:BinaryExpr
+        4:logicalExpr
+    ******************************/
+TemporarySymbolEntry* NewTempSE(int type, ExprNode* expr1, ExprNode* expr2 /* =nullptr */) {
+    if (expr1->getOperand() == nullptr)
+        return nullptr;
+    switch (type) {
+        case 1: /*UnaryExpr*/
+            if (expr1->getOperandType() == TypeSystem::floatType)
+                return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            else
+                return new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        case 2: /*NotExpr*/
+            return new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        case 3: /*BinaryExpr*/
+            if (expr2->getOperand() == nullptr)
+                return nullptr;
+
+            if (expr1->getOperandType() == TypeSystem::floatType || expr2->getOperandType() == TypeSystem::floatType)
+                return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            else
+                return new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        case 4: /*logicalExpr*/
+            if (expr2->getOperand() == nullptr)
+                return nullptr;
+
+            return new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel());
+        default:
+            return nullptr;
+    }
 }

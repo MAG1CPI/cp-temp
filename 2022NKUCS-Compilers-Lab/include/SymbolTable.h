@@ -8,6 +8,14 @@
 
 class Operand;
 
+union ValueType {
+    int i;
+    float f;
+    int *ip;
+    float *fp;
+};
+const ValueType kZERO = {.f = 0};
+
 class SymbolEntry {
    private:
     int kind;
@@ -40,13 +48,13 @@ class SymbolEntry {
 */
 class ConstantSymbolEntry : public SymbolEntry {
    private:
-    int value;
+    ValueType value;
 
    public:
-    ConstantSymbolEntry(Type* type, int value);
+    ConstantSymbolEntry(Type* type, ValueType value);
     virtual ~ConstantSymbolEntry() {}
 
-    int getValue() const { return value; }
+    ValueType getValue() const { return value; }
 
     std::string toStr();
 };
@@ -81,7 +89,7 @@ class IdentifierSymbolEntry : public SymbolEntry {
     int scope;
     Operand* addr;  // The address of the identifier.
                     // You can add any field you need here.
-    int int_value;  // TODO
+    ValueType value;
 
     bool overload;                         // Function overloading.
     IdentifierSymbolEntry* next_overload;  // Next overloading function
@@ -103,8 +111,8 @@ class IdentifierSymbolEntry : public SymbolEntry {
     void setAddr(Operand* addr) { this->addr = addr; }
     Operand* getAddr() { return addr; }
 
-    void setIntValue(int int_value) { this->int_value = int_value; }
-    int getIntValue() { return int_value; }
+    void setValue(ValueType value) { this->value = value; }
+    ValueType getValue() { return value; }
 
     std::string toStr();
 };

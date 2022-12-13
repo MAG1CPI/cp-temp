@@ -38,7 +38,7 @@ class Node {
     std::vector<Instruction*>& trueList() { return true_list; }
     std::vector<Instruction*>& falseList() { return false_list; }
 
-    void insertCondBrInst(Function *func, Node *cond, BasicBlock *insert_bb);
+    void insertCondBrInst(Function* func, Node* cond, BasicBlock* insert_bb);
 };
 
 class ExprNode : public Node {
@@ -46,7 +46,7 @@ class ExprNode : public Node {
     SymbolEntry* symbolEntry;
     Operand* dst;  // The result of the subtree is stored into dst.
    public:
-    ExprNode(SymbolEntry* symbolEntry)
+    ExprNode(SymbolEntry* symbolEntry = nullptr)
         : symbolEntry(symbolEntry){};
     Operand* getOperand() { return dst; };
     Type* getOperandType() { return dst->getType(); };
@@ -342,4 +342,5 @@ class Ast {
     void genCode(Unit* unit);
 };
 
+TemporarySymbolEntry* NewTempSE(int type, ExprNode* expr1, ExprNode* expr2 = nullptr);
 #endif

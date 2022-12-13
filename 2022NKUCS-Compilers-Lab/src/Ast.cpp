@@ -413,12 +413,12 @@ void DeclStmt::genCode() {
             int value;
             sscanf(initval->getOperand()->toStr().c_str(), "%d", &value);
             dynamic_cast<IdentifierSymbolEntry *>(se)->setIntValue(value);
-            //std::cout << "add a global var value:" << value << std::endl;
+            //fprintf(stderr, "add a global var value:%s %d\n", initval->getOperand()->toStr().c_str(), value);
         }
         else
         {
             dynamic_cast<IdentifierSymbolEntry *>(se)->setIntValue(0);
-            //std::cout << "add a global var value:" << 0 << std::endl;
+            //fprintf(stderr, "add a global var value:%d\n", 0);
         }
         unit.insertGlobalVar(se);
     }

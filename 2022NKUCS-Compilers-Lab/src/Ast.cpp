@@ -110,22 +110,9 @@ void FunctionDef::genCode() {
             falsebranch->addPred(*basicblock);
             (*basicblock)->addSucc(truebranch);
             (*basicblock)->addSucc(falsebranch);
-        } else if (/*(*basicblock)->empty() == false &&*/ lastinst->isRet() == false) {
-            FunctionType* funcType = dynamic_cast<FunctionType*>(func->getSymPtr()->getType());
-            Type* retType = funcType->getRetType();
-            if (retType->isVoid())
-                new RetInstruction(nullptr, *basicblock);
-            else if (retType->isInt()) {
-                SymbolEntry* zero_se = new ConstantSymbolEntry(TypeSystem::intType, kZERO);
-                Operand* zero = new Operand(zero_se);
-                new RetInstruction(zero, *basicblock);
-            } else if (retType->isFloat()) {
-                SymbolEntry* zero_se = new ConstantSymbolEntry(TypeSystem::floatType, kZERO);
-                Operand* zero = new Operand(zero_se);
-                new RetInstruction(zero, *basicblock);
-            }
         }
     }
+
     for (auto basicblock = func->begin(); basicblock != func->end(); basicblock++) {
         if ((*basicblock)->empty()) {
             for (auto bb = (*basicblock)->pred_begin(); bb != (*basicblock)->pred_end(); bb++) {
@@ -140,6 +127,25 @@ void FunctionDef::genCode() {
                 BasicBlock* falsebb = dynamic_cast<CondBrInstruction*>(inst)->getFalseBranch();
                 if (func->inBlockList(truebb) == false || func->inBlockList(falsebb))
                     (*basicblock)->remove(inst);
+            }
+        }
+    }
+    //if func has no returnstmt add return; or return 0;
+    for(auto basicblock = func->begin(); basicblock != func->end(); basicblock++) {
+        Instruction* lastinst = (*basicblock)->rbegin();
+        if (lastinst->isUncond() == false && lastinst->isCond() == false && lastinst->isRet() == false) {
+            FunctionType* funcType = dynamic_cast<FunctionType*>(func->getSymPtr()->getType());
+            Type* retType = funcType->getRetType();
+            if (retType->isVoid())
+                new RetInstruction(nullptr, *basicblock);
+            else if (retType->isInt()) {
+                SymbolEntry* zero_se = new ConstantSymbolEntry(TypeSystem::intType, kZERO);
+                Operand* zero = new Operand(zero_se);
+                new RetInstruction(zero, *basicblock);
+            } else if (retType->isFloat()) {
+                SymbolEntry* zero_se = new ConstantSymbolEntry(TypeSystem::floatType, kZERO);
+                Operand* zero = new Operand(zero_se);
+                new RetInstruction(zero, *basicblock);
             }
         }
     }

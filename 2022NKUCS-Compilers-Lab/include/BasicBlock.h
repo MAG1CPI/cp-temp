@@ -4,6 +4,7 @@
 #include <fstream>
 #include <set>
 #include <vector>
+#include "AsmBuilder.h"
 #include "Instruction.h"
 
 class Function;
@@ -46,6 +47,8 @@ class BasicBlock {
     void remove(Instruction*);
 
     void output() const;
+
+    void genMachineCode(AsmBuilder*);
 
    private:
     typedef std::vector<BasicBlock*>::iterator bb_iterator;

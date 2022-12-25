@@ -20,6 +20,8 @@ class Operand {
         : se(se) { def = nullptr; }
 
     int usersNum() const { return uses.size(); }
+    SymbolEntry * getEntry() { return se; };
+    Instruction* getDef() { return def; };
     Type* getType() { return se->getType(); }
 
     void setDef(Instruction* inst) { def = inst; }

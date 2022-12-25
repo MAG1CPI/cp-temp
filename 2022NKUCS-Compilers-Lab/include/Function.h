@@ -4,6 +4,7 @@
 #include <fstream>
 #include <set>
 #include <vector>
+#include "AsmBuilder.h"
 #include "BasicBlock.h"
 
 class Unit;
@@ -31,6 +32,8 @@ class Function {
 
     void output() const;
 
+    void genMachineCode(AsmBuilder*);
+   
    private:
     typedef std::vector<BasicBlock*>::iterator iterator;
     typedef std::vector<BasicBlock*>::reverse_iterator r_iterator;

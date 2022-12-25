@@ -136,6 +136,7 @@ class IdentifierSymbolEntry : public SymbolEntry {
 */
 class TemporarySymbolEntry : public SymbolEntry {
    private:
+    int stack_offset;
     int label;
 
    public:
@@ -143,6 +144,8 @@ class TemporarySymbolEntry : public SymbolEntry {
     virtual ~TemporarySymbolEntry() {}
 
     int getLabel() const { return label; }
+    void setOffset(int offset) { this->stack_offset = offset; };
+    int getOffset() { return this->stack_offset; };
 
     std::string toStr();
 };

@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <vector>
+#include "AsmBuilder.h"
 #include "Function.h"
 
 class Unit {
@@ -20,7 +21,8 @@ class Unit {
     void insertGlobalVar(IdentifierSymbolEntry*);
     void insertSysYFunc(IdentifierSymbolEntry*);
     void output() const;
-
+    void genMachineCode(MachineUnit* munit);
+    
    private:
     typedef std::vector<Function*>::iterator iterator;
     typedef std::vector<Function*>::reverse_iterator r_iterator;

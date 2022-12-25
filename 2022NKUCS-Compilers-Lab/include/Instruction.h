@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include "Operand.h"
+#include "AsmBuilder.h"
 
 class BasicBlock;
 
@@ -36,6 +37,7 @@ class Instruction {
 
     bool isUncond() const { return instType == UNCOND; }
     bool isCond() const { return instType == COND; }
+    bool isAlloc() const {return instType == ALLOCA;};
     bool isRet() const { return instType == RET; }
     BasicBlock* getParent() { return parent; }
     Instruction* getNext() { return next; }
@@ -44,7 +46,14 @@ class Instruction {
     void setNext(Instruction* inst) { next = inst; }
     void setPrev(Instruction* inst) { prev = inst; }
 
+    MachineOperand* genMachineOperand(Operand*);
+    MachineOperand* genMachineReg(int reg);
+    MachineOperand* genMachineVReg();
+    MachineOperand* genMachineImm(int val);
+    MachineOperand* genMachineLabel(int block_no);
+
     virtual void output() const = 0;
+    virtual void genMachineCode(AsmBuilder*) = 0;
 };
 
 // meaningless instruction, used as the head node of the instruction list.
@@ -54,6 +63,7 @@ class DummyInstruction : public Instruction {
         : Instruction(-1, nullptr){};
 
     void output() const {};
+    void genMachineCode(AsmBuilder*) {};
 };
 
 class AllocaInstruction : public Instruction {
@@ -65,6 +75,7 @@ class AllocaInstruction : public Instruction {
     ~AllocaInstruction();
 
     void output() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 class LoadInstruction : public Instruction {
@@ -73,6 +84,7 @@ class LoadInstruction : public Instruction {
     ~LoadInstruction();
 
     void output() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 class StoreInstruction : public Instruction {
@@ -81,6 +93,7 @@ class StoreInstruction : public Instruction {
     ~StoreInstruction();
 
     void output() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 class BinaryInstruction : public Instruction {
@@ -98,6 +111,7 @@ class BinaryInstruction : public Instruction {
     ~BinaryInstruction();
 
     void output() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 class CmpInstruction : public Instruction {
@@ -114,6 +128,7 @@ class CmpInstruction : public Instruction {
     ~CmpInstruction();
 
     void output() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 // unconditional branch
@@ -129,6 +144,7 @@ class UncondBrInstruction : public Instruction {
     void setBranch(BasicBlock* bb) { branch = bb; }
 
     void output() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 // conditional branch
@@ -147,6 +163,7 @@ class CondBrInstruction : public Instruction {
     void setFalseBranch(BasicBlock* bb) { false_branch = bb; }
 
     void output() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 class CallInstruction : public Instruction {
@@ -158,6 +175,7 @@ class CallInstruction : public Instruction {
     ~CallInstruction();
 
     void output() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 class RetInstruction : public Instruction {
@@ -166,6 +184,7 @@ class RetInstruction : public Instruction {
     ~RetInstruction();
 
     void output() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 class UnSignedExtInstruction : public Instruction {
@@ -174,6 +193,7 @@ class UnSignedExtInstruction : public Instruction {
     ~UnSignedExtInstruction();
 
     void output() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 class NEGInstruction : public Instruction {
@@ -182,6 +202,7 @@ class NEGInstruction : public Instruction {
     ~NEGInstruction();
 
     void output() const;
+    void genMachineCode(AsmBuilder*);
 };
 
 #endif

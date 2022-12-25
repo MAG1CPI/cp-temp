@@ -68,3 +68,10 @@ void Unit::output() const {
         fprintf(yyout, "declare %s %s(%s)\n", return_type.c_str(), name.c_str(), fparam_type.c_str());
     }
 }
+
+void Unit::genMachineCode(MachineUnit* munit) {
+    AsmBuilder* builder = new AsmBuilder();
+    builder->setUnit(munit);
+    for (auto& func : func_list)
+        func->genMachineCode(builder);
+}

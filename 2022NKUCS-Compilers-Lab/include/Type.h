@@ -28,7 +28,7 @@ class Type {
     bool isVoid() const { return kind == VOID; }
     bool isArray() const { return kind == ARRAY; }
     bool isFunc() const { return kind == FUNC; }
-    bool isPTR() const { return kind == PTR; }
+    bool isPtr() const { return kind == PTR; }
 
     virtual std::string toStr() = 0;
 };

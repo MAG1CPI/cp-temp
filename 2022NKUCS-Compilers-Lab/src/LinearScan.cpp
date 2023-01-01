@@ -1,65 +1,56 @@
-#include <algorithm>
 #include "LinearScan.h"
-#include "MachineCode.h"
+#include <algorithm>
 #include "LiveVariableAnalysis.h"
+#include "MachineCode.h"
 
-LinearScan::LinearScan(MachineUnit *unit)
-{
+LinearScan::LinearScan(MachineUnit* unit) {
     this->unit = unit;
     for (int i = 4; i < 11; i++)
         regs.push_back(i);
 }
 
-void LinearScan::allocateRegisters()
-{
-    for (auto &f : unit->getFuncs())
-    {
+void LinearScan::allocateRegisters() {
+    for (auto& f : unit->getFuncs()) {
         func = f;
         bool success;
         success = false;
-        while (!success)        // repeat until all vregs can be mapped
+        while (!success)  // repeat until all vregs can be mapped
         {
             computeLiveIntervals();
             success = linearScanRegisterAllocation();
-            if (success)        // all vregs can be mapped to real regs
+            if (success)  // all vregs can be mapped to real regs
                 modifyCode();
-            else                // spill vregs that can't be mapped to real regs
+            else  // spill vregs that can't be mapped to real regs
                 genSpillCode();
         }
     }
 }
 
-void LinearScan::makeDuChains()
-{
+void LinearScan::makeDuChains() {
     LiveVariableAnalysis lva;
     lva.pass(func);
     du_chains.clear();
     int i = 0;
-    std::map<MachineOperand, std::set<MachineOperand *>> liveVar;
-    for (auto &bb : func->getBlocks())
-    {
+    std::map<MachineOperand, std::set<MachineOperand*>> liveVar;
+    for (auto& bb : func->getBlocks()) {
         liveVar.clear();
-        for (auto &t : bb->getLiveOut())
+        for (auto& t : bb->getLiveOut())
             liveVar[*t].insert(t);
         int no;
         no = i = bb->getInsts().size() + i;
-        for (auto inst = bb->getInsts().rbegin(); inst != bb->getInsts().rend(); inst++)
-        {
+        for (auto inst = bb->getInsts().rbegin(); inst != bb->getInsts().rend(); inst++) {
             (*inst)->setNo(no--);
-            for (auto &def : (*inst)->getDef())
-            {
-                if (def->isVReg())
-                {
-                    auto &uses = liveVar[*def];
+            for (auto& def : (*inst)->getDef()) {
+                if (def->isVReg()) {
+                    auto& uses = liveVar[*def];
                     du_chains[def].insert(uses.begin(), uses.end());
-                    auto &kill = lva.getAllUses()[*def];
-                    std::set<MachineOperand *> res;
+                    auto& kill = lva.getAllUses()[*def];
+                    std::set<MachineOperand*> res;
                     set_difference(uses.begin(), uses.end(), kill.begin(), kill.end(), inserter(res, res.end()));
                     liveVar[*def] = res;
                 }
             }
-            for (auto &use : (*inst)->getUse())
-            {
+            for (auto& use : (*inst)->getUse()) {
                 if (use->isVReg())
                     liveVar[*use].insert(use);
             }
@@ -67,16 +58,14 @@ void LinearScan::makeDuChains()
     }
 }
 
-void LinearScan::computeLiveIntervals()
-{
+void LinearScan::computeLiveIntervals() {
     makeDuChains();
     intervals.clear();
-    for (auto &du_chain : du_chains)
-    {
+    for (auto& du_chain : du_chains) {
         int t = -1;
-        for (auto &use : du_chain.second)
+        for (auto& use : du_chain.second)
             t = std::max(t, use->getParent()->getNo());
-        Interval *interval = new Interval({du_chain.first->getParent()->getNo(), t, false, 0, 0, {du_chain.first}, du_chain.second});
+        Interval* interval = new Interval({du_chain.first->getParent()->getNo(), t, false, 0, 0, {du_chain.first}, du_chain.second});
         intervals.push_back(interval);
     }
     for (auto& interval : intervals) {
@@ -123,21 +112,17 @@ void LinearScan::computeLiveIntervals()
     }
     bool change;
     change = true;
-    while (change)
-    {
+    while (change) {
         change = false;
-        std::vector<Interval *> t(intervals.begin(), intervals.end());
+        std::vector<Interval*> t(intervals.begin(), intervals.end());
         for (size_t i = 0; i < t.size(); i++)
-            for (size_t j = i + 1; j < t.size(); j++)
-            {
-                Interval *w1 = t[i];
-                Interval *w2 = t[j];
-                if (**w1->defs.begin() == **w2->defs.begin())
-                {
-                    std::set<MachineOperand *> temp;
+            for (size_t j = i + 1; j < t.size(); j++) {
+                Interval* w1 = t[i];
+                Interval* w2 = t[j];
+                if (**w1->defs.begin() == **w2->defs.begin()) {
+                    std::set<MachineOperand*> temp;
                     set_intersection(w1->uses.begin(), w1->uses.end(), w2->uses.begin(), w2->uses.end(), inserter(temp, temp.end()));
-                    if (!temp.empty())
-                    {
+                    if (!temp.empty()) {
                         change = true;
                         w1->defs.insert(w2->defs.begin(), w2->defs.end());
                         w1->uses.insert(w2->uses.begin(), w2->uses.end());
@@ -159,17 +144,14 @@ void LinearScan::computeLiveIntervals()
     sort(intervals.begin(), intervals.end(), compareStart);
 }
 
-bool LinearScan::linearScanRegisterAllocation()
-{
+bool LinearScan::linearScanRegisterAllocation() {
     // Todo
 
     return true;
 }
 
-void LinearScan::modifyCode()
-{
-    for (auto &interval : intervals)
-    {
+void LinearScan::modifyCode() {
+    for (auto& interval : intervals) {
         func->addSavedRegs(interval->rreg);
         for (auto def : interval->defs)
             def->setReg(interval->rreg);
@@ -178,32 +160,27 @@ void LinearScan::modifyCode()
     }
 }
 
-void LinearScan::genSpillCode()
-{
-    for(auto &interval:intervals)
-    {
-        if(!interval->spill)
+void LinearScan::genSpillCode() {
+    for (auto& interval : intervals) {
+        if (!interval->spill)
             continue;
         // TODO
         /* HINT:
          * The vreg should be spilled to memory.
          * 1. insert ldr inst before the use of vreg
          * 2. insert str inst after the def of vreg
-         */ 
+         */
     }
 }
 
-void LinearScan::expireOldIntervals(Interval *interval)
-{
+void LinearScan::expireOldIntervals(Interval* interval) {
     // Todo
 }
 
-void LinearScan::spillAtInterval(Interval *interval)
-{
+void LinearScan::spillAtInterval(Interval* interval) {
     // Todo
 }
 
-bool LinearScan::compareStart(Interval *a, Interval *b)
-{
+bool LinearScan::compareStart(Interval* a, Interval* b) {
     return a->start < b->start;
 }

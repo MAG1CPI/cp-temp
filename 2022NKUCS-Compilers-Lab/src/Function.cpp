@@ -80,21 +80,28 @@ void Function::output() const {
     fprintf(yyout, "}\n");
 }
 
+void Function::DFS(AsmBuilder* builder, BasicBlock* block, std::map<BasicBlock*, MachineBlock*>& map, std::set<BasicBlock*>& visited) {
+    block->genMachineCode(builder);
+    map[block] = builder->getBlock();
+    visited.insert(block);
+    for (auto it = block->succ_begin(); it != block->succ_end(); it++) 
+        if (visited.find(*it) == visited.end()) 
+            DFS(builder, *it, map, visited);
+}
 
-void Function::genMachineCode(AsmBuilder* builder) 
-{
+void Function::genMachineCode(AsmBuilder* builder) {
     auto cur_unit = builder->getUnit();
     auto cur_func = new MachineFunction(cur_unit, this->sym_ptr);
     builder->setFunction(cur_func);
     std::map<BasicBlock*, MachineBlock*> map;
-    for(auto block : block_list)
-    {
-        block->genMachineCode(builder);
-        map[block] = builder->getBlock();
-    }
+    //for (auto block : block_list) {
+    //    block->genMachineCode(builder);
+    //    map[block] = builder->getBlock();
+    //}
+    std::set<BasicBlock*> visited;
+    DFS(builder, entry, map, visited);
     // Add pred and succ for every block
-    for(auto block : block_list)
-    {
+    for (auto block : block_list) {
         auto mblock = map[block];
         for (auto pred = block->pred_begin(); pred != block->pred_end(); pred++)
             mblock->addPred(map[*pred]);
@@ -102,5 +109,5 @@ void Function::genMachineCode(AsmBuilder* builder)
             mblock->addSucc(map[*succ]);
     }
     cur_unit->InsertFunc(cur_func);
-
+    
 }

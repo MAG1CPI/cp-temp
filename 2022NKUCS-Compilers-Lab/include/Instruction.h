@@ -63,7 +63,7 @@ class DummyInstruction : public Instruction {
         : Instruction(-1, nullptr){};
 
     void output() const {};
-    void genMachineCode(AsmBuilder*) {};
+    void genMachineCode(AsmBuilder*) {}
 };
 
 class AllocaInstruction : public Instruction {

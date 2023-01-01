@@ -15,7 +15,7 @@ class Function {
     SymbolEntry* sym_ptr;
     BasicBlock* entry;
     std::vector<BasicBlock*> block_list;
-    std::vector<TemporarySymbolEntry *> fparams_symtab;
+    std::vector<TemporarySymbolEntry*> fparams_symtab;
 
    public:
     Function(Unit*, SymbolEntry*);
@@ -28,12 +28,13 @@ class Function {
 
     void insertBlock(BasicBlock* bb);
     void remove(BasicBlock* bb);
-    void insertFParamSE(TemporarySymbolEntry *se);
+    void insertFParamSE(TemporarySymbolEntry* se);
 
     void output() const;
 
+    void DFS(AsmBuilder*, BasicBlock*, std::map<BasicBlock*, MachineBlock*>&, std::set<BasicBlock*>&);
     void genMachineCode(AsmBuilder*);
-   
+
    private:
     typedef std::vector<BasicBlock*>::iterator iterator;
     typedef std::vector<BasicBlock*>::reverse_iterator r_iterator;

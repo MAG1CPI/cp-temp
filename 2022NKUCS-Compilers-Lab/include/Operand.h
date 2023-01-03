@@ -12,16 +12,16 @@ class Operand {
    private:
     Instruction* def;                // The instruction where this operand is defined.
     std::vector<Instruction*> uses;  // Intructions that use this operand.
-    
-    SymbolEntry* se;                 // The symbol entry of this operand.
+
+    SymbolEntry* se;                // The symbol entry of this operand.
 
    public:
     Operand(SymbolEntry* se)
         : se(se) { def = nullptr; }
 
     int usersNum() const { return uses.size(); }
-    SymbolEntry * getEntry() { return se; };
-    Instruction* getDef() { return def; };
+    SymbolEntry* getEntry() { return se; }
+    Instruction* getDef() { return def; }
     Type* getType() { return se->getType(); }
 
     void setDef(Instruction* inst) { def = inst; }

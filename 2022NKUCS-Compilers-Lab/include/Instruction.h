@@ -4,8 +4,10 @@
 #include <fstream>
 #include <map>
 #include <vector>
-#include "Operand.h"
 #include "AsmBuilder.h"
+#include "BasicBlock.h"
+#include "Function.h"
+#include "Operand.h"
 
 class BasicBlock;
 
@@ -37,7 +39,7 @@ class Instruction {
 
     bool isUncond() const { return instType == UNCOND; }
     bool isCond() const { return instType == COND; }
-    bool isAlloc() const {return instType == ALLOCA;};
+    bool isAlloc() const { return instType == ALLOCA; }
     bool isRet() const { return instType == RET; }
     BasicBlock* getParent() { return parent; }
     Instruction* getNext() { return next; }

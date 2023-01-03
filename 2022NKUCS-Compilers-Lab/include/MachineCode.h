@@ -30,13 +30,15 @@ class MachineOperand {
     int val;            // value of immediate number
     int reg_no;         // register no
     std::string label;  // address label
+    bool is_func;
+
    public:
     enum { IMM,
            VREG,
            REG,
            LABEL };
     MachineOperand(int tp, int val);
-    MachineOperand(std::string label);
+    MachineOperand(std::string label, bool is_func = false);
     bool operator==(const MachineOperand&) const;
     bool operator<(const MachineOperand&) const;
     bool isImm() { return this->type == IMM; };
@@ -159,11 +161,12 @@ class CmpMInstruction : public MachineInstruction {
     void output();
 };
 
-class StackMInstrcuton : public MachineInstruction {
+class StackMInstruction : public MachineInstruction {
    public:
     enum opType { PUSH,
                   POP };
-    StackMInstrcuton(MachineBlock* p, int op, MachineOperand* src, int cond = MachineInstruction::NONE);
+    StackMInstruction(MachineBlock* p, int op, MachineOperand* src, int cond = MachineInstruction::NONE);
+    StackMInstruction(MachineBlock* p, int op, std::vector<MachineOperand*>& src, int cond = MachineInstruction::NONE);
     void output();
 };
 
@@ -225,20 +228,27 @@ class MachineFunction {
         return this->stack_size;
     };
     void InsertBlock(MachineBlock* block) { this->block_list.push_back(block); };
-    void addSavedRegs(int regno) { saved_regs.insert(regno); };
+
+    void addSavedRegs(int regno) { saved_regs.insert(regno); }
+    std::vector<MachineOperand*> getSavedRegs();
+
     void output();
 };
 
 class MachineUnit {
    private:
     std::vector<MachineFunction*> func_list;
+    std::vector<IdentifierSymbolEntry*> globalvar_list;
     void PrintGlobalDecl();
 
    public:
-    std::vector<MachineFunction*>& getFuncs() { return func_list; };
-    std::vector<MachineFunction*>::iterator begin() { return func_list.begin(); };
-    std::vector<MachineFunction*>::iterator end() { return func_list.end(); };
-    void InsertFunc(MachineFunction* func) { func_list.push_back(func); };
+    std::vector<MachineFunction*>& getFuncs() { return func_list; }
+    std::vector<MachineFunction*>::iterator begin() { return func_list.begin(); }
+    std::vector<MachineFunction*>::iterator end() { return func_list.end(); }
+
+    void insertGlobalVar(IdentifierSymbolEntry* sym_ptr) { globalvar_list.push_back(sym_ptr); }
+    void InsertFunc(MachineFunction* func) { func_list.push_back(func); }
+
     void output();
 };
 

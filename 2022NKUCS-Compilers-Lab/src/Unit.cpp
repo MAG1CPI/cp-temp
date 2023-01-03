@@ -72,6 +72,11 @@ void Unit::output() const {
 void Unit::genMachineCode(MachineUnit* munit) {
     AsmBuilder* builder = new AsmBuilder();
     builder->setUnit(munit);
+
+    for (auto id_se : globalvar_list) {
+        munit->insertGlobalVar(id_se);
+    }
+
     for (auto& func : func_list)
         func->genMachineCode(builder);
 }

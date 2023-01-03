@@ -457,7 +457,7 @@ void MachineFunction::output() {
 
     // recover
     fprintf(yyout, ".L%s_END:\n", func_name.c_str());
-    
+
     if (stack_size != 0) {
         fprintf(yyout, "\tadd sp, sp, #%d\n", stack_size);
     }
@@ -474,6 +474,18 @@ void MachineFunction::output() {
 void MachineUnit::PrintGlobalDecl() {
     // TODO:
     // You need to print global variable/const declarition code;
+    fprintf(yyout, "\t.data\n");
+    std::string globalvar_name;
+    for (auto id_se : globalvar_list) {
+        globalvar_name = id_se->toStr().substr(1);
+        fprintf(yyout, "\t.global %s\n", globalvar_name.c_str());
+        fprintf(yyout, "\t.align 4\n");
+        fprintf(yyout, "\t.size %s, %d\n", globalvar_name.c_str(), id_se->getType()->getSize());
+        fprintf(yyout, "%s:\n", globalvar_name.c_str());
+        if (id_se->getType()->isInt()) {
+            fprintf(yyout, "\t.word %d\n", id_se->getValue().i);
+        }
+    }
 }
 
 void MachineUnit::output() {
@@ -485,7 +497,16 @@ void MachineUnit::output() {
     fprintf(yyout, "\t.arch armv8-a\n");
     fprintf(yyout, "\t.arch_extension crc\n");
     fprintf(yyout, "\t.arm\n");
+
     PrintGlobalDecl();
+
     for (auto iter : func_list)
         iter->output();
+
+    std::string globalvar_name;
+    for (auto id_se : globalvar_list) {
+        globalvar_name = id_se->toStr().substr(1);
+        fprintf(yyout, "addr_%s:\n", globalvar_name.c_str());
+        fprintf(yyout, "\t.word %s\n", globalvar_name.c_str());
+    }
 }

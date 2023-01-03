@@ -229,20 +229,24 @@ class MachineFunction {
 
     void addSavedRegs(int regno) { saved_regs.insert(regno); }
     std::vector<MachineOperand*> getSavedRegs();
-    
+
     void output();
 };
 
 class MachineUnit {
    private:
     std::vector<MachineFunction*> func_list;
+    std::vector<IdentifierSymbolEntry*> globalvar_list;
     void PrintGlobalDecl();
 
    public:
-    std::vector<MachineFunction*>& getFuncs() { return func_list; };
-    std::vector<MachineFunction*>::iterator begin() { return func_list.begin(); };
-    std::vector<MachineFunction*>::iterator end() { return func_list.end(); };
-    void InsertFunc(MachineFunction* func) { func_list.push_back(func); };
+    std::vector<MachineFunction*>& getFuncs() { return func_list; }
+    std::vector<MachineFunction*>::iterator begin() { return func_list.begin(); }
+    std::vector<MachineFunction*>::iterator end() { return func_list.end(); }
+
+    void insertGlobalVar(IdentifierSymbolEntry* sym_ptr) { globalvar_list.push_back(sym_ptr); }
+    void InsertFunc(MachineFunction* func) { func_list.push_back(func); }
+
     void output();
 };
 

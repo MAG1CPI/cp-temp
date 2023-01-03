@@ -17,9 +17,10 @@ class Type {
            ARRAY,
            FUNC,
            PTR };
+    int size;
 
    public:
-    Type(int kind)
+    Type(int kind, int size)
         : kind(kind) {}
     virtual ~Type() {}
 
@@ -30,16 +31,15 @@ class Type {
     bool isFunc() const { return kind == FUNC; }
     bool isPtr() const { return kind == PTR; }
 
+    int getSize() const { return this->size; }
+
     virtual std::string toStr() = 0;
 };
 
 class IntType : public Type {
-   protected:
-    int size;
-
    public:
     IntType(int size)
-        : Type(Type::INT), size(size) {}
+        : Type(Type::INT, size) {}
 
     std::string toStr();
 };
@@ -55,7 +55,7 @@ class ConstIntType : public IntType {
 class FloatType : public Type {
    public:
     FloatType()
-        : Type(Type::FLOAT) {}
+        : Type(Type::FLOAT, 4) {}
 
     std::string toStr();
 };
@@ -70,7 +70,7 @@ class ConstFloatType : public FloatType {
 class VoidType : public Type {
    public:
     VoidType()
-        : Type(Type::VOID) {}
+        : Type(Type::VOID, 0) {}
 
     std::string toStr();
 };
@@ -83,7 +83,7 @@ class ArrayType : public Type {
 
    public:
     ArrayType(Type* elementType, int length, bool is_const = false)
-        : Type(Type::ARRAY), elementType(elementType), length(length), is_const(is_const) {}
+        : Type(Type::ARRAY, 0), elementType(elementType), length(length), is_const(is_const) {}
 
     bool isConst() const { return is_const; }
     Type* getElementType() const { return elementType; }
@@ -99,7 +99,7 @@ class FunctionType : public Type {
 
    public:
     FunctionType(Type* returnType, std::vector<Type*> paramsType)
-        : Type(Type::FUNC), returnType(returnType), paramsType(paramsType) {}
+        : Type(Type::FUNC, 0), returnType(returnType), paramsType(paramsType) {}
 
     Type* getRetType() { return returnType; }
     std::vector<Type*>* getParamsType() { return &paramsType; }
@@ -113,7 +113,7 @@ class PointerType : public Type {
 
    public:
     PointerType(Type* valueType)
-        : Type(Type::PTR), valueType(valueType) {}
+        : Type(Type::PTR, 4), valueType(valueType) {}
 
     std::string toStr();
 };

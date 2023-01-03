@@ -21,7 +21,7 @@ class Type {
 
    public:
     Type(int kind, int size)
-        : kind(kind) {}
+        : kind(kind), size(size) {}
     virtual ~Type() {}
 
     bool isInt() const { return kind == INT; }

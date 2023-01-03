@@ -1,3 +1,4 @@
+/*
 int main()
 {
     int a;
@@ -10,4 +11,15 @@ int main()
     else
         min = b;
     return min;
+}
+*/
+int a;
+int main(){
+	a = 10;
+	if( a>0 ){
+		return 1;
+	}
+	else{
+		return 0;
+	}
 }

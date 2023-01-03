@@ -76,7 +76,13 @@ void MachineOperand::output() {
             if (this->label.substr(0, 2) == ".L" || is_func)
                 fprintf(yyout, "%s", this->label.c_str());
             else
-                fprintf(yyout, "addr_%s", this->label.c_str());
+            {
+                //TODO
+                if(this->label[0] == '@')
+                    fprintf(yyout, "addr_%s", this->label.substr(1).c_str());
+                else
+                    fprintf(yyout, "addr_%s", this->label.c_str());
+            }    
         default:
             break;
     }

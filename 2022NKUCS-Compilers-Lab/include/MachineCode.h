@@ -91,6 +91,8 @@ class MachineInstruction {
     int getNo() { return no; };
     std::vector<MachineOperand*>& getDef() { return def_list; };
     std::vector<MachineOperand*>& getUse() { return use_list; };
+    
+    MachineBlock* getParent() { return parent; }
 };
 
 class BinaryMInstruction : public MachineInstruction {

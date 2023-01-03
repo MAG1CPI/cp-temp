@@ -9,9 +9,10 @@ MachineOperand::MachineOperand(int tp, int val) {
         this->reg_no = val;
 }
 
-MachineOperand::MachineOperand(std::string label) {
+MachineOperand::MachineOperand(std::string label, bool is_func) {
     this->type = MachineOperand::LABEL;
     this->label = label;
+    this->is_func = is_func;
 }
 
 bool MachineOperand::operator==(const MachineOperand& a) const {
@@ -72,7 +73,7 @@ void MachineOperand::output() {
             PrintReg();
             break;
         case LABEL:
-            if (this->label.substr(0, 2) == ".L")
+            if (this->label.substr(0, 2) == ".L" || is_func)
                 fprintf(yyout, "%s", this->label.c_str());
             else
                 fprintf(yyout, "addr_%s", this->label.c_str());
@@ -355,10 +356,10 @@ void CmpMInstruction::output() {
     fprintf(yyout, "\n");
 }
 
-StackMInstrcuton::StackMInstrcuton(MachineBlock* p,
-                                   int op,
-                                   MachineOperand* src,
-                                   int cond) {
+StackMInstruction::StackMInstruction(MachineBlock* p,
+                                     int op,
+                                     MachineOperand* src,
+                                     int cond) {
     // TODO
     this->parent = p;
     this->type = MachineInstruction::STACK;
@@ -368,9 +369,22 @@ StackMInstrcuton::StackMInstrcuton(MachineBlock* p,
     src->setParent(this);
 }
 
-void StackMInstrcuton::output() {
+StackMInstruction::StackMInstruction(MachineBlock* p,
+                                     int op,
+                                     std::vector<MachineOperand*>& srcs,
+                                     int cond = MachineInstruction::NONE) {
     // TODO
-    if (!this->use_list.empty()) {
+    this->parent = p;
+    this->type = MachineInstruction::STACK;
+    this->op = op;
+    this->cond = cond;
+    this->use_list = srcs;
+    for (auto src : srcs)
+        src->setParent(this);
+}
+void StackMInstruction::output() {
+    // TODO
+    if (!use_list.empty()) {
         switch (op) {
             case PUSH:
                 fprintf(yyout, "\tpush ");
@@ -380,7 +394,12 @@ void StackMInstrcuton::output() {
                 break;
         }
         fprintf(yyout, "{");
-        this->use_list[0]->output();
+        auto reg = use_list.begin();
+        (*reg)->output();
+        for (reg++; reg < use_list.end(); reg++) {
+            fprintf(yyout, ", ");
+            (*reg)->output();
+        }
         fprintf(yyout, "}\n");
     }
 }
@@ -392,16 +411,25 @@ MachineFunction::MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr) {
 };
 
 void MachineBlock::output() {
+    if (this->inst_list.empty())
+        return;
     fprintf(yyout, ".L%d:\n", this->no);
     for (auto iter : inst_list)
         iter->output();
 }
+std::vector<MachineOperand*> MachineFunction::getSavedRegs() {
+    std::vector<MachineOperand*> regs;
+    for (auto reg_no : saved_regs)
+        regs.push_back(new MachineOperand(MachineOperand::REG, reg_no));
+    return regs;
+}
 
 void MachineFunction::output() {
-    const char* func_name = this->sym_ptr->toStr().c_str() + 1;
-    fprintf(yyout, "\t.global %s\n", func_name);
-    fprintf(yyout, "\t.type %s , %%function\n", func_name);
-    fprintf(yyout, "%s:\n", func_name);
+    // const char* func_name = this->sym_ptr->toStr().c_str() + 1;
+    std::string func_name = sym_ptr->toStr().substr(1);
+    fprintf(yyout, "\t.global %s\n", func_name.c_str());
+    fprintf(yyout, "\t.type %s , %%function\n", func_name.c_str());
+    fprintf(yyout, "%s:\n", func_name.c_str());
     // TODO
     /* Hint:
      *  1. Save fp
@@ -409,9 +437,38 @@ void MachineFunction::output() {
      *  3. Save callee saved register
      *  4. Allocate stack space for local variable */
 
+    // save
+    fprintf(yyout, "\tpush {");
+    for (auto reg : getSavedRegs()) {
+        reg->output();
+        fprintf(yyout, ", ");
+    }
+    fprintf(yyout, "fp, lr}\n");
+
+    fprintf(yyout, "\tmov fp, sp\n");
+
+    if (stack_size != 0) {
+        fprintf(yyout, "\tsub sp, sp, #%d\n", stack_size);
+    }
+
     // Traverse all the block in block_list to print assembly code.
     for (auto iter : block_list)
         iter->output();
+
+    // recover
+    fprintf(yyout, ".L%s_END:\n", func_name.c_str());
+    
+    if (stack_size != 0) {
+        fprintf(yyout, "\tadd sp, sp, #%d\n", stack_size);
+    }
+    fprintf(yyout, "\tpop {");
+    for (auto reg : getSavedRegs()) {
+        reg->output();
+        fprintf(yyout, ", ");
+    }
+    fprintf(yyout, "fp, lr}\n");
+
+    fprintf(yyout, "\tbx lr\n\n");
 }
 
 void MachineUnit::PrintGlobalDecl() {

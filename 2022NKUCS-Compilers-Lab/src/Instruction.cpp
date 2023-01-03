@@ -769,4 +769,93 @@ void RetInstruction::genMachineCode(AsmBuilder* builder) {
      * 1. Generate mov instruction to save return value in r0
      * 2. Restore callee saved registers and sp, fp
      * 3. Generate bx instruction */
+    MachineFunction* cur_func = builder->getFunction();
+    MachineBlock* cur_block = builder->getBlock();
+    MachineInstruction* cur_inst = nullptr;
+
+    MachineOperand* dst;
+    // save return value
+    if (!operands.empty()) {
+        MachineOperand* src;
+        if (operands[0]->getType()->isInt()) {
+            src = genMachineOperand(operands[0]);
+            dst = new MachineOperand(MachineOperand::REG, 0);
+            if (src->isImm()) {
+                cur_inst = new LoadMInstruction(cur_block, dst, src);
+            } else {
+                cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, src);
+            }
+        }
+        cur_block->InsertInst(cur_inst);
+    }
+
+    // goto func end
+    std::string func_name = getParent()->getParent()->getSymPtr()->toStr().substr(1);
+    dst = new MachineOperand(".L" + func_name + "_END");
+    cur_inst = new BranchMInstruction(cur_block, BranchMInstruction::B, dst);
+    cur_block->InsertInst(cur_inst);
+}
+
+void CallInstruction::genMachineCode(AsmBuilder* builder) {
+    // TODO
+    MachineBlock* cur_block = builder->getBlock();
+    MachineInstruction* cur_inst = nullptr;
+    MachineOperand *dst, *src;
+
+    uint32_t i = 0;
+    uint32_t reg_arg_num = std::min(std::size_t(4), operands.size());
+    std::vector<MachineOperand*> stack_arg;
+    for (i = 1; i <= reg_arg_num; i++) {
+        dst = new MachineOperand(MachineOperand::REG, i - 1);
+        cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, genMachineOperand(operands[i]));
+        cur_block->InsertInst(cur_inst);
+    }
+    for (; i < operands.size(); i++) {
+        stack_arg.push_back(genMachineOperand(operands[i]));
+    }
+    if (stack_arg.size()) {
+        std::reverse(stack_arg.begin(), stack_arg.end());
+        cur_inst = new StackMInstruction(cur_block, StackMInstruction::PUSH, stack_arg);
+        cur_block->InsertInst(cur_inst);
+    }
+
+    std::string func_name = ((IdentifierSymbolEntry*)func)->toStr().substr(1);
+    cur_inst = new BranchMInstruction(cur_block, BranchMInstruction::BL, new MachineOperand(func_name, true));
+    cur_block->InsertInst(cur_inst);
+
+    if (!stack_arg.empty()) {
+        MachineOperand* sp = genMachineReg(13);
+        MachineOperand* off = genMachineImm(stack_arg.size() * 4);
+        cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::ADD, sp, sp, off);
+        cur_block->InsertInst(cur_inst);
+    }
+
+    if (operands[0]) {
+        dst = genMachineOperand(operands[0]);
+        src = genMachineReg(0);
+        cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, src);
+        cur_block->InsertInst(cur_inst);
+    }
+}
+
+void UnSignedExtInstruction::genMachineCode(AsmBuilder* builder) {
+    // TODO
+    MachineBlock* cur_block = builder->getBlock();
+    MachineOperand* dst = genMachineOperand(operands[0]);
+    MachineOperand* src = genMachineOperand(operands[1]);
+
+    MovMInstruction* cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, src);
+    cur_block->InsertInst(cur_inst);
+}
+
+void NEGInstruction::genMachineCode(AsmBuilder* builder) {
+    // TODO
+    MachineBlock* cur_block = builder->getBlock();
+    MachineOperand* dst = genMachineOperand(operands[0]);
+    MovMInstruction* cur_inst = nullptr;
+
+    cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, genMachineImm(1), MachineInstruction::EQ);
+    cur_block->InsertInst(cur_inst);
+    cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, genMachineImm(0), MachineInstruction::NE);
+    cur_block->InsertInst(cur_inst);
 }

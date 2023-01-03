@@ -372,7 +372,7 @@ StackMInstruction::StackMInstruction(MachineBlock* p,
 StackMInstruction::StackMInstruction(MachineBlock* p,
                                      int op,
                                      std::vector<MachineOperand*>& srcs,
-                                     int cond = MachineInstruction::NONE) {
+                                     int cond) {
     // TODO
     this->parent = p;
     this->type = MachineInstruction::STACK;
@@ -410,7 +410,20 @@ MachineFunction::MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr) {
     this->stack_size = 0;
 };
 
-void MachineBlock::output() {
+void MachineBlock::insertBefore(MachineInstruction *before, MachineInstruction *cur) {
+    std::vector<MachineInstruction*>::iterator position;
+    position = find(inst_list.begin(), inst_list.end(), cur);
+    inst_list.insert(position, before);
+}
+
+void MachineBlock::insertAfter(MachineInstruction *after, MachineInstruction *cur) {
+    std::vector<MachineInstruction*>::iterator position;
+    position = find(inst_list.begin(), inst_list.end(), cur);
+    inst_list.insert(position + 1, after);
+}
+
+void MachineBlock::output()
+{
     if (this->inst_list.empty())
         return;
     fprintf(yyout, ".L%d:\n", this->no);

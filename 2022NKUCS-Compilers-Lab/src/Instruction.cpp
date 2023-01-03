@@ -1,5 +1,6 @@
 #include "Instruction.h"
 #include "BasicBlock.h"
+#include "Function.h"
 
 extern FILE* yyout;
 
@@ -769,7 +770,7 @@ void RetInstruction::genMachineCode(AsmBuilder* builder) {
      * 1. Generate mov instruction to save return value in r0
      * 2. Restore callee saved registers and sp, fp
      * 3. Generate bx instruction */
-    MachineFunction* cur_func = builder->getFunction();
+    //MachineFunction* cur_func = builder->getFunction();
     MachineBlock* cur_block = builder->getBlock();
     MachineInstruction* cur_inst = nullptr;
 

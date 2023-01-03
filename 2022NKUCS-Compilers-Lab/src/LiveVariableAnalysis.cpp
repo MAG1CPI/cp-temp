@@ -1,5 +1,5 @@
-#include "LiveVariableAnalysis.h"
 #include <algorithm>
+#include "LiveVariableAnalysis.h"
 #include "MachineCode.h"
 
 void LiveVariableAnalysis::pass(MachineUnit* unit) {

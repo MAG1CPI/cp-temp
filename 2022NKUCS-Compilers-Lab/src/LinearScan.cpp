@@ -1,7 +1,7 @@
-#include "LinearScan.h"
 #include <algorithm>
-#include "LiveVariableAnalysis.h"
+#include "LinearScan.h"
 #include "MachineCode.h"
+#include "LiveVariableAnalysis.h"
 
 LinearScan::LinearScan(MachineUnit* unit) {
     this->unit = unit;
@@ -146,8 +146,31 @@ void LinearScan::computeLiveIntervals() {
 
 bool LinearScan::linearScanRegisterAllocation() {
     // Todo
+    bool no_spill = true;
+    active.clear();
+    regs.clear();
+    for (int i = 4; i < 11; i++)
+        regs.push_back(i);
 
-    return true;
+    for (auto& i : intervals)
+    {
+        expireOldIntervals(i);
+        if (regs.empty())
+        {
+            spillAtInterval(i);
+            no_spill = false;
+        }
+        else
+        {
+            i->rreg = *(regs.begin());
+            regs.erase(regs.begin());
+            active.push_back(i);
+            sort(active.begin(), active.end(), [](Interval *x, Interval *y) { return x->end < y->end; });
+        }
+    }
+    return no_spill;
+
+    //return true;
 }
 
 void LinearScan::modifyCode() {
@@ -170,15 +193,57 @@ void LinearScan::genSpillCode() {
          * 1. insert ldr inst before the use of vreg
          * 2. insert str inst after the def of vreg
          */
+        interval->disp = -func->AllocSpace(4);
+
+        MachineOperand *fp = new MachineOperand(MachineOperand::REG, 11);
+        MachineOperand *stack_off = new MachineOperand(MachineOperand::IMM, interval->disp);
+        for (MachineOperand *use : interval->uses)
+        {
+            MachineBlock* mblock = use->getParent()->getParent();
+            MachineInstruction *cur_minst = use->getParent();
+            LoadMInstruction *load_minst = new LoadMInstruction(mblock, use, fp, stack_off);
+
+            mblock->insertBefore(load_minst, cur_minst);
+        }
+        for (MachineOperand *def : interval->defs)
+        {
+            MachineBlock* mblock = def->getParent()->getParent();
+            MachineInstruction *cur_minst = def->getParent();
+            StoreMInstruction *store_minst = new StoreMInstruction(mblock, def, fp, stack_off);
+            
+            mblock->insertAfter(store_minst, cur_minst);
+        }
     }
 }
 
 void LinearScan::expireOldIntervals(Interval* interval) {
     // Todo
+    std::vector<Interval*>::iterator iter = active.begin();
+    while (iter != active.end())
+    {
+        if ((*iter)->end >= interval->start)
+            return;
+        else
+        {
+            regs.push_back((*iter)->rreg);
+            iter = active.erase(iter);
+        }
+    }
 }
 
 void LinearScan::spillAtInterval(Interval* interval) {
     // Todo
+    Interval *spill = *(active.rbegin());
+    if(spill->end > interval->end)
+    {
+        spill->spill = true;
+        interval->rreg = spill->rreg;
+        active.pop_back();
+        active.push_back(interval);
+        sort(active.begin(), active.end(), [](Interval *x, Interval *y) { return x->end < y->end; });
+    }
+    else
+        interval->spill = true;
 }
 
 bool LinearScan::compareStart(Interval* a, Interval* b) {

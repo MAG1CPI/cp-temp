@@ -4,8 +4,8 @@
 #include <fstream>
 #include <set>
 #include <vector>
-#include "AsmBuilder.h"
 #include "Instruction.h"
+#include "AsmBuilder.h"
 
 class Function;
 

@@ -3,8 +3,8 @@
 
 #include <fstream>
 #include <vector>
-#include "AsmBuilder.h"
 #include "Function.h"
+#include "AsmBuilder.h"
 
 class Unit {
    private:

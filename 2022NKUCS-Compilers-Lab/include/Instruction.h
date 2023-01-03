@@ -4,10 +4,8 @@
 #include <fstream>
 #include <map>
 #include <vector>
-#include "AsmBuilder.h"
-#include "BasicBlock.h"
-#include "Function.h"
 #include "Operand.h"
+#include "AsmBuilder.h"
 
 class BasicBlock;
 

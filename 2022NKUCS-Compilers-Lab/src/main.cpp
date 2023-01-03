@@ -2,9 +2,9 @@
 #include <unistd.h>
 #include <iostream>
 #include "Ast.h"
-#include "LinearScan.h"
-#include "MachineCode.h"
 #include "Unit.h"
+#include "MachineCode.h"
+#include "LinearScan.h"
 using namespace std;
 
 Ast ast;

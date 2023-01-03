@@ -202,6 +202,9 @@ class MachineBlock {
     void setCmpCond(int cond) { cmp_cond = cond; }
     int getCmpCond() const { return cmp_cond; }
 
+    void insertBefore(MachineInstruction* before, MachineInstruction* cur);
+    void insertAfter(MachineInstruction* after, MachineInstruction* cur);
+
     void output();
 };
 

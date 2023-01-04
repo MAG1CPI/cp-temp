@@ -18,10 +18,11 @@ class Type {
            FUNC,
            PTR };
     int size;
+    bool is_const;
 
    public:
-    Type(int kind, int size)
-        : kind(kind), size(size) {}
+    Type(int kind, int size, bool is_const = false)
+        : kind(kind), size(size), is_const(is_const) {}
     virtual ~Type() {}
 
     bool isInt() const { return kind == INT; }
@@ -31,6 +32,7 @@ class Type {
     bool isFunc() const { return kind == FUNC; }
     bool isPtr() const { return kind == PTR; }
 
+    bool isConst() const { return is_const; }
     int getSize() const { return this->size; }
 
     virtual std::string toStr() = 0;
@@ -38,31 +40,16 @@ class Type {
 
 class IntType : public Type {
    public:
-    IntType(int size)
-        : Type(Type::INT, size) {}
-
-    std::string toStr();
-};
-
-class ConstIntType : public IntType {
-   public:
-    ConstIntType(int size)
-        : IntType(size) {}
+    IntType(int size, bool is_const = false)
+        : Type(Type::INT, size, is_const) {}
 
     std::string toStr();
 };
 
 class FloatType : public Type {
    public:
-    FloatType()
-        : Type(Type::FLOAT, 4) {}
-
-    std::string toStr();
-};
-
-class ConstFloatType : public FloatType {
-   public:
-    ConstFloatType() {}
+    FloatType(bool is_const = false)
+        : Type(Type::FLOAT, 32, is_const) {}
 
     std::string toStr();
 };
@@ -79,13 +66,11 @@ class ArrayType : public Type {
    private:
     Type* elementType;
     int length;
-    bool is_const;
 
    public:
     ArrayType(Type* elementType, int length, bool is_const = false)
-        : Type(Type::ARRAY, 0), elementType(elementType), length(length), is_const(is_const) {}
+        : Type(Type::ARRAY, 0, is_const), elementType(elementType), length(length) {}
 
-    bool isConst() const { return is_const; }
     Type* getElementType() const { return elementType; }
     int getLength() const { return length; }
 
@@ -113,7 +98,7 @@ class PointerType : public Type {
 
    public:
     PointerType(Type* valueType)
-        : Type(Type::PTR, 4), valueType(valueType) {}
+        : Type(Type::PTR, 32), valueType(valueType) {}
 
     std::string toStr();
 };
@@ -122,9 +107,9 @@ class TypeSystem {
    private:
     static IntType commonBool;
     static IntType commonInt;
-    static ConstIntType commonConstInt;
+    static IntType commonConstInt;
     static FloatType commonFloat;
-    static ConstFloatType commonConstFloat;
+    static FloatType commonConstFloat;
     static VoidType commonVoid;
 
    public:

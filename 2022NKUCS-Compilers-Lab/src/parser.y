@@ -195,7 +195,7 @@ LVal
             $$ = new Id(se);
             delete []$1; } }
     | ARRAYID {
-        // TODO: array
+        /*TODO: array*/
         SymbolEntry *se;
         se = identifiers->lookup($1, all_parent_symtab);
         /*CHECK: undefined id - cannot fix it, quit */
@@ -604,7 +604,7 @@ FuncFParams
     | FuncFParam COMMA FuncFParams {
         $1->SetSibling($3);
         $$ = $1; }
-    | %empty { $$ = nullptr; }
+    | %empty { $$ = nullptr;/*TODO f(int a,)*/ }
     ;
 FuncFParam
     : Type ID {

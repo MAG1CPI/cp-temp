@@ -2,9 +2,9 @@
 
 IntType TypeSystem::commonBool = IntType(1);
 IntType TypeSystem::commonInt = IntType(32);
-ConstIntType TypeSystem::commonConstInt = ConstIntType(32);
+IntType TypeSystem::commonConstInt = IntType(32,true);
 FloatType TypeSystem::commonFloat = FloatType();
-ConstFloatType TypeSystem::commonConstFloat = ConstFloatType();
+FloatType TypeSystem::commonConstFloat = FloatType(true);
 VoidType TypeSystem::commonVoid = VoidType();
 
 Type* TypeSystem::boolType = &commonBool;
@@ -18,15 +18,7 @@ std::string IntType::toStr() {
     return "i" + std::to_string(size);
 }
 
-std::string ConstIntType::toStr() {
-    return "i" + std::to_string(size);
-}
-
 std::string FloatType::toStr() {
-    return "float";
-}
-
-std::string ConstFloatType::toStr() {
     return "float";
 }
 

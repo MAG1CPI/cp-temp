@@ -3,10 +3,11 @@
 #include <algorithm>
 #include <fstream>
 #include <set>
+#include <queue>
 #include <string>
 #include <vector>
 #include "SymbolTable.h"
-
+#include <iostream>
 /* Hint:
  * MachineUnit: Compiler unit
  * MachineFunction: Function in assembly code

@@ -63,11 +63,16 @@ int main(int argc, char* argv[]) {
         ast.output();
     ast.typeCheck();
     ast.genCode(&unit);
+    //cout<<"ast\n";
     if (dump_ir)
         unit.output();
+    //cout<<"ir\n";
     unit.genMachineCode(&mUnit);
+    //cout<<"genMachineCode\n";
     LinearScan linearScan(&mUnit);
+    //cout<<"linearScan\n";
     linearScan.allocateRegisters();
+    //cout<<"allocateRegisters\n";
     if (dump_asm)
         mUnit.output();
     return 0;

@@ -6,6 +6,7 @@
 #include <vector>
 #include "Operand.h"
 #include "AsmBuilder.h"
+#include <iostream>
 
 class BasicBlock;
 

@@ -192,7 +192,6 @@ CallInstruction::CallInstruction(SymbolEntry* func, std::vector<Operand*> rparam
     operands.push_back(dst);
     if (dst)
         dst->setDef(this);
-
     for (auto rparam : rparams) {
         operands.push_back(rparam);
         rparam->addUse(this);
@@ -431,10 +430,12 @@ void AllocaInstruction::genMachineCode(AsmBuilder* builder) {
     /* HINT:
      * Allocate stack space for local variabel
      * Store frame offset in symbol entry */
+    //std::cout << "i Alloca \n";
     auto cur_func = builder->getFunction();
     // offset may change for array
     int offset = cur_func->AllocSpace(4);
     dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->setOffset(-offset);
+    //std::cout << "i Alloca E\n";
 }
 
 void LoadInstruction::genMachineCode(AsmBuilder* builder) {
@@ -472,6 +473,7 @@ void LoadInstruction::genMachineCode(AsmBuilder* builder) {
         cur_block->InsertInst(cur_inst);
     }
     */
+    //std::cout << "i Load\n";
     MachineBlock* cur_block = builder->getBlock();
     MachineInstruction* cur_inst = nullptr;
 
@@ -515,15 +517,18 @@ void LoadInstruction::genMachineCode(AsmBuilder* builder) {
             cur_block->InsertInst(cur_inst);
         }
     }
+    //std::cout << "i Load E\n";
 }
 
 void StoreInstruction::genMachineCode(AsmBuilder* builder) {
     // TODO
+    //std::cout << "i Store\n";
     MachineBlock* cur_block = builder->getBlock();
     MachineInstruction* cur_inst = nullptr;
 
     if (operands[1]->getType()->isInt()) {
         MachineOperand* src = genMachineOperand(operands[1]);
+        
         // if src is a immediate
         if (operands[1]->getEntry()->isConstant()) {
             MachineOperand* temp_operand = genMachineVReg();
@@ -570,11 +575,13 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder) {
             cur_block->InsertInst(cur_inst);
         }
     }
+    //std::cout << "i Store E\n";
 }
 
 void BinaryInstruction::genMachineCode(AsmBuilder* builder) {
     // TODO:
     // complete other instructions
+    //std::cout << "i Binary\n";
     MachineBlock* cur_block = builder->getBlock();
     MachineOperand *src1 = nullptr, *src2 = nullptr, *dst = nullptr;
     MachineOperand* internal_reg = nullptr;
@@ -692,10 +699,12 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder) {
         }
         cur_block->InsertInst(cur_inst);
     }
+    //std::cout << "i Binary E\n";
 }
 
 void CmpInstruction::genMachineCode(AsmBuilder* builder) {
     // TODO
+    //std::cout << "i Cmp\n";
     MachineBlock* cur_block = builder->getBlock();
     MachineOperand *src1 = nullptr, *src2 = nullptr, *dst = nullptr;
     MachineOperand* internal_reg = nullptr;
@@ -735,19 +744,23 @@ void CmpInstruction::genMachineCode(AsmBuilder* builder) {
         cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, genMachineImm(0), anti_opcode);
         cur_block->InsertInst(cur_inst);
     }
+    //std::cout << "i Cmp E\n";
 }
 
 void UncondBrInstruction::genMachineCode(AsmBuilder* builder) {
     // TODO
+    //std::cout << "i uncond\n";
     MachineBlock* cur_block = builder->getBlock();
     std::string str = ".L" + std::to_string(branch->getNo());
     MachineOperand* dst = new MachineOperand(str);
     MachineInstruction* cur_inst = new BranchMInstruction(cur_block, BranchMInstruction::B, dst);
     cur_block->InsertInst(cur_inst);
+    //std::cout << "i uncond E\n";
 }
 
 void CondBrInstruction::genMachineCode(AsmBuilder* builder) {
     // TODO
+    //std::cout << "i cond\n";
     MachineBlock* cur_block = builder->getBlock();
     std::string str;
     MachineOperand* dst;
@@ -762,6 +775,7 @@ void CondBrInstruction::genMachineCode(AsmBuilder* builder) {
     dst = new MachineOperand(str);
     cur_inst = new BranchMInstruction(cur_block, BranchMInstruction::B, dst);
     cur_block->InsertInst(cur_inst);
+    //std::cout << "i cond E\n";
 }
 
 void RetInstruction::genMachineCode(AsmBuilder* builder) {
@@ -770,7 +784,8 @@ void RetInstruction::genMachineCode(AsmBuilder* builder) {
      * 1. Generate mov instruction to save return value in r0
      * 2. Restore callee saved registers and sp, fp
      * 3. Generate bx instruction */
-    //MachineFunction* cur_func = builder->getFunction();
+    // MachineFunction* cur_func = builder->getFunction();
+    //std::cout << "i ret\n";
     MachineBlock* cur_block = builder->getBlock();
     MachineInstruction* cur_inst = nullptr;
 
@@ -795,22 +810,26 @@ void RetInstruction::genMachineCode(AsmBuilder* builder) {
     dst = new MachineOperand(".L" + func_name + "_END");
     cur_inst = new BranchMInstruction(cur_block, BranchMInstruction::B, dst);
     cur_block->InsertInst(cur_inst);
+    //std::cout << "i ret E\n";
 }
 
 void CallInstruction::genMachineCode(AsmBuilder* builder) {
     // TODO
+    //std::cout << "i call\n";
     MachineBlock* cur_block = builder->getBlock();
     MachineInstruction* cur_inst = nullptr;
     MachineOperand *dst, *src;
 
     uint32_t i = 0;
-    uint32_t reg_arg_num = std::min(std::size_t(4), operands.size());
+    uint32_t reg_arg_num = std::min(std::size_t(5), operands.size());
+    //std::cout << reg_arg_num << "\n";
     std::vector<MachineOperand*> stack_arg;
-    for (i = 1; i <= reg_arg_num; i++) {
+    for (i = 1; i < reg_arg_num; i++) {
         dst = new MachineOperand(MachineOperand::REG, i - 1);
         cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, genMachineOperand(operands[i]));
         cur_block->InsertInst(cur_inst);
     }
+    //std::cout << "i M\n";
     for (; i < operands.size(); i++) {
         stack_arg.push_back(genMachineOperand(operands[i]));
     }
@@ -837,20 +856,24 @@ void CallInstruction::genMachineCode(AsmBuilder* builder) {
         cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, src);
         cur_block->InsertInst(cur_inst);
     }
+    //std::cout << "i call E\n";
 }
 
 void UnSignedExtInstruction::genMachineCode(AsmBuilder* builder) {
     // TODO
+    //std::cout << "i Ext\n";
     MachineBlock* cur_block = builder->getBlock();
     MachineOperand* dst = genMachineOperand(operands[0]);
     MachineOperand* src = genMachineOperand(operands[1]);
 
     MovMInstruction* cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, src);
     cur_block->InsertInst(cur_inst);
+    //std::cout << "i Ext E\n";
 }
 
 void NEGInstruction::genMachineCode(AsmBuilder* builder) {
     // TODO
+    //std::cout << "i NEG\n";
     MachineBlock* cur_block = builder->getBlock();
     MachineOperand* dst = genMachineOperand(operands[0]);
     MovMInstruction* cur_inst = nullptr;
@@ -859,4 +882,5 @@ void NEGInstruction::genMachineCode(AsmBuilder* builder) {
     cur_block->InsertInst(cur_inst);
     cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, genMachineImm(0), MachineInstruction::NE);
     cur_block->InsertInst(cur_inst);
+    //std::cout << "i NEG E\n";
 }

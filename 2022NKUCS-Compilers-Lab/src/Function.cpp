@@ -90,16 +90,17 @@ void Function::DFS(AsmBuilder* builder, BasicBlock* block, std::map<BasicBlock*,
 }
 
 void Function::genMachineCode(AsmBuilder* builder) {
+    //std::cout<<"FUNC\n";
     auto cur_unit = builder->getUnit();
     auto cur_func = new MachineFunction(cur_unit, this->sym_ptr);
     builder->setFunction(cur_func);
     std::map<BasicBlock*, MachineBlock*> map;
-    //for (auto block : block_list) {
-    //    block->genMachineCode(builder);
-    //    map[block] = builder->getBlock();
-    //}
-    std::set<BasicBlock*> visited;
-    DFS(builder, entry, map, visited);
+    for (auto block : block_list) {
+        block->genMachineCode(builder);
+        map[block] = builder->getBlock();
+    }
+    //std::set<BasicBlock*> visited;
+    //DFS(builder, entry, map, visited);
     // Add pred and succ for every block
     for (auto block : block_list) {
         auto mblock = map[block];
@@ -109,5 +110,5 @@ void Function::genMachineCode(AsmBuilder* builder) {
             mblock->addSucc(map[*succ]);
     }
     cur_unit->InsertFunc(cur_func);
-    
+    //std::cout<<"FUNC E\n";
 }

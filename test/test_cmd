@@ -1,1 +1,0 @@
-arm-linux-gnueabihf-gcc main.c -s -o main-arm.s

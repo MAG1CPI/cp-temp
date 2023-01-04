@@ -106,6 +106,7 @@ void BasicBlock::output() const {
 
 void BasicBlock::genMachineCode(AsmBuilder* builder) 
 {
+    //std::cout<<"BB\n";
     auto cur_func = builder->getFunction();
     auto cur_block = new MachineBlock(cur_func, no);
     builder->setBlock(cur_block);
@@ -114,4 +115,5 @@ void BasicBlock::genMachineCode(AsmBuilder* builder)
         i->genMachineCode(builder);
     }
     cur_func->InsertBlock(cur_block);
+    //std::cout<<"BB E\n";
 }

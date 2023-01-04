@@ -2,7 +2,7 @@
 %{
     #include <string>
     #include "parser.h"
-
+    //#include <iostream>
     #define YY_NO_UNPUT
     #define YY_NO_INPUT
     #define YYSTYPE void *
@@ -24,7 +24,7 @@ BlankChar           ([ \t\v])
 BlockCommentBegin   (\/\*)
 BlockCommentEnd     (\*\/)
 LineCommentBegin    (\/\/)
-CommentBody         ([^\r\n|\n|\r])
+CommentBody         (\||[^\r\n|\n|\r])
 
 %x BLOCKCOMMENT
 %x LINECOMMENT

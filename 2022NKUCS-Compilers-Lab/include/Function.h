@@ -4,6 +4,7 @@
 #include <fstream>
 #include <set>
 #include <vector>
+#include <algorithm>
 #include "BasicBlock.h"
 #include "AsmBuilder.h"
 
@@ -29,6 +30,8 @@ class Function {
     void insertBlock(BasicBlock* bb);
     void remove(BasicBlock* bb);
     void insertFParamSE(TemporarySymbolEntry* se);
+    std::vector<TemporarySymbolEntry*> &getFParams() { return fparams_symtab; }
+    bool haveFParam(TemporarySymbolEntry* se);
 
     void output() const;
 

@@ -432,6 +432,25 @@ void MachineBlock::output()
 {
     if (this->inst_list.empty())
         return;
+
+    std::vector<MachineInstruction*> store_list;
+    int base_offset = 4 * (parent->getSavedRegs().size() + 2); //fp and lr
+    for (auto iter = inst_list.begin(); iter != inst_list.end(); iter++)
+    {
+        MachineOperand* operand = (*iter)->getUse()[0];
+        if ((*iter)->isStore() && operand->isStackParam())
+            store_list.push_back((*iter));
+    }
+    for (auto iter = store_list.begin(); iter != store_list.end(); iter++)
+    {
+        MachineOperand *fp = new MachineOperand(MachineOperand::REG, 11);
+        MachineOperand *r3 = new MachineOperand(MachineOperand::REG, 3);
+        int offset = base_offset + 4 * (store_list.size() - (iter - store_list.begin()));
+        MachineOperand *stack_offset = new MachineOperand(MachineOperand::IMM, offset);
+        LoadMInstruction *load_minst = new LoadMInstruction(this, r3, fp, stack_offset);
+        this->insertBefore(load_minst, (*iter));
+    }
+
     fprintf(yyout, ".L%d:\n", this->no);
     for (auto iter : inst_list)
         iter->output();

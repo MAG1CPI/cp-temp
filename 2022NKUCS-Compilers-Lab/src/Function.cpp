@@ -42,6 +42,10 @@ void Function::insertFParamSE(TemporarySymbolEntry* se) {
     fparams_symtab.push_back(se);
 }
 
+bool Function::haveFParam(TemporarySymbolEntry* se) {
+    return find(fparams_symtab.begin(), fparams_symtab.end(), se) != fparams_symtab.end();
+}
+
 void Function::output() const {
     FunctionType* funcType = dynamic_cast<FunctionType*>(sym_ptr->getType());
     Type* retType = funcType->getRetType();

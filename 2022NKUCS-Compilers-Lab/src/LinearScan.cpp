@@ -196,12 +196,12 @@ void LinearScan::genSpillCode() {
         interval->disp = -func->AllocSpace(4);
 
         MachineOperand *fp = new MachineOperand(MachineOperand::REG, 11);
-        MachineOperand *stack_off = new MachineOperand(MachineOperand::IMM, interval->disp);
+        MachineOperand *stack_offset = new MachineOperand(MachineOperand::IMM, interval->disp);
         for (MachineOperand *use : interval->uses)
         {
             MachineBlock* mblock = use->getParent()->getParent();
             MachineInstruction *cur_minst = use->getParent();
-            LoadMInstruction *load_minst = new LoadMInstruction(mblock, use, fp, stack_off);
+            LoadMInstruction *load_minst = new LoadMInstruction(mblock, new MachineOperand(*use), fp, stack_offset);
 
             mblock->insertBefore(load_minst, cur_minst);
         }
@@ -209,7 +209,7 @@ void LinearScan::genSpillCode() {
         {
             MachineBlock* mblock = def->getParent()->getParent();
             MachineInstruction *cur_minst = def->getParent();
-            StoreMInstruction *store_minst = new StoreMInstruction(mblock, def, fp, stack_off);
+            StoreMInstruction *store_minst = new StoreMInstruction(mblock, new MachineOperand(*def), fp, stack_offset);
             
             mblock->insertAfter(store_minst, cur_minst);
         }
@@ -227,6 +227,8 @@ void LinearScan::expireOldIntervals(Interval* interval) {
         {
             regs.push_back((*iter)->rreg);
             iter = active.erase(iter);
+            //不排序每次还是用新的reg，而不是回收的reg
+            sort(regs.begin(), regs.end());
         }
     }
 }

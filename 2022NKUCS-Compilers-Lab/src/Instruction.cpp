@@ -398,7 +398,25 @@ MachineOperand* Instruction::genMachineOperand(Operand* ope) {
     if (se->isConstant())
         mope = new MachineOperand(MachineOperand::IMM, dynamic_cast<ConstantSymbolEntry*>(se)->getValue().i);
     else if (se->isTemporary())
-        mope = new MachineOperand(MachineOperand::VREG, dynamic_cast<TemporarySymbolEntry*>(se)->getLabel());
+    {
+        Function *func = this->parent->getParent();
+        auto temp_se = dynamic_cast<TemporarySymbolEntry*>(se);
+        if(func->haveFParam(temp_se))
+        {
+            int reg_no = find(func->getFParams().begin(), func->getFParams().end(), temp_se) - func->getFParams().begin();
+            if(reg_no < 4)
+            {
+                mope = new MachineOperand(MachineOperand::REG, reg_no);
+            }
+            else //TODO fparams more than 4
+            {
+                mope = new MachineOperand(MachineOperand::REG, 3);
+                mope->setStackParam();
+            }
+        }
+        else
+            mope = new MachineOperand(MachineOperand::VREG, temp_se->getLabel());
+    }    
     else if (se->isVariable()) {
         auto id_se = dynamic_cast<IdentifierSymbolEntry*>(se);
         if (id_se->isGlobal())

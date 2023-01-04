@@ -1,11 +1,11 @@
-int a;
-int func(int p){
-	p = p - 1;
-	return p;
+int func(int a, int b, int c, int d, int e, int f)
+{
+	a = b - e;
+	return a;
 }
-int main(){
-	int b;
-	a = 10;
-	b = func(a);
-	return b;
+int main()
+{
+	int a = 0, b = 1, c = 2, d = 3, e = 4, f = 5;
+	a = func(a, b, c, d, e, f);
+	return 0;
 }

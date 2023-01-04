@@ -33,6 +33,8 @@ class MachineOperand {
     std::string label;  // address label
     bool is_func;
 
+    bool stack_param = false;
+
    public:
     enum { IMM,
            VREG,
@@ -56,6 +58,9 @@ class MachineOperand {
     void setParent(MachineInstruction* p) { this->parent = p; };
     MachineInstruction* getParent() { return this->parent; };
     void PrintReg();
+
+    void setStackParam() { stack_param = true; }
+    bool isStackParam() { return stack_param; }
     void output();
 };
 
@@ -95,6 +100,14 @@ class MachineInstruction {
     std::vector<MachineOperand*>& getDef() { return def_list; };
     std::vector<MachineOperand*>& getUse() { return use_list; };
     
+    bool isBinary() const { return this->type == BINARY; };
+    bool isLoad() const { return this->type == LOAD; };
+    bool isStore() const { return this->type == STORE; };
+    bool isMov() const { return this->type == MOV; };
+    bool isBranch() const { return this->type == BRANCH; };
+    bool isCmp() const { return this->type == CMP; };
+    bool isStack() const { return this->type == STACK; };
+
     MachineBlock* getParent() { return parent; }
 };
 

@@ -317,7 +317,65 @@ void Constant::genCode() {
 void Id::genCode() {
     BasicBlock* bb = builder->getInsertBB();
     Operand* addr = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();
+    Type* type = symbolEntry->getType();
+    Node* index = GetSibling();
+    /*
+    if (type->isArray()) {
+        std::vector<int> dims = dynamic_cast<ArrayType*>(type)->getDim();
+        while (index) {
+            index->genCode();
+            index = index->GetSibling();
+        }
+
+        int i = 1;
+        ValueType dim_value;
+        ConstantSymbolEntry* dim_se;
+        Operand* dim_op;
+        Operand *offset1_op, *offset2_op;
+        TemporarySymbolEntry *offset1_se, *offset2_se;
+
+        index = GetSibling();
+        offset1_op = dynamic_cast<ExprNode*>(index)->getOperand();
+        index = index->GetSibling();
+
+        while (index) {
+            dim_value.i = dims[i];
+            dim_se = new ConstantSymbolEntry(TypeSystem::constintType, dim_value);
+            dim_op = new Operand(dim_se);
+
+            offset2_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            offset2_op = new Operand(offset2_se);
+            new BinaryInstruction(BinaryInstruction::MUL, offset2_op, offset1_op, dim_op, bb);
+
+            offset1_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            offset1_op = new Operand(offset1_se);
+            new BinaryInstruction(BinaryInstruction::ADD, offset1_op, offset2_op, dynamic_cast<ExprNode*>(index)->getOperand(), bb);
+            index = index->GetSibling();
+        }
+
+        ValueType align_value;
+        offset2_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        offset2_op = new Operand(offset2_se);
+        align_value.i = 4;
+        Operand* align = new Operand(new ConstantSymbolEntry(TypeSystem::constintType, align_value));
+        new BinaryInstruction(BinaryInstruction::MUL, offset2_op, offset1_op, align, bb);
+
+        TemporarySymbolEntry* final_offset_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+        Operand* final_offset = new Operand(final_offset_se);
+        // 全局变量地址
+        if (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->isGlobal()) {
+            TemporarySymbolEntry* temp_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+            Operand* new_addr = new Operand(temp_se);
+            new LoadInstruction(new_addr, addr, bb);
+            addr = new_addr;
+        }
+
+        new BinaryInstruction(BinaryInstruction::ADD, final_offset, offset2_op, addr, bb);
+
+        new LoadInstruction(dst, final_offset, bb);
+    } else {*/
     new LoadInstruction(dst, addr, bb);
+    //}
 }
 
 void IfStmt::genCode() {

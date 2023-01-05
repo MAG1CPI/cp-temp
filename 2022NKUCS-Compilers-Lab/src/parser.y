@@ -595,7 +595,7 @@ ConstDef
             decl_type = TypeSystem::constintType;
         else if (decl_type == TypeSystem::floatType)
             decl_type = TypeSystem::constfloatType;
-        Type* type = new ArrayType(decl_type);
+        Type* type = new ArrayType(decl_type, true);
         se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
         identifiers->install($1, se);
 
@@ -754,14 +754,14 @@ FuncFParam
 
 // 数组下标
 ArrayIndices 
-    : L_SQUARE ConstExp R_SQUARE {
+    : L_SQUARE Exp R_SQUARE {
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
         if($2->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
             assert(false); }
         $$ = $2;
     }
-    | L_SQUARE ConstExp R_SQUARE ArrayIndices {
+    | L_SQUARE Exp R_SQUARE ArrayIndices {
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
         if($2->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
@@ -770,16 +770,15 @@ ArrayIndices
         $$ = $2;     
     }
     ;
-
 ConstArrayIndices 
-    : L_SQUARE Exp R_SQUARE {
+    : L_SQUARE ConstExp R_SQUARE {
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
         if($2->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
             assert(false); }
         $$ = $2;
     }
-    | L_SQUARE Exp R_SQUARE ConstArrayIndices{
+    | L_SQUARE ConstExp R_SQUARE ConstArrayIndices{
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
         if($2->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);

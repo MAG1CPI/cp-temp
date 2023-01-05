@@ -723,6 +723,8 @@ double UnaryExpr::getValue()
             return  -(expr->getValue());
         case NOT:
             return !(expr->getValue());
+        default:
+            return 0.0;
     }
 }
 
@@ -781,6 +783,8 @@ double BinaryExpr::getValue()
             return expr1->getValue() > expr2->getValue();
         case GREATEREQ:
             return expr1->getValue() >= expr2->getValue();
+        default:
+            return 0.0;
     }
 }
 
@@ -839,6 +843,8 @@ double Constant::getValue()
         return (dynamic_cast<ConstantSymbolEntry*>(symbolEntry))->getValue().i;
     else if(symbolEntry->getType()->isFloat())
         return (dynamic_cast<ConstantSymbolEntry*>(symbolEntry))->getValue().f;
+    else
+        return 0.0;
 }
 
 void Constant::output(int level) {
@@ -856,6 +862,8 @@ double Id::getValue()
         return (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry))->getValue().i;
     else if(symbolEntry->getType()->isFloat())
         return (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry))->getValue().f;
+    else
+        return;
 }
 
 void Id::output(int level) {

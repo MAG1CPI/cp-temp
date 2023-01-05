@@ -9,6 +9,7 @@
 
     #include "Unit.h"
     extern Unit unit;
+    // [TODO] sys 库函数识别
 %}
 
 Decimial            ([1-9][0-9]*|0)

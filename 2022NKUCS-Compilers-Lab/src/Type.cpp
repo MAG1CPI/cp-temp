@@ -2,9 +2,9 @@
 
 IntType TypeSystem::commonBool = IntType(1);
 IntType TypeSystem::commonInt = IntType(32);
-ConstIntType TypeSystem::commonConstInt = ConstIntType(32);
+IntType TypeSystem::commonConstInt = IntType(32, true);
 FloatType TypeSystem::commonFloat = FloatType();
-ConstFloatType TypeSystem::commonConstFloat = ConstFloatType();
+FloatType TypeSystem::commonConstFloat = FloatType(true);
 VoidType TypeSystem::commonVoid = VoidType();
 
 Type* TypeSystem::boolType = &commonBool;
@@ -18,43 +18,33 @@ std::string IntType::toStr() {
     return "i" + std::to_string(size);
 }
 
-std::string ConstIntType::toStr() {
-    return "i" + std::to_string(size);
-}
-
 std::string FloatType::toStr() {
     return "float";
 }
 
-std::string ConstFloatType::toStr() {
-    return "float";
+void ArrayType::pushDim(int num) {
+    size *= num;
+    dim.push_back(num);
 }
 
 std::string ArrayType::toStr() {
     // not sure
+    /*
     std::string str = "";
-    bool is_fparam = false;
-    Type* part_type = this;
-    int part_len;
-    // fparam
-    if (getLength() == -1) {
-        is_fparam = true;
-        part_type = getElementType();
-    }
-    // iterate all dim
-    while (part_type && part_type->isArray()) {
-        part_len = ((ArrayType*)part_type)->getLength();
-        str += "[" + std::to_string(part_len) + "]";
-        part_type = ((ArrayType*)part_type)->getElementType();
-    }
-    // basic type
-    if (!(part_type->isInt() || part_type->isFloat()))
-        assert(false);
-    str += part_type->toStr();
-    // fparam
-    if (is_fparam)
+    if (dim[0] == -1) {
+        for (uint32_t i = 1; i < dim.size(); i++)
+            str += "[" + std::to_string(dim[i]) + "x";
+        str += elementType->toStr();
+        str += std::string(dim.size() - 1, ']');
         str += "*";
-    return str + part_type->toStr();
+    } else {
+        for (uint32_t i = 0; i < dim.size(); i++)
+            str += "[" + std::to_string(dim[i]) + "x";
+        str += elementType->toStr();
+        str += std::string(dim.size(), ']');
+    }
+    */
+    return elementType->toStr() + "ARRAY";
 }
 
 std::string VoidType::toStr() {

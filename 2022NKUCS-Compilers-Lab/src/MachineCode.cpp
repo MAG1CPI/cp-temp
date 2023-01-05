@@ -75,14 +75,13 @@ void MachineOperand::output() {
         case LABEL:
             if (this->label.substr(0, 2) == ".L" || is_func)
                 fprintf(yyout, "%s", this->label.c_str());
-            else
-            {
-                //TODO
-                if(this->label[0] == '@')
+            else {
+                // TODO
+                if (this->label[0] == '@')
                     fprintf(yyout, "addr_%s", this->label.substr(1).c_str());
                 else
                     fprintf(yyout, "addr_%s", this->label.c_str());
-            }    
+            }
         default:
             break;
     }
@@ -416,38 +415,35 @@ MachineFunction::MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr) {
     this->stack_size = 0;
 };
 
-void MachineBlock::insertBefore(MachineInstruction *before, MachineInstruction *cur) {
+void MachineBlock::insertBefore(MachineInstruction* before, MachineInstruction* cur) {
     std::vector<MachineInstruction*>::iterator position;
     position = find(inst_list.begin(), inst_list.end(), cur);
     inst_list.insert(position, before);
 }
 
-void MachineBlock::insertAfter(MachineInstruction *after, MachineInstruction *cur) {
+void MachineBlock::insertAfter(MachineInstruction* after, MachineInstruction* cur) {
     std::vector<MachineInstruction*>::iterator position;
     position = find(inst_list.begin(), inst_list.end(), cur);
     inst_list.insert(position + 1, after);
 }
 
-void MachineBlock::output()
-{
+void MachineBlock::output() {
     if (this->inst_list.empty())
         return;
 
     std::vector<MachineInstruction*> store_list;
-    int base_offset = 4 * (parent->getSavedRegs().size() + 2); //fp and lr
-    for (auto iter = inst_list.begin(); iter != inst_list.end(); iter++)
-    {
+    int base_offset = 4 * (parent->getSavedRegs().size() + 2);  // fp and lr
+    for (auto iter = inst_list.begin(); iter != inst_list.end(); iter++) {
         MachineOperand* operand = (*iter)->getUse()[0];
         if ((*iter)->isStore() && operand->isStackParam())
             store_list.push_back((*iter));
     }
-    for (auto iter = store_list.begin(); iter != store_list.end(); iter++)
-    {
-        MachineOperand *fp = new MachineOperand(MachineOperand::REG, 11);
-        MachineOperand *r3 = new MachineOperand(MachineOperand::REG, 3);
+    for (auto iter = store_list.begin(); iter != store_list.end(); iter++) {
+        MachineOperand* fp = new MachineOperand(MachineOperand::REG, 11);
+        MachineOperand* r3 = new MachineOperand(MachineOperand::REG, 3);
         int offset = base_offset + 4 * (store_list.size() - (iter - store_list.begin()));
-        MachineOperand *stack_offset = new MachineOperand(MachineOperand::IMM, offset);
-        LoadMInstruction *load_minst = new LoadMInstruction(this, r3, fp, stack_offset);
+        MachineOperand* stack_offset = new MachineOperand(MachineOperand::IMM, offset);
+        LoadMInstruction* load_minst = new LoadMInstruction(this, r3, fp, stack_offset);
         this->insertBefore(load_minst, (*iter));
     }
 
@@ -518,7 +514,7 @@ void MachineUnit::PrintGlobalDecl() {
         globalvar_name = id_se->toStr().substr(1);
         fprintf(yyout, "\t.global %s\n", globalvar_name.c_str());
         fprintf(yyout, "\t.align 4\n");
-        fprintf(yyout, "\t.size %s, %d\n", globalvar_name.c_str(), id_se->getType()->getSize());
+        fprintf(yyout, "\t.size %s, %d\n", globalvar_name.c_str(), id_se->getType()->getSize() / 8);
         fprintf(yyout, "%s:\n", globalvar_name.c_str());
         if (id_se->getType()->isInt()) {
             fprintf(yyout, "\t.word %d\n", id_se->getValue().i);

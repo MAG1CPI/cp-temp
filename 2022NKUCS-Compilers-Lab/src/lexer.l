@@ -154,6 +154,127 @@ CommentBody         (\||[^\r\n|\n|\r])
     return ID;
 }
 
+"putfloat" {
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+
+    SymbolTable* global = identifiers;
+    while(global->getPrev() != nullptr)
+    {
+        global = global->getPrev();
+    }
+    std::vector<Type*> paramstype;
+    paramstype.push_back(TypeSystem::floatType);
+    Type* funcType = new FunctionType(TypeSystem::voidType, paramstype);
+    SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
+    global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
+    return ID;
+}
+
+"getfloat" {
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    
+    SymbolTable* global = identifiers;
+    while(global->getPrev() != nullptr)
+    {
+        global = global->getPrev();
+    }
+    std::vector<Type*> paramstype;
+    Type* funcType = new FunctionType(TypeSystem::floatType, paramstype);
+    SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
+    global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
+    return ID;
+}
+
+"putarray" {
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+
+    SymbolTable* global = identifiers;
+    while(global->getPrev() != nullptr)
+    {
+        global = global->getPrev();
+    }
+    std::vector<Type*> paramstype;
+    paramstype.push_back(TypeSystem::intType);
+    paramstype.push_back(new ArrayType(TypeSystem::intType, -1));
+    Type* funcType = new FunctionType(TypeSystem::voidType, paramstype);
+    SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
+    global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
+    return ID;
+}
+
+"getarray" {
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    
+    SymbolTable* global = identifiers;
+    while(global->getPrev() != nullptr)
+    {
+        global = global->getPrev();
+    }
+    std::vector<Type*> paramstype;
+    paramstype.push_back(new ArrayType(TypeSystem::intType, -1));
+    Type* funcType = new FunctionType(TypeSystem::intType, paramstype);
+    SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
+    global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
+    return ID;
+}
+
+"putfarray" {
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+
+    SymbolTable* global = identifiers;
+    while(global->getPrev() != nullptr)
+    {
+        global = global->getPrev();
+    }
+    std::vector<Type*> paramstype;
+    paramstype.push_back(TypeSystem::floatType);
+    paramstype.push_back(new ArrayType(TypeSystem::floatType, -1));
+    Type* funcType = new FunctionType(TypeSystem::voidType, paramstype);
+    SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
+    global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
+    return ID;
+}
+
+"getfarray" {
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    
+    SymbolTable* global = identifiers;
+    while(global->getPrev() != nullptr)
+    {
+        global = global->getPrev();
+    }
+    std::vector<Type*> paramstype;
+    paramstype.push_back(new ArrayType(TypeSystem::floatType, -1));
+    Type* funcType = new FunctionType(TypeSystem::floatType, paramstype);
+    SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
+    global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
+    return ID;
+}
+
 {Decimial} {
     yylval.vtype.i = atoi(yytext);
     return INT_NUM;

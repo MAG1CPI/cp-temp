@@ -48,6 +48,7 @@
 
 %nterm <exprtype> Exp Cond LVal PrimaryExp UnaryExp FuncRParams MulExp AddExp RelExp EqExp LAndExp LOrExp ConstExp
 %nterm <exprtype> InitVal ConstInitVal
+%nterm <exprtype> ArrayIndices ConstArrayIndices InitValList ConstInitValList
 %nterm <type> Type
 
 %precedence THEN
@@ -194,8 +195,8 @@ LVal
         else{
             $$ = new Id(se);
             delete []$1; } }
-    | ARRAYID {
-        /*TODO: array*/
+    | ARRAYID ArrayIndices{
+        /*[DONE]ARRARY*/
         SymbolEntry *se;
         se = identifiers->lookup($1, all_parent_symtab);
         /*CHECK: undefined id - cannot fix it, quit */
@@ -209,6 +210,7 @@ LVal
             delete [](char*)$1;
             assert(se->getType()->isFunc() == false); }
         $$ = new Id(se);
+        $$->SetSibling($2);
         delete []$1; }
     ;
 PrimaryExp
@@ -471,7 +473,7 @@ VarDef
         identifiers->install($1, se);
         $$ = new DeclStmt(new Id(se));
         delete []$1; }
-    | ID ASSIGN InitVal {
+    | ID ASSIGN Exp {
         SymbolEntry *se;
         se = identifiers->lookup($1, current_symtab);
         /*CHECK: duplicate defined id - cannot fix it, quit */
@@ -479,18 +481,73 @@ VarDef
             fprintf(stderr, "[CHECKINFO][L%d]identifier \"%s\" duplicate defined\n", yylineno, (char*)$1);
             delete [](char*)$1;
             assert(se == nullptr); }
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if($3->getOperand() == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
+
         se = new IdentifierSymbolEntry(decl_type, $1, identifiers->getLevel());
         identifiers->install($1, se);
         $$ = new DeclStmt(new Id(se), $3);
         delete []$1; }
+    | ARRAYID ConstArrayIndices{
+        /*[DONE]ARRARY*/
+        SymbolEntry *se;
+        se = identifiers->lookup($1, current_symtab);
+        /* CHECK: duplicate defined id - cannot fix it, quit */
+        if(se != nullptr) {
+            fprintf(stderr, "[CHECKINFO][L%d]identifier \"%s\" duplicate defined!\n", yylineno, (char*)$1);
+            delete [](char*)$1;
+            assert(se == nullptr); }
+
+        Type* type = new ArrayType(decl_type);
+        se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+
+        Id* id = new Id(se);
+        id->SetSibling($2);
+        $$ = new DeclStmt(id);
+        delete []$1; }
+    | ARRAYID ConstArrayIndices ASSIGN L_BRACE InitValList R_BRACE{
+        /*[DONE]ARRARY*/
+        SymbolEntry *se;
+        se = identifiers->lookup($1, current_symtab);
+        /*CHECK: duplicate defined id - cannot fix it, quit */
+        if(se != nullptr) {
+            fprintf(stderr, "[CHECKINFO][L%d]identifier \"%s\" duplicate defined\n", yylineno, (char*)$1);
+            delete [](char*)$1;
+            assert(se == nullptr); }
+
+        Type* type = new ArrayType(decl_type);
+        se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+
+        Id* id = new Id(se);
+        id->SetSibling($2);
+        $$ = new DeclStmt(id, $5);
+        delete []$1; }
+    ;
+// only for array now
+InitValList
+    : InitVal COMMA InitValList{
+        $1->SetSibling($3);
+        $$ = $1; }
+    | InitVal{
+        $$ = $1; }
     ;
 InitVal 
-    : Exp { 
+    : Exp {
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
         if($1->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
             assert(false); }
-        $$ = $1; }
+        $$ = new InitValue();
+        (dynamic_cast<InitValue*>($$))->setVal($1); }
+    | L_BRACE InitValList R_BRACE{
+        $$ = new InitValue();
+        (dynamic_cast<InitValue*>($$))->setVal($2); }
+    | L_BRACE R_BRACE{
+        $$ = new InitValue(); }
     ;
 ConstDecl
     : CONST Type ConstList SEMI { $$ = $3; }
@@ -502,7 +559,7 @@ ConstList
         $$ = $1; }
     ;
 ConstDef
-    : ID ASSIGN ConstInitVal {
+    : ID ASSIGN ConstExp {
         SymbolEntry *se;
         se = identifiers->lookup($1, current_symtab);
         /*CHECK: duplicate defined id - cannot fix it, quit */
@@ -510,22 +567,64 @@ ConstDef
             fprintf(stderr, "[CHECKINFO][L%d]identifier \"%s\" duplicate defined\n", yylineno, (char*)$1);
             delete [](char*)$1;
             assert(se == nullptr); }
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if($3->getOperand() == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
+
         if (decl_type == TypeSystem::intType)
             decl_type = TypeSystem::constintType;
         else if (decl_type == TypeSystem::floatType)
             decl_type = TypeSystem::constfloatType;
         se = new IdentifierSymbolEntry(decl_type, $1, identifiers->getLevel());
         identifiers->install($1, se);
+
         $$ = new DeclStmt(new Id(se), $3);
         delete []$1; }
+    | ARRAYID ConstArrayIndices ASSIGN L_BRACE ConstInitVal R_BRACE {
+        /*[DONE]ARRARY*/
+        SymbolEntry *se;
+        se = identifiers->lookup($1, current_symtab);
+        /*CHECK: duplicate defined id - cannot fix it, quit */
+        if(se != nullptr) {
+            fprintf(stderr, "[CHECKINFO][L%d]identifier \"%s\" duplicate defined\n", yylineno, (char*)$1);
+            delete [](char*)$1;
+            assert(se == nullptr); }
+
+        if (decl_type == TypeSystem::intType)
+            decl_type = TypeSystem::constintType;
+        else if (decl_type == TypeSystem::floatType)
+            decl_type = TypeSystem::constfloatType;
+        Type* type = new ArrayType(decl_type);
+        se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
+        identifiers->install($1, se);
+
+        Id* id = new Id(se);
+        id->SetSibling($2);
+        $$ = new DeclStmt(id, $5);
+        delete []$1; }
     ;
-ConstInitVal
-    : ConstExp { 
+// only for array now
+ConstInitValList
+    : ConstInitVal COMMA ConstInitValList{
+        $1->SetSibling($3);
+        $$ = $1; }
+    | ConstInitVal{
+        $$ = $1; }
+    ;
+ConstInitVal 
+    : Exp {
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
         if($1->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
             assert(false); }
-        $$ = $1; }
+        $$ = new InitValue();
+        (dynamic_cast<InitValue*>($$))->setVal($1); }
+    | L_BRACE ConstInitValList R_BRACE{
+        $$ = new InitValue();
+        (dynamic_cast<InitValue*>($$))->setVal($2); }
+    | L_BRACE R_BRACE{
+        $$ = new InitValue(); }
     ;
 FuncDef
     : Type ID {
@@ -608,16 +707,86 @@ FuncFParams
     ;
 FuncFParam
     : Type ID {
-        SymbolEntry *se;
         /* CHECK: void fparam - cannot fix it, quit */
         if($1->isVoid()){
             fprintf(stderr, "[CHECKINFO][L%d]illegal parameter type!\n", yylineno);
             assert($1->isVoid() == false); }
-        se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
+            
+        SymbolEntry *se = new IdentifierSymbolEntry($1, $2, identifiers->getLevel());
         identifiers->install($2, se);
         $$ = new FuncFParam(new Id(se));
         func_fparam_type.push_back($1);
         delete []$2; }
+    | Type ARRAYID L_SQUARE R_SQUARE ConstArrayIndices{
+        /* CHECK: void fparam - cannot fix it, quit */
+        if($1->isVoid()){
+            fprintf(stderr, "[CHECKINFO][L%d]illegal parameter type!\n", yylineno);
+            assert($1->isVoid() == false); }
+        
+        Type* arrayType = new ArrayType($1);
+        (dynamic_cast<ArrayType*>(arrayType))->pushDim(-1);
+
+        SymbolEntry *se = new IdentifierSymbolEntry(arrayType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        Id* id = new Id(se);
+        id->SetSibling($5);
+
+        $$ = new FuncFParam(id);
+        func_fparam_type.push_back(arrayType);
+        }
+    | Type ARRAYID L_SQUARE R_SQUARE{
+        /* CHECK: void fparam - cannot fix it, quit */
+        if($1->isVoid()){
+            fprintf(stderr, "[CHECKINFO][L%d]illegal parameter type!\n", yylineno);
+            assert($1->isVoid() == false); }
+        
+        Type* arrayType = new ArrayType($1);
+        (dynamic_cast<ArrayType*>(arrayType))->pushDim(-1);
+
+        SymbolEntry *se = new IdentifierSymbolEntry(arrayType, $2, identifiers->getLevel());
+        identifiers->install($2, se);
+        Id* id = new Id(se);
+
+        $$ = new FuncFParam(id);
+        func_fparam_type.push_back(arrayType);
+        }
+    ;
+
+// 数组下标
+ArrayIndices 
+    : L_SQUARE ConstExp R_SQUARE {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if($2->getOperand() == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
+        $$ = $2;
+    }
+    | L_SQUARE ConstExp R_SQUARE ArrayIndices {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if($2->getOperand() == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
+        $2->SetSibling($4);
+        $$ = $2;     
+    }
+    ;
+
+ConstArrayIndices 
+    : L_SQUARE Exp R_SQUARE {
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if($2->getOperand() == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
+        $$ = $2;
+    }
+    | L_SQUARE Exp R_SQUARE ConstArrayIndices{
+        /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
+        if($2->getOperand() == nullptr){
+            fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
+            assert(false); }
+        $2->SetSibling($4);
+        $$ = $2;
+    }
     ;
 %%
 

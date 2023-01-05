@@ -119,6 +119,21 @@ class Id : public ExprNode {
     void genCode();
 };
 
+class InitValue : public ExprNode {
+   private:
+    ExprNode* val;
+
+   public:
+    InitValue() { val = nullptr; }
+
+    void setVal(ExprNode* val) { this->val = val; }
+    ExprNode* getVal() { return val; }
+
+    void output(int level);
+    void typeCheck();
+    void genCode();
+};
+
 class StmtNode : public Node {};
 
 class CompoundStmt : public StmtNode {

@@ -5,7 +5,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
-
+#include <iostream>
 class Type {
    private:
     int kind;
@@ -65,14 +65,16 @@ class VoidType : public Type {
 class ArrayType : public Type {
    private:
     Type* elementType;
-    int length;
+    std::vector<int> dim;
 
    public:
-    ArrayType(Type* elementType, int length, bool is_const = false)
-        : Type(Type::ARRAY, 0, is_const), elementType(elementType), length(length) {}
+    ArrayType(Type* elementType, bool is_const = false)
+        : Type(Type::ARRAY, elementType->getSize(), is_const), elementType(elementType) {}
 
     Type* getElementType() const { return elementType; }
-    int getLength() const { return length; }
+
+    std::vector<int> getDim() { return dim; }
+    void pushDim(int num);
 
     std::string toStr();
 };

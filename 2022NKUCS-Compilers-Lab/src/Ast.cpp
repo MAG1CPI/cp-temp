@@ -130,8 +130,8 @@ void FunctionDef::genCode() {
             }
         }
     }
-    //if func has no returnstmt add return; or return 0;
-    for(auto basicblock = func->begin(); basicblock != func->end(); basicblock++) {
+    // if func has no returnstmt add return; or return 0;
+    for (auto basicblock = func->begin(); basicblock != func->end(); basicblock++) {
         Instruction* lastinst = (*basicblock)->rbegin();
         if (lastinst->isUncond() == false && lastinst->isCond() == false && lastinst->isRet() == false) {
             FunctionType* funcType = dynamic_cast<FunctionType*>(func->getSymPtr()->getType());
@@ -155,6 +155,7 @@ void UnaryExpr::genCode() {
     BasicBlock* bb = builder->getInsertBB();
     // Function *func = bb->getParent();
     if (op == ADD || op == SUB) {
+        //[TODO]FLOAT
         expr->genCode();
         if (expr->getOperandType()->toStr() == "i1")
             expr->bool2int(bb);
@@ -169,7 +170,7 @@ void UnaryExpr::genCode() {
         new BinaryInstruction(opcode, dst, src1, src2, bb);
     } else if (op == NOT) {
         expr->genCode();
-        // Todo
+        //[TODO]FLOAT
         // swapList(expr->trueList(), expr->falseList());
         if (expr->getOperandType()->toStr() == "i32")
             expr->int2bool(bb);
@@ -192,6 +193,7 @@ void BinaryExpr::genCode() {
     BasicBlock* bb = builder->getInsertBB();
     Function* func = bb->getParent();
     if (op == AND) {
+        //[TODO]FLOAT
         BasicBlock* trueBB = new BasicBlock(func);  // if the result of lhs is true, jump to the trueBB.
         expr1->genCode();
         BasicBlock* expr1_bb = builder->getInsertBB();
@@ -213,7 +215,7 @@ void BinaryExpr::genCode() {
         false_list = merge(expr1->falseList(), expr2->falseList());
 
     } else if (op == OR) {
-        // Todo
+        //[TODO]FLOAT
         BasicBlock* trueBB = new BasicBlock(func);
         expr1->genCode();
         BasicBlock* expr1_bb = builder->getInsertBB();
@@ -235,7 +237,7 @@ void BinaryExpr::genCode() {
         false_list = expr2->falseList();
 
     } else if (op >= EQ && op <= GREATEREQ) {
-        // Todo
+        //[TODO]FLOAT
         expr1->genCode();
         if (expr1->getOperandType()->toStr() == "i1")
             expr1->bool2int(bb);
@@ -275,6 +277,7 @@ void BinaryExpr::genCode() {
         this->insertCondBrInst(func, this, bb);
 
     } else if (op >= ADD && op <= MOD) {
+        //[TODO]FLOAT
         expr1->genCode();
         if (expr1->getOperandType()->toStr() == "i1")
             expr1->bool2int(bb);
@@ -327,6 +330,7 @@ void IfStmt::genCode() {
 
     cond->genCode();
     cond_bb = builder->getInsertBB();
+    //[TODO]FLOAT
     if (cond->getOperandType()->toStr() == "i32") {
         cond->int2bool(cond_bb);
         insertCondBrInst(func, cond, cond_bb);
@@ -355,6 +359,7 @@ void IfElseStmt::genCode() {
 
     cond->genCode();
     cond_bb = builder->getInsertBB();
+    //[TODO]FLOAT
     if (cond->getOperandType()->toStr() == "i32") {
         cond->int2bool(cond_bb);
         insertCondBrInst(func, cond, cond_bb);
@@ -469,6 +474,7 @@ void WhileStmt::genCode() {
     builder->setInsertBB(cond_bb);
     cond->genCode();
     cond_bb = builder->getInsertBB();
+    //[TODO]FLOAT
     if (cond->getOperandType()->toStr() == "i32") {
         cond->int2bool(cond_bb);
         insertCondBrInst(func, cond, cond_bb);
@@ -547,6 +553,10 @@ void FunctionCall::genCode() {
 
 void NullStmt::genCode() {
     // do nothing
+}
+
+void InitValue::genCode() {
+    // [TODO]
 }
 
 void Ast::typeCheck() {
@@ -628,6 +638,9 @@ void FunctionCall::typeCheck() {
 
 void NullStmt::typeCheck() {
     // do nothing
+}
+
+void InitValue::typeCheck() {
 }
 
 void Ast::output() {
@@ -717,6 +730,11 @@ void Id::output(int level) {
     scope = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getScope();
     fprintf(yyout, "%*cId\tname: %s\tscope: %d\ttype: %s\n", level, ' ',
             name.c_str(), scope, type.c_str());
+    Node* index = GetSibling();
+    while (index) {
+        index->output(level + 4);
+        index = index->GetSibling();
+    }
 }
 
 void CompoundStmt::output(int level) {
@@ -826,6 +844,16 @@ void FunctionCall::output(int level) {
 
 void NullStmt::output(int level) {
     fprintf(yyout, "%*cNullStmt\n", level, ' ');
+}
+
+void InitValue::output(int level) {
+    // [TODO]output
+    if (val) {
+        val->output(level + 4);
+    }
+    if (GetSibling()) {
+        GetSibling()->output(level);
+    }
 }
 
 /******************************

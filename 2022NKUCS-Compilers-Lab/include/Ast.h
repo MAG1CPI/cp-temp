@@ -52,6 +52,8 @@ class ExprNode : public Node {
     Type* getOperandType() { return dst->getType(); };
     SymbolEntry* getSymPtr() { return symbolEntry; };
 
+    virtual double getValue() { return 0.0; };
+
     void int2bool(BasicBlock* insert_bb);
     void bool2int(BasicBlock* insert_bb);
 };
@@ -67,6 +69,7 @@ class UnaryExpr : public ExprNode {
            NOT };
     UnaryExpr(SymbolEntry* se, int op, ExprNode* expr)
         : ExprNode(se), op(op), expr(expr) { dst = new Operand(se); };
+    double getValue();
     void output(int level);
     void typeCheck();
     void genCode();
@@ -93,6 +96,7 @@ class BinaryExpr : public ExprNode {
            GREATEREQ };
     BinaryExpr(SymbolEntry* se, int op, ExprNode* expr1, ExprNode* expr2)
         : ExprNode(se), op(op), expr1(expr1), expr2(expr2) { dst = new Operand(se); };
+    double getValue();
     void output(int level);
     void typeCheck();
     void genCode();
@@ -102,6 +106,7 @@ class Constant : public ExprNode {
    public:
     Constant(SymbolEntry* se)
         : ExprNode(se) { dst = new Operand(se); };
+    double getValue();
     void output(int level);
     void typeCheck();
     void genCode();
@@ -114,6 +119,7 @@ class Id : public ExprNode {
         SymbolEntry* temp = new TemporarySymbolEntry(se->getType(), SymbolTable::getLabel());
         dst = new Operand(temp);
     };
+    double getValue();
     void output(int level);
     void typeCheck();
     void genCode();

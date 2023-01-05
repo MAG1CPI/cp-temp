@@ -67,13 +67,13 @@ int main(int argc, char* argv[]) {
     if (dump_ir)
         unit.output();
     //cout<<"ir\n";
-    //unit.genMachineCode(&mUnit);
+    unit.genMachineCode(&mUnit);
     //cout<<"genMachineCode\n";
-    //LinearScan linearScan(&mUnit);
+    LinearScan linearScan(&mUnit);
     //cout<<"linearScan\n";
-    //linearScan.allocateRegisters();
+    linearScan.allocateRegisters();
     //cout<<"allocateRegisters\n";
-    //if (dump_asm)
-    //    mUnit.output();
+    if (dump_asm)
+        mUnit.output();
     return 0;
 }

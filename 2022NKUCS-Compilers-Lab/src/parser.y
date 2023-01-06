@@ -501,11 +501,36 @@ VarDef
             assert(se == nullptr); }
 
         Type* type = new ArrayType(decl_type);
+        /*[DONE]ARRARY INDEX IN DECL*/
+        Node* index_node = $2;
+        Node* new_index_node_begin, *new_index_node;
+        ValueType index_value;
+        SymbolEntry *index_se;
+
+        index_value.i = (dynamic_cast<ExprNode*>(index_node))->getValue();
+
+        index_se = new ConstantSymbolEntry(TypeSystem::intType, index_value);
+        new_index_node_begin = new_index_node = new Constant(index_se);
+        
+        (dynamic_cast<ArrayType*>(type))->pushDim(index_value.i);
+
+        index_node = index_node->GetSibling();
+        while (index_node) {
+            index_value.i = (dynamic_cast<ExprNode*>(index_node))->getValue();
+
+            index_se = new ConstantSymbolEntry(TypeSystem::intType, index_value);
+            new_index_node->SetSibling(new Constant(index_se));
+
+            (dynamic_cast<ArrayType*>(type))->pushDim(index_value.i);
+
+            new_index_node = new_index_node->GetSibling();
+            index_node = index_node->GetSibling();
+        }
         se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
         identifiers->install($1, se);
 
         Id* id = new Id(se);
-        id->SetSibling($2);
+        id->SetSibling(new_index_node_begin);
         $$ = new DeclStmt(id);
         delete []$1; }
     | ARRAYID ConstArrayIndices ASSIGN L_BRACE InitValList R_BRACE{
@@ -519,11 +544,36 @@ VarDef
             assert(se == nullptr); }
 
         Type* type = new ArrayType(decl_type);
+        /*[DONE]ARRARY INDEX IN DECL*/
+        Node* index_node = $2;
+        Node* new_index_node_begin, *new_index_node;
+        ValueType index_value;
+        SymbolEntry *index_se;
+
+        index_value.i = (dynamic_cast<ExprNode*>(index_node))->getValue();
+
+        index_se = new ConstantSymbolEntry(TypeSystem::intType, index_value);
+        new_index_node_begin = new_index_node = new Constant(index_se);
+        
+        (dynamic_cast<ArrayType*>(type))->pushDim(index_value.i);
+
+        index_node = index_node->GetSibling();
+        while (index_node) {
+            index_value.i = (dynamic_cast<ExprNode*>(index_node))->getValue();
+
+            index_se = new ConstantSymbolEntry(TypeSystem::intType, index_value);
+            new_index_node->SetSibling(new Constant(index_se));
+
+            (dynamic_cast<ArrayType*>(type))->pushDim(index_value.i);
+
+            new_index_node = new_index_node->GetSibling();
+            index_node = index_node->GetSibling();
+        }
         se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
         identifiers->install($1, se);
 
         Id* id = new Id(se);
-        id->SetSibling($2);
+        id->SetSibling(new_index_node_begin);
         $$ = new DeclStmt(id, $5);
         delete []$1; }
     ;
@@ -578,10 +628,26 @@ ConstDef
             decl_type = TypeSystem::constfloatType;
         se = new IdentifierSymbolEntry(decl_type, $1, identifiers->getLevel());
         identifiers->install($1, se);
+        
+        /*[DONE]CONST INIT*/
+        ValueType init_value;
+        SymbolEntry *init_se;
+        ExprNode* init_node;
+        if (decl_type == TypeSystem::constintType){
+            init_value.i = $3->getValue();
+            init_se = new ConstantSymbolEntry(TypeSystem::intType, init_value);
+        }
+        else if (decl_type == TypeSystem::constfloatType){
+            init_value.f = $3->getValue();
+            init_se = new ConstantSymbolEntry(TypeSystem::floatType, init_value);
+        }
+        (dynamic_cast<IdentifierSymbolEntry*>(se))->setValue(init_value);
 
-        $$ = new DeclStmt(new Id(se), $3);
+        init_node = new Constant(init_se);
+
+        $$ = new DeclStmt(new Id(se), init_node);
         delete []$1; }
-    | ARRAYID ConstArrayIndices ASSIGN L_BRACE ConstInitVal R_BRACE {
+    | ARRAYID ConstArrayIndices ASSIGN L_BRACE ConstInitValList R_BRACE {
         /*[DONE]ARRARY*/
         SymbolEntry *se;
         se = identifiers->lookup($1, current_symtab);
@@ -596,11 +662,36 @@ ConstDef
         else if (decl_type == TypeSystem::floatType)
             decl_type = TypeSystem::constfloatType;
         Type* type = new ArrayType(decl_type, true);
+        /*[DONE]ARRARY INDEX IN DECL*/
+        Node* index_node = $2;
+        Node* new_index_node_begin, *new_index_node;
+        ValueType index_value;
+        SymbolEntry *index_se;
+
+        index_value.i = (dynamic_cast<ExprNode*>(index_node))->getValue();
+
+        index_se = new ConstantSymbolEntry(TypeSystem::intType, index_value);
+        new_index_node_begin = new_index_node = new Constant(index_se);
+        
+        (dynamic_cast<ArrayType*>(type))->pushDim(index_value.i);
+
+        index_node = index_node->GetSibling();
+        while (index_node) {
+            index_value.i = (dynamic_cast<ExprNode*>(index_node))->getValue();
+
+            index_se = new ConstantSymbolEntry(TypeSystem::intType, index_value);
+            new_index_node->SetSibling(new Constant(index_se));
+
+            (dynamic_cast<ArrayType*>(type))->pushDim(index_value.i);
+
+            new_index_node = new_index_node->GetSibling();
+            index_node = index_node->GetSibling();
+        }
         se = new IdentifierSymbolEntry(type, $1, identifiers->getLevel());
         identifiers->install($1, se);
 
         Id* id = new Id(se);
-        id->SetSibling($2);
+        id->SetSibling(new_index_node_begin);
         $$ = new DeclStmt(id, $5);
         delete []$1; }
     ;
@@ -613,13 +704,30 @@ ConstInitValList
         $$ = $1; }
     ;
 ConstInitVal 
-    : Exp {
+    : ConstExp {
         /* CHECK: use a void function as an operand - use the corresponding variable - cannot fix it, quit */
         if($1->getOperand() == nullptr){
             fprintf(stderr, "[CHECKINFO][L%d]a void function is used as an operand!\n", yylineno);
             assert(false); }
+        /*[DONE]CONST INIT*/
+        ValueType init_value;
+        SymbolEntry *init_se;
+        ExprNode* init_node;
+        if (decl_type == TypeSystem::constintType||decl_type == TypeSystem::intType){
+            init_value.i = $1->getValue();
+            init_se = new ConstantSymbolEntry(TypeSystem::intType, init_value);
+        }
+        else if (decl_type == TypeSystem::constfloatType||decl_type == TypeSystem::floatType){
+            init_value.f = $1->getValue();
+            init_se = new ConstantSymbolEntry(TypeSystem::floatType, init_value);
+        }
+        else{
+            assert(0);
+        }
+        init_node = new Constant(init_se);
+
         $$ = new InitValue();
-        (dynamic_cast<InitValue*>($$))->setVal($1); }
+        (dynamic_cast<InitValue*>($$))->setVal(init_node); }
     | L_BRACE ConstInitValList R_BRACE{
         $$ = new InitValue();
         (dynamic_cast<InitValue*>($$))->setVal($2); }
@@ -723,16 +831,41 @@ FuncFParam
             fprintf(stderr, "[CHECKINFO][L%d]illegal parameter type!\n", yylineno);
             assert($1->isVoid() == false); }
         
-        Type* arrayType = new ArrayType($1);
-        (dynamic_cast<ArrayType*>(arrayType))->pushDim(-1);
+        Type* type = new ArrayType($1);
+        /*[DONE]ARRARY INDEX IN DECL*/
+        (dynamic_cast<ArrayType*>(type))->pushDim(-1);
+        Node* index_node = $5;
+        Node* new_index_node_begin, *new_index_node;
+        ValueType index_value;
+        SymbolEntry *index_se;
 
-        SymbolEntry *se = new IdentifierSymbolEntry(arrayType, $2, identifiers->getLevel());
+        index_value.i = (dynamic_cast<ExprNode*>(index_node))->getValue();
+
+        index_se = new ConstantSymbolEntry(TypeSystem::intType, index_value);
+        new_index_node_begin = new_index_node = new Constant(index_se);
+        
+        (dynamic_cast<ArrayType*>(type))->pushDim(index_value.i);
+
+        index_node = index_node->GetSibling();
+        while (index_node) {
+            index_value.i = (dynamic_cast<ExprNode*>(index_node))->getValue();
+
+            index_se = new ConstantSymbolEntry(TypeSystem::intType, index_value);
+            new_index_node->SetSibling(new Constant(index_se));
+
+            (dynamic_cast<ArrayType*>(type))->pushDim(index_value.i);
+
+            new_index_node = new_index_node->GetSibling();
+            index_node = index_node->GetSibling();
+        }
+
+        SymbolEntry *se = new IdentifierSymbolEntry(type, $2, identifiers->getLevel());
         identifiers->install($2, se);
         Id* id = new Id(se);
-        id->SetSibling($5);
+        id->SetSibling(new_index_node_begin);
 
         $$ = new FuncFParam(id);
-        func_fparam_type.push_back(arrayType);
+        func_fparam_type.push_back(type);
         }
     | Type ARRAYID L_SQUARE R_SQUARE{
         /* CHECK: void fparam - cannot fix it, quit */

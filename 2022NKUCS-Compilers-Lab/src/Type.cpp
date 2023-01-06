@@ -29,22 +29,24 @@ void ArrayType::pushDim(int num) {
 
 std::string ArrayType::toStr() {
     // not sure
-    /*
+    //*
     std::string str = "";
     if (dim[0] == -1) {
         for (uint32_t i = 1; i < dim.size(); i++)
-            str += "[" + std::to_string(dim[i]) + "x";
+            str += "[" + std::to_string(dim[i]) + " x ";
         str += elementType->toStr();
         str += std::string(dim.size() - 1, ']');
         str += "*";
     } else {
         for (uint32_t i = 0; i < dim.size(); i++)
-            str += "[" + std::to_string(dim[i]) + "x";
+            str += "[" + std::to_string(dim[i]) + " x ";
         str += elementType->toStr();
         str += std::string(dim.size(), ']');
+        //std::cout<<str<<"\n";
     }
-    */
-    return elementType->toStr() + "ARRAY";
+    return str;
+    //*/
+    //return elementType->toStr() + "ARRAY";
 }
 
 std::string VoidType::toStr() {

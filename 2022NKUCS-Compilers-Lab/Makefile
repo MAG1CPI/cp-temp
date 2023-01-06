@@ -1,7 +1,7 @@
 SRC_PATH ?= src
 INC_PATH += include
 BUILD_PATH ?= build
-TEST_PATH ?= test/level1-1
+TEST_PATH ?= test/level1-2
 OBJ_PATH ?= $(BUILD_PATH)/obj
 BINARY ?= $(BUILD_PATH)/compiler
 SYSLIB_PATH ?= sysyruntimelibrary
@@ -38,7 +38,7 @@ $(LEXER):$(FLEX)
 	@flex -o $@ $<
 
 $(PARSER):$(BISON)
-	@bison -o $@ $< --warnings=error=all --defines=$(PARSERH)
+	@bison -d -o $@ $< --warnings=error=all --defines=$(PARSERH) 
 
 $(OBJ_PATH)/%.o:$(SRC_PATH)/%.cpp
 	@mkdir -p $(OBJ_PATH)

@@ -317,9 +317,9 @@ void Constant::genCode() {
 void Id::genCode() {
     BasicBlock* bb = builder->getInsertBB();
     Operand* addr = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();
+    /*
     Type* type = symbolEntry->getType();
     Node* index = GetSibling();
-    /*
     if (type->isArray()) {
         std::vector<int> dims = dynamic_cast<ArrayType*>(type)->getDim();
         while (index) {
@@ -461,11 +461,11 @@ void DeclStmt::genCode() {
         se->setAddr(addr);
         if (initval != nullptr) {
             ValueType value;
-            //sscanf(initval->getOperand()->toStr().c_str(), "%d", &value.i);
-            //TODO!!!
-            if(se->getType()->isInt())
+            // sscanf(initval->getOperand()->toStr().c_str(), "%d", &value.i);
+            // TODO!!!
+            if (se->getType()->isInt())
                 value.i = (int)initval->getValue();
-            else if(se->getType()->isFloat())
+            else if (se->getType()->isFloat())
                 value.f = initval->getValue();
             dynamic_cast<IdentifierSymbolEntry*>(se)->setValue(value);
             // std::cout << "add a global var value:" << value << std::endl;
@@ -491,7 +491,9 @@ void DeclStmt::genCode() {
             BasicBlock* bb = builder->getInsertBB();
             initval->genCode();
             Operand* src = initval->getOperand();
+            //std::cout << "[]\n";
             new StoreInstruction(addr, src, bb);
+            //std::cout << "[]\n";
         }
     }
 
@@ -712,22 +714,7 @@ void Ast::output() {
         root->output(4);
 }
 
-//[TODO]
-double UnaryExpr::getValue()
-{
-    switch (op)
-    {
-        case ADD:
-            return expr->getValue();
-        case SUB:
-            return  -(expr->getValue());
-        case NOT:
-            return !(expr->getValue());
-    }
-}
-
-void UnaryExpr::output(int level)
-{
+void UnaryExpr::output(int level) {
     std::string op_str;
     switch (op) {
         case ADD:
@@ -742,46 +729,6 @@ void UnaryExpr::output(int level)
     }
     fprintf(yyout, "%*cUnaryExpr\top: %s\n", level, ' ', op_str.c_str());
     expr->output(level + 4);
-}
-
-//[TODO]
-double BinaryExpr::getValue()
-{
-    switch (op)
-    {
-        case ADD:
-            return expr1->getValue() + expr2->getValue();
-        case SUB:
-            return expr1->getValue() - expr2->getValue();
-        case MUL:
-            return expr1->getValue() * expr2->getValue();
-        case DIV:
-            if (expr2->getValue() != 0)
-            {
-                if(dst->getType()->isInt())
-                    return (int)expr1->getValue() / (int)expr2->getValue();
-                else if(dst->getType()->isFloat())
-                    return expr1->getValue() / expr2->getValue();
-            }
-        case MOD:
-            return (int)(expr1->getValue()) % (int)(expr2->getValue());
-        case AND:
-            return expr1->getValue() && expr2->getValue();
-        case OR:
-            return expr1->getValue() || expr2->getValue();
-        case EQ:
-            return expr1->getValue() == expr2->getValue();
-        case NOTEQ:
-            return expr1->getValue() != expr2->getValue();
-        case LESS:
-            return expr1->getValue() < expr2->getValue();
-        case LESSEQ:
-            return expr1->getValue() <= expr2->getValue();
-        case GREATER:
-            return expr1->getValue() > expr2->getValue();
-        case GREATEREQ:
-            return expr1->getValue() >= expr2->getValue();
-    }
 }
 
 void BinaryExpr::output(int level) {
@@ -832,30 +779,12 @@ void BinaryExpr::output(int level) {
     expr2->output(level + 4);
 }
 
-//[TODO]
-double Constant::getValue()
-{
-    if (symbolEntry->getType()->isInt())
-        return (dynamic_cast<ConstantSymbolEntry*>(symbolEntry))->getValue().i;
-    else if(symbolEntry->getType()->isFloat())
-        return (dynamic_cast<ConstantSymbolEntry*>(symbolEntry))->getValue().f;
-}
-
 void Constant::output(int level) {
     std::string type, value;
     type = symbolEntry->getType()->toStr();
     value = symbolEntry->toStr();
     fprintf(yyout, "%*cIntegerLiteral\tvalue: %s\ttype: %s\n", level, ' ',
             value.c_str(), type.c_str());
-}
-
-//[TODO]
-double Id::getValue()
-{
-    if (symbolEntry->getType()->isInt())
-        return (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry))->getValue().i;
-    else if(symbolEntry->getType()->isFloat())
-        return (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry))->getValue().f;
 }
 
 void Id::output(int level) {
@@ -990,6 +919,93 @@ void InitValue::output(int level) {
     if (GetSibling()) {
         GetSibling()->output(level);
     }
+}
+
+//[TODO]
+double UnaryExpr::getValue() {
+    switch (op) {
+        case ADD:
+            return expr->getValue();
+        case SUB:
+            return -(expr->getValue());
+        case NOT:
+            return !(expr->getValue());
+    }
+    return 0;
+}
+
+//[TODO]
+double BinaryExpr::getValue() {
+    switch (op) {
+        case ADD:
+            return expr1->getValue() + expr2->getValue();
+        case SUB:
+            return expr1->getValue() - expr2->getValue();
+        case MUL:
+            return expr1->getValue() * expr2->getValue();
+        case DIV:
+            if (expr2->getValue() != 0) {
+                if (dst->getType()->isInt())
+                    return (int)expr1->getValue() / (int)expr2->getValue();
+                else if (dst->getType()->isFloat())
+                    return expr1->getValue() / expr2->getValue();
+            }
+        case MOD:
+            return (int)(expr1->getValue()) % (int)(expr2->getValue());
+        case AND:
+            return expr1->getValue() && expr2->getValue();
+        case OR:
+            return expr1->getValue() || expr2->getValue();
+        case EQ:
+            return expr1->getValue() == expr2->getValue();
+        case NOTEQ:
+            return expr1->getValue() != expr2->getValue();
+        case LESS:
+            return expr1->getValue() < expr2->getValue();
+        case LESSEQ:
+            return expr1->getValue() <= expr2->getValue();
+        case GREATER:
+            return expr1->getValue() > expr2->getValue();
+        case GREATEREQ:
+            return expr1->getValue() >= expr2->getValue();
+    }
+    return 0;
+}
+
+//[TODO]
+double Constant::getValue() {
+    if (symbolEntry->getType()->isInt())
+        return (dynamic_cast<ConstantSymbolEntry*>(symbolEntry))->getValue().i;
+    else if (symbolEntry->getType()->isFloat())
+        return (dynamic_cast<ConstantSymbolEntry*>(symbolEntry))->getValue().f;
+    return 0;
+}
+
+//[TODO]
+double Id::getValue() {
+    Type* type = symbolEntry->getType();
+    if (type->isInt())
+        return (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry))->getValue().i;
+    else if (type->isFloat())
+        return (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry))->getValue().f;
+    else if (type->isArray()) {
+        std::vector<int> dim = (dynamic_cast<ArrayType*>(type))->getDim();
+        Type* elementType = (dynamic_cast<ArrayType*>(type))->getElementType();
+        Node* index_node = GetSibling();
+        int i = 1;
+        int index = (dynamic_cast<ExprNode*>(index_node))->getValue();
+        index_node = index_node->GetSibling();
+        while (index_node) {
+            index *= dim[i];
+            index += (dynamic_cast<ExprNode*>(index_node))->getValue();
+            index_node = index_node->GetSibling();
+        }
+        if (elementType->isInt())
+            return (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry))->getArrayValue(index).i;
+        else if (elementType->isFloat())
+            return (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry))->getArrayValue(index).f;
+    }
+    return 0;
 }
 
 /******************************

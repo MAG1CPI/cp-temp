@@ -787,6 +787,17 @@ void Constant::output(int level) {
             value.c_str(), type.c_str());
 }
 
+//[TODO]
+double Id::getValue()
+{
+    if (symbolEntry->getType()->isInt())
+        return (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry))->getValue().i;
+    else if(symbolEntry->getType()->isFloat())
+        return (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry))->getValue().f;
+    else
+        return;
+}
+
 void Id::output(int level) {
     std::string name, type;
     int scope;

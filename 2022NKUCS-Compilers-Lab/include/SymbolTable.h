@@ -11,8 +11,8 @@ class Operand;
 union ValueType {
     int i;
     float f;
-    int *ip;
-    float *fp;
+    int* ip;
+    float* fp;
 };
 const ValueType kZERO = {.f = 0};
 
@@ -90,7 +90,8 @@ class IdentifierSymbolEntry : public SymbolEntry {
     Operand* addr;  // The address of the identifier.
                     // You can add any field you need here.
     ValueType value;
-
+    std::vector<ValueType> array_value;
+    
     bool overload;                         // Function overloading.
     IdentifierSymbolEntry* next_overload;  // Next overloading function
 
@@ -113,6 +114,9 @@ class IdentifierSymbolEntry : public SymbolEntry {
 
     void setValue(ValueType value) { this->value = value; }
     ValueType getValue() { return value; }
+
+    void pushArrayValue(ValueType value) { array_value.push_back(value); }
+    ValueType getArrayValue(int n) { return array_value[n]; }
 
     std::string toStr();
 };

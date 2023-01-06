@@ -262,7 +262,8 @@ UnaryExp
                         // rparam too less
                         //fprintf(stderr, "[CHECKINFO][L%d]%srparam too less!\n", yylineno,func_se->getType()->toStr().c_str());
                         goto NextFunction_UnaryExp;
-                    } else if(fparam_type->toStr() != rparam->getOperandType()->toStr()){
+                    } else if(!(fparam_type->isArray())&& !(rparam->getOperandType()->isArray())
+                                &&fparam_type->toStr() != rparam->getOperandType()->toStr()){
                         // rparam not match
                         //fprintf(stderr, "[CHECKINFO][L%d]%s not match %s!\n",
                         //        yylineno, 
@@ -270,6 +271,7 @@ UnaryExp
                         //        fparam_type->toStr().c_str());
                         goto NextFunction_UnaryExp;
                     }
+                    //[TODO]array type check
                     rparam = dynamic_cast<ExprNode*>(rparam->GetSibling());
                 }
                 if(rparam != nullptr){
@@ -759,10 +761,12 @@ FuncDef
                     goto NextFunction_FuncDef_New;
                 }
                 for(uint32_t i = 0; i < fparams_type->size(); i++) {
-                    if((*fparams_type)[i] != paramstype[i]){
+                    if(!((*fparams_type)[i]->isArray())&& !(paramstype[i]->isArray())
+                        &&(*fparams_type)[i] != paramstype[i]){
                         //param type not match
                         goto NextFunction_FuncDef_New;
                     }
+                    //[TODO]array type check
                 }
                 fprintf(stderr, "[CHECKINFO][L%d]function duplicate defined!\n", yylineno);
                 assert(0);

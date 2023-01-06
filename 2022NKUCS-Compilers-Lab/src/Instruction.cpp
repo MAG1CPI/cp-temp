@@ -445,7 +445,10 @@ void AllocaInstruction::genMachineCode(AsmBuilder* builder) {
     // std::cout << "i Alloca \n";
     auto cur_func = builder->getFunction();
     // offset may change for array
-    int offset = cur_func->AllocSpace(4);
+    int size = se->getType()->getSize() / 8;
+    if (size < 0)
+        size = 4;
+    int offset = cur_func->AllocSpace(size);
     dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->setOffset(-offset);
     // std::cout << "i Alloca E\n";
 }
@@ -584,6 +587,15 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder) {
         else if (operands[0]->getType()->isPtr()) {
             MachineOperand* dst = genMachineOperand(operands[0]);
             cur_inst = new StoreMInstruction(cur_block, src, dst);
+            cur_block->InsertInst(cur_inst);
+        } else {
+            MachineOperand* dst_addr = genMachineVReg();
+            MachineOperand* fp = genMachineReg(11);
+            MachineOperand* offset = genMachineOperand(operands[0]);
+            cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::ADD, dst_addr, fp, offset);
+            cur_block->InsertInst(cur_inst);
+
+            cur_inst = new StoreMInstruction(cur_block, src, dst_addr);
             cur_block->InsertInst(cur_inst);
         }
     }

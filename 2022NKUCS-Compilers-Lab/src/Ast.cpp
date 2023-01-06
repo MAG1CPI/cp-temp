@@ -317,10 +317,14 @@ void Constant::genCode() {
 void Id::genCode() {
     BasicBlock* bb = builder->getInsertBB();
     Operand* addr = dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->getAddr();
-    /*
+
     Type* type = symbolEntry->getType();
     Node* index = GetSibling();
     if (type->isArray()) {
+        // if(dynamic_cast<ArrayType*>(type)->getElementType()->isInt())
+        dst = new Operand(new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel()));
+        // else
+        //     dst = new Operand(new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel()));
         std::vector<int> dims = dynamic_cast<ArrayType*>(type)->getDim();
         while (index) {
             index->genCode();
@@ -360,11 +364,11 @@ void Id::genCode() {
         Operand* align = new Operand(new ConstantSymbolEntry(TypeSystem::constintType, align_value));
         new BinaryInstruction(BinaryInstruction::MUL, offset2_op, offset1_op, align, bb);
 
-        TemporarySymbolEntry* final_offset_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+        TemporarySymbolEntry* final_offset_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
         Operand* final_offset = new Operand(final_offset_se);
         // 全局变量地址
         if (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->isGlobal()) {
-            TemporarySymbolEntry* temp_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+            TemporarySymbolEntry* temp_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
             Operand* new_addr = new Operand(temp_se);
             new LoadInstruction(new_addr, addr, bb);
             addr = new_addr;
@@ -373,9 +377,9 @@ void Id::genCode() {
         new BinaryInstruction(BinaryInstruction::ADD, final_offset, offset2_op, addr, bb);
 
         new LoadInstruction(dst, final_offset, bb);
-    } else {*/
-    new LoadInstruction(dst, addr, bb);
-    //}
+    } else {
+        new LoadInstruction(dst, addr, bb);
+    }
 }
 
 void IfStmt::genCode() {
@@ -489,14 +493,17 @@ void DeclStmt::genCode() {
         se->setAddr(addr);                         // set the addr operand in symbol entry so that we can use it in subsequent code generation.
         if (initval != nullptr) {
             BasicBlock* bb = builder->getInsertBB();
-            initval->genCode();
-            Operand* src = initval->getOperand();
-            //std::cout << "[]\n";
-            new StoreInstruction(addr, src, bb);
-            //std::cout << "[]\n";
+            if (!se->getType()->isArray()) {
+                initval->genCode();
+                Operand* src = initval->getOperand();
+                new StoreInstruction(addr, src, bb);
+            } else {
+                // initval->genCode();
+                // Operand* src = initval->getOperand();
+                // new StoreInstruction(addr, src, bb);
+            }
         }
     }
-
     if (HaveSibling())
         GetSibling()->genCode();
 }
@@ -520,7 +527,64 @@ void AssignStmt::genCode() {
      * We haven't implemented array yet, the lval can only be ID. So we just store the result of the `expr` to the addr of the id.
      * If you want to implement array, you have to caculate the address first and then store the result into it.
      */
-    new StoreInstruction(addr, src, bb);
+    ///*
+    Type* type = lval->getSymPtr()->getType();
+    if (type->isArray()) {
+        Node* index = lval->GetSibling();
+        std::vector<int> dims = dynamic_cast<ArrayType*>(type)->getDim();
+        while (index) {
+            index->genCode();
+            index = index->GetSibling();
+        }
+
+        int i = 1;
+        ValueType dim_value;
+        ConstantSymbolEntry* dim_se;
+        Operand* dim_op;
+        Operand *offset1_op, *offset2_op;
+        TemporarySymbolEntry *offset1_se, *offset2_se;
+
+        index = lval->GetSibling();
+        offset1_op = dynamic_cast<ExprNode*>(index)->getOperand();
+        index = index->GetSibling();
+
+        while (index) {
+            dim_value.i = dims[i];
+            dim_se = new ConstantSymbolEntry(TypeSystem::constintType, dim_value);
+            dim_op = new Operand(dim_se);
+
+            offset2_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            offset2_op = new Operand(offset2_se);
+            new BinaryInstruction(BinaryInstruction::MUL, offset2_op, offset1_op, dim_op, bb);
+
+            offset1_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            offset1_op = new Operand(offset1_se);
+            new BinaryInstruction(BinaryInstruction::ADD, offset1_op, offset2_op, dynamic_cast<ExprNode*>(index)->getOperand(), bb);
+            index = index->GetSibling();
+        }
+
+        ValueType align_value;
+        offset2_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        offset2_op = new Operand(offset2_se);
+        align_value.i = 4;
+        Operand* align = new Operand(new ConstantSymbolEntry(TypeSystem::constintType, align_value));
+        new BinaryInstruction(BinaryInstruction::MUL, offset2_op, offset1_op, align, bb);
+
+        TemporarySymbolEntry* final_offset_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+        Operand* final_offset = new Operand(final_offset_se);
+        // 全局变量地址
+        if (dynamic_cast<IdentifierSymbolEntry*>(lval->getSymPtr())->isGlobal()) {
+            TemporarySymbolEntry* temp_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+            Operand* new_addr = new Operand(temp_se);
+            new LoadInstruction(new_addr, addr, bb);
+            addr = new_addr;
+        }
+
+        new BinaryInstruction(BinaryInstruction::ADD, final_offset, offset2_op, addr, bb);
+        new StoreInstruction(final_offset, src, bb);
+    } else {  //*/
+        new StoreInstruction(addr, src, bb);
+    }
 }
 
 void ExprStmt::genCode() {

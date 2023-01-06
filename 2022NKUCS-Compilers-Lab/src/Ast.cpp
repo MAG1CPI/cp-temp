@@ -863,7 +863,7 @@ double Id::getValue()
     else if(symbolEntry->getType()->isFloat())
         return (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry))->getValue().f;
     else
-        return;
+        return 0.0;
 }
 
 void Id::output(int level) {

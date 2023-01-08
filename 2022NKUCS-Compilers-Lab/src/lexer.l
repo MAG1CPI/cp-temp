@@ -275,6 +275,44 @@ CommentBody         (\||[^\r\n|\n|\r])
     return ID;
 }
 
+"starttime" {
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    
+    SymbolTable* global = identifiers;
+    while(global->getPrev() != nullptr)
+    {
+        global = global->getPrev();
+    }
+    std::vector<Type*> paramstype;
+    Type* funcType = new FunctionType(TypeSystem::voidType, paramstype);
+    SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
+    global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
+    return ID;
+}
+
+"stoptime" {
+    char *lexeme;
+    lexeme = new char[strlen(yytext) + 1];
+    strcpy(lexeme, yytext);
+    yylval.strtype = lexeme;
+    
+    SymbolTable* global = identifiers;
+    while(global->getPrev() != nullptr)
+    {
+        global = global->getPrev();
+    }
+    std::vector<Type*> paramstype;
+    Type* funcType = new FunctionType(TypeSystem::voidType, paramstype);
+    SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
+    global->install(yytext, se);
+    unit.insertSysYFunc(dynamic_cast<IdentifierSymbolEntry*>(se));
+    return ID;
+}
+
 {Decimial} {
     yylval.vtype.i = atoi(yytext);
     return INT_NUM;

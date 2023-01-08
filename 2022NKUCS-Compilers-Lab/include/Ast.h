@@ -113,12 +113,18 @@ class Constant : public ExprNode {
 };
 
 class Id : public ExprNode {
+    ExprNode* index;
+
    public:
     Id(SymbolEntry* se)
         : ExprNode(se) {
         SymbolEntry* temp = new TemporarySymbolEntry(se->getType(), SymbolTable::getLabel());
         dst = new Operand(temp);
     };
+    
+    void setIndex(ExprNode* index) { this->index = index; }
+    ExprNode* getIndex() { return index; }
+
     double getValue();
     void output(int level);
     void typeCheck();

@@ -106,9 +106,10 @@ class BinaryInstruction : public Instruction {
            MOD,
            AND,
            OR };
+    bool is_array_pointer;
 
    public:
-    BinaryInstruction(unsigned opcode, Operand* dst, Operand* src1, Operand* src2, BasicBlock* insert_bb = nullptr);
+    BinaryInstruction(unsigned opcode, Operand* dst, Operand* src1, Operand* src2, BasicBlock* insert_bb = nullptr, bool is_array_pointer = false);
     ~BinaryInstruction();
 
     void output() const;

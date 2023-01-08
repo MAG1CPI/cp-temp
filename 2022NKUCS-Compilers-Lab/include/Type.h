@@ -102,6 +102,7 @@ class PointerType : public Type {
     PointerType(Type* valueType)
         : Type(Type::PTR, 32), valueType(valueType) {}
 
+    Type* getValueType() { return valueType; }
     std::string toStr();
 };
 

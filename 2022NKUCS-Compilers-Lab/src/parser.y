@@ -761,7 +761,12 @@ ConstDef
         
         ExprNode* init_node = new InitValue();
         
-        $$ = new DeclStmt(id, init_node);
+        /*数组展平*/
+        ExprNode* new_init_node_begin,* new_init_node_end;
+        uint32_t n=0;
+        dynamic_cast<InitValue*>(init_node)->flatten((dynamic_cast<ArrayType*>(type))->getDim(), 0, new_init_node_begin, new_init_node_end, n, false);
+
+        $$ = new DeclStmt(id, new_init_node_begin);
         delete []$1; }
     | ARRAYID ConstArrayIndices ASSIGN L_BRACE ConstInitValList R_BRACE {
         /*[DONE]ARRARY*/
@@ -809,8 +814,13 @@ ConstDef
         Id* id = new Id(se);
 
         dynamic_cast<Id*>(id)->setIndex(new_index_node_begin);
-        
-        $$ = new DeclStmt(id, $5);
+
+        /*数组展平*/
+        ExprNode* new_init_node_begin,* new_init_node_end;
+        uint32_t n=0;
+        dynamic_cast<InitValue*>($5)->flatten((dynamic_cast<ArrayType*>(type))->getDim(), 0, new_init_node_begin, new_init_node_end, n, false);
+
+        $$ = new DeclStmt(id, new_init_node_begin);
         delete []$1; }
     ;
 // only for array now

@@ -112,7 +112,7 @@ void FunctionDef::genCode() {
             (*basicblock)->addSucc(falsebranch);
         }
     }
-    
+
     for (auto basicblock = func->begin(); basicblock != func->end(); basicblock++) {
         for (auto inst = (*basicblock)->begin(); inst != (*basicblock)->end()->getPrev(); inst = inst->getNext()) {
             if (inst->isCond()) {
@@ -365,6 +365,7 @@ void Id::genCode() {
                 offset1_op = new Operand(offset1_se);
                 new BinaryInstruction(BinaryInstruction::ADD, offset1_op, offset2_op, dynamic_cast<ExprNode*>(index)->getOperand(), bb);
                 index = index->GetSibling();
+                i++;
             }
 
             ValueType align_value;
@@ -382,6 +383,7 @@ void Id::genCode() {
                 Operand* new_addr = new Operand(temp_se);
                 new LoadInstruction(new_addr, addr, bb);
                 addr = new_addr;
+                final_offset_se->setGlobalArray(true);
             }
 
             new BinaryInstruction(BinaryInstruction::ADD, final_offset, offset2_op, addr, bb);
@@ -481,27 +483,21 @@ void DeclStmt::genCode() {
             ValueType value;
             // sscanf(initval->getOperand()->toStr().c_str(), "%d", &value.i);
             // TODO!!!
-            if (se->getType()->isInt())
-            {
+            if (se->getType()->isInt()) {
                 value.i = (int)initval->getValue();
                 dynamic_cast<IdentifierSymbolEntry*>(se)->setValue(value);
-            }
-            else if (se->getType()->isFloat())
-            {
+            } else if (se->getType()->isFloat()) {
                 value.f = initval->getValue();
                 dynamic_cast<IdentifierSymbolEntry*>(se)->setValue(value);
-            }
-            else if (se->getType()->isArray() && dynamic_cast<ArrayType *>(se->getType())->getElementType()->isInt())
-            {
-                //ExprNode * init_val = dynamic_cast<InitValue *>(initval)->getVal();
-                value.i = int(dynamic_cast<InitValue *>(initval)->getVal()->getValue());
+            } else if (se->getType()->isArray() && dynamic_cast<ArrayType*>(se->getType())->getElementType()->isInt()) {
+                // ExprNode * init_val = dynamic_cast<InitValue *>(initval)->getVal();
+                value.i = int(dynamic_cast<InitValue*>(initval)->getVal()->getValue());
                 dynamic_cast<IdentifierSymbolEntry*>(se)->pushArrayValue(value);
-                ExprNode *next_initval = dynamic_cast<ExprNode *>(initval->GetSibling());
-                while (next_initval != nullptr)
-                {
-                    value.i = dynamic_cast<InitValue *>(next_initval)->getVal()->getValue();
+                ExprNode* next_initval = dynamic_cast<ExprNode*>(initval->GetSibling());
+                while (next_initval != nullptr) {
+                    value.i = dynamic_cast<InitValue*>(next_initval)->getVal()->getValue();
                     dynamic_cast<IdentifierSymbolEntry*>(se)->pushArrayValue(value);
-                    next_initval = dynamic_cast<ExprNode *>(next_initval->GetSibling());
+                    next_initval = dynamic_cast<ExprNode*>(next_initval->GetSibling());
                 }
             }
             //[TODO] float
@@ -617,6 +613,7 @@ void AssignStmt::genCode() {
             offset1_op = new Operand(offset1_se);
             new BinaryInstruction(BinaryInstruction::ADD, offset1_op, offset2_op, dynamic_cast<ExprNode*>(index)->getOperand(), bb);
             index = index->GetSibling();
+            i++;
         }
 
         ValueType align_value;
@@ -634,6 +631,7 @@ void AssignStmt::genCode() {
             Operand* new_addr = new Operand(temp_se);
             new LoadInstruction(new_addr, addr, bb);
             addr = new_addr;
+            final_offset_se->setGlobalArray(true);
         }
 
         new BinaryInstruction(BinaryInstruction::ADD, final_offset, offset2_op, addr, bb);

@@ -91,7 +91,7 @@ class IdentifierSymbolEntry : public SymbolEntry {
                     // You can add any field you need here.
     ValueType value;
     std::vector<ValueType> array_value;
-    
+
     bool overload;                         // Function overloading.
     IdentifierSymbolEntry* next_overload;  // Next overloading function
 
@@ -143,6 +143,7 @@ class TemporarySymbolEntry : public SymbolEntry {
    private:
     int stack_offset;
     int label;
+    bool is_global_array;
 
    public:
     TemporarySymbolEntry(Type* type, int label);
@@ -151,6 +152,9 @@ class TemporarySymbolEntry : public SymbolEntry {
     int getLabel() const { return label; }
     void setOffset(int offset) { this->stack_offset = offset; };
     int getOffset() { return this->stack_offset; };
+
+    void setGlobalArray(bool is_global_array) { this->is_global_array = is_global_array; }
+    bool isGlobalArray() { return is_global_array; }
 
     std::string toStr();
 };

@@ -39,6 +39,7 @@ std::string IdentifierSymbolEntry::toStr() {
 TemporarySymbolEntry::TemporarySymbolEntry(Type* type, int label)
     : SymbolEntry(type, SymbolEntry::TEMPORARY) {
     this->label = label;
+    is_global_array = false;
 }
 
 std::string TemporarySymbolEntry::toStr() {

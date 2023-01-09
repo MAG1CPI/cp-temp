@@ -117,8 +117,8 @@ void FunctionDef::genCode() {
         for (auto inst = (*basicblock)->begin(); inst != (*basicblock)->end()->getPrev(); inst = inst->getNext()) {
             if (inst->isCond()) {
                 BasicBlock* truebb = dynamic_cast<CondBrInstruction*>(inst)->getTrueBranch();
-                //BasicBlock* falsebb = dynamic_cast<CondBrInstruction*>(inst)->getFalseBranch();
-                if (func->inBlockList(truebb) == false)
+                BasicBlock* falsebb = dynamic_cast<CondBrInstruction*>(inst)->getFalseBranch();
+                if (func->inBlockList(truebb) == false || func->inBlockList(falsebb))
                     (*basicblock)->remove(inst);
             }
         }

@@ -511,15 +511,66 @@ void MachineUnit::PrintGlobalDecl() {
     if (globalvar_list.size() > 0) {
         fprintf(yyout, "\t.data\n");
         std::string globalvar_name;
-        for (auto id_se : globalvar_list) {
-            globalvar_name = id_se->toStr().substr(1);
-            fprintf(yyout, "\t.global %s\n", globalvar_name.c_str());
-            fprintf(yyout, "\t.align 4\n");
-            fprintf(yyout, "\t.size %s, %d\n", globalvar_name.c_str(), id_se->getType()->getSize() / 8);
-            fprintf(yyout, "%s:\n", globalvar_name.c_str());
-            if (id_se->getType()->isInt()) {
-                fprintf(yyout, "\t.word %d\n", id_se->getValue().i);
+        for (auto id_se : globalvar_list)
+        {
+            if(id_se->getType()->isArray()) //array
+            {
+                globalvar_name = id_se->toStr().substr(1);
+                if(id_se->ArrayInitValueNum() != 0)
+                {
+                    fprintf(yyout, "\t.global %s\n", globalvar_name.c_str());
+                    fprintf(yyout, "\t.align 4\n");
+                    fprintf(yyout, "\t.size %s, %d\n", globalvar_name.c_str(), id_se->getType()->getSize() / 8);
+                    fprintf(yyout, "%s:\n", globalvar_name.c_str());
+                    if(dynamic_cast<ArrayType *>(id_se->getType())->getElementType()->isInt())
+                    {
+                        for(int i = 0; i < id_se->ArrayInitValueNum(); i++)
+                        {
+                            fprintf(yyout, "\t.word %d\n", id_se->getArrayValue(i).i);
+                        }
+                        if(id_se->getType()->getSize() / 8 - id_se->ArrayInitValueNum() * 4 != 0)
+                            fprintf(yyout, "\t.space %d\n", id_se->getType()->getSize() / 8 - id_se->ArrayInitValueNum() * 4);
+                    }
+                    else if (dynamic_cast<ArrayType *>(id_se->getType())->getElementType()->isFloat())
+                    {
+                        for(int i = 0; i < id_se->ArrayInitValueNum(); i++)
+                        {
+                            float value = id_se->getArrayValue(i).f;
+                            uint32_t print_value = reinterpret_cast<uint32_t&>(value);
+                            fprintf(yyout, "\t.word %u\n", print_value);
+                        }
+                        if(id_se->getType()->getSize() / 8 - id_se->ArrayInitValueNum() * 4 != 0)
+                            fprintf(yyout, "\t.space %d\n", id_se->getType()->getSize() / 8 - id_se->ArrayInitValueNum() * 4);
+                    }
+                    else
+                        assert(0);
+                }
+                else
+                {
+                    fprintf(yyout, "\t.comm\t%s,%d,4\n", globalvar_name.c_str(), id_se->getType()->getSize());
+                }
             }
+            else //var
+            {
+                globalvar_name = id_se->toStr().substr(1);
+                fprintf(yyout, "\t.global %s\n", globalvar_name.c_str());
+                fprintf(yyout, "\t.align 4\n");
+                fprintf(yyout, "\t.size %s, %d\n", globalvar_name.c_str(), id_se->getType()->getSize() / 8);
+                fprintf(yyout, "%s:\n", globalvar_name.c_str());
+                if (id_se->getType()->isInt())
+                {
+                    fprintf(yyout, "\t.word %d\n", id_se->getValue().i);
+                }
+                else if (id_se->getType()->isFloat())
+                {
+                    float value = id_se->getValue().f;
+                    uint32_t print_value = reinterpret_cast<uint32_t&>(value);
+                    fprintf(yyout, "\t.word %u\n", print_value);
+                }
+                else
+                    assert(0);
+            }
+            
         }
     }
 }

@@ -112,20 +112,24 @@ void FunctionDef::genCode() {
             (*basicblock)->addSucc(falsebranch);
         }
     }
-
+    
     for (auto basicblock = func->begin(); basicblock != func->end(); basicblock++) {
         if ((*basicblock)->empty()) {
             for (auto bb = (*basicblock)->pred_begin(); bb != (*basicblock)->pred_end(); bb++) {
                 //(*basicblock)->removePred(*bb);
-                (*bb)->removeSucc(*basicblock);
-                (*bb)->remove((*bb)->rbegin());
+                if ((*bb)->rbegin()->isUncond())
+                {
+                    (*bb)->removeSucc(*basicblock);
+                    (*bb)->remove((*bb)->rbegin());
+                }
             }
         }
-        for (auto inst = (*basicblock)->begin(); inst != (*basicblock)->end()->getPrev(); inst = inst->getNext()) {
+        for (auto inst = (*basicblock)->begin(); inst != (*basicblock)->end()->getPrev(); inst = inst->getNext())
+        {
             if (inst->isCond()) {
                 BasicBlock* truebb = dynamic_cast<CondBrInstruction*>(inst)->getTrueBranch();
-                BasicBlock* falsebb = dynamic_cast<CondBrInstruction*>(inst)->getFalseBranch();
-                if (func->inBlockList(truebb) == false || func->inBlockList(falsebb))
+                //BasicBlock* falsebb = dynamic_cast<CondBrInstruction*>(inst)->getFalseBranch();
+                if (func->inBlockList(truebb) == false)
                     (*basicblock)->remove(inst);
             }
         }
@@ -480,10 +484,31 @@ void DeclStmt::genCode() {
             // sscanf(initval->getOperand()->toStr().c_str(), "%d", &value.i);
             // TODO!!!
             if (se->getType()->isInt())
+            {
                 value.i = (int)initval->getValue();
+                dynamic_cast<IdentifierSymbolEntry*>(se)->setValue(value);
+            }
             else if (se->getType()->isFloat())
+            {
                 value.f = initval->getValue();
-            dynamic_cast<IdentifierSymbolEntry*>(se)->setValue(value);
+                dynamic_cast<IdentifierSymbolEntry*>(se)->setValue(value);
+            }
+            else if (se->getType()->isArray() && dynamic_cast<ArrayType *>(se->getType())->getElementType()->isInt())
+            {
+                //ExprNode * init_val = dynamic_cast<InitValue *>(initval)->getVal();
+                value.i = int(dynamic_cast<InitValue *>(initval)->getVal()->getValue());
+                dynamic_cast<IdentifierSymbolEntry*>(se)->pushArrayValue(value);
+                ExprNode *next_initval = dynamic_cast<ExprNode *>(initval->GetSibling());
+                while (next_initval != nullptr)
+                {
+                    value.i = dynamic_cast<InitValue *>(next_initval)->getVal()->getValue();
+                    dynamic_cast<IdentifierSymbolEntry*>(se)->pushArrayValue(value);
+                    next_initval = dynamic_cast<ExprNode *>(next_initval->GetSibling());
+                }
+            }
+            //[TODO] float
+            else
+                assert(0);
             // std::cout << "add a global var value:" << value << std::endl;
         } else {
             dynamic_cast<IdentifierSymbolEntry*>(se)->setValue(kZERO);

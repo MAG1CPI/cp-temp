@@ -117,6 +117,7 @@ class IdentifierSymbolEntry : public SymbolEntry {
 
     void pushArrayValue(ValueType value) { array_value.push_back(value); }
     ValueType getArrayValue(int n) { return array_value[n]; }
+    int ArrayInitValueNum() { return array_value.size(); }
 
     std::string toStr();
 };

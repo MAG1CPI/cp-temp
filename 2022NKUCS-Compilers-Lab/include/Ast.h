@@ -124,7 +124,7 @@ class Id : public ExprNode {
         SymbolEntry* temp = new TemporarySymbolEntry(se->getType(), SymbolTable::getLabel());
         dst = new Operand(temp);
     };
-    
+
     void setIndex(ExprNode* index) { this->index = index; }
     ExprNode* getIndex() { return index; }
 
@@ -137,6 +137,9 @@ class Id : public ExprNode {
 class InitValue : public ExprNode {
    private:
     ExprNode* val;
+    Type* type;
+    Operand* base_addr;
+    int offset = 0;
 
    public:
     InitValue() {
@@ -147,7 +150,16 @@ class InitValue : public ExprNode {
     void setVal(ExprNode* val) { this->val = val; }
     ExprNode* getVal() { return val; }
 
-    void flatten(std::vector<int> dims, uint32_t level, ExprNode*& begin, ExprNode*& end, uint32_t& n, bool is_float=false);
+    void setType(Type* type) { this->type = type; }
+    Type* getType() { return type; }
+
+    void setBaseAddr(Operand* base_addr) { this->base_addr = base_addr; }
+    Operand* getBaseAddr() { return base_addr; }
+
+    void setOffset(int offset) { this->offset = offset; }
+    int getOffset() { return offset; }
+
+    void flatten(std::vector<int> dims, uint32_t level, ExprNode*& begin, ExprNode*& end, uint32_t& n, bool is_float = false);
 
     void output(int level);
     void typeCheck();

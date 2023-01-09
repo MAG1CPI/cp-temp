@@ -1,0 +1,151 @@
+PASS: 000_main
+PASS: 001_var_defn
+PASS: 002_var_defn2
+PASS: 003_var_defn3
+PASS: 004_arr_defn
+PASS: 005_arr_defn2
+PASS: 006_arr_defn3
+FAIL: 007_arr_defn4     Compile Error
+PASS: 008_const_var_defn
+PASS: 009_const_var_defn2
+PASS: 010_const_var_defn3
+FAIL: 011_const_array_defn      Wrong Answer
+PASS: 012_func_defn
+PASS: 013_var_defn_func
+PASS: 014_add
+PASS: 015_add2
+PASS: 016_addc
+PASS: 017_sub
+PASS: 018_sub2
+PASS: 019_subc
+PASS: 020_mul
+PASS: 021_mulc
+PASS: 022_div
+PASS: 023_divc
+PASS: 024_mod
+PASS: 025_rem
+PASS: 026_if
+PASS: 027_if2
+PASS: 028_if_test1
+PASS: 029_if_test2
+PASS: 030_if_test3
+PASS: 031_if_test4
+PASS: 032_if_test5
+PASS: 033_while_if
+PASS: 034_while_test1
+PASS: 035_while_test2
+PASS: 036_while_test3
+PASS: 037_break
+PASS: 038_continue
+PASS: 039_while_if_test1
+PASS: 040_while_if_test2
+PASS: 041_while_if_test3
+FAIL: 042_arr_expr_len  Wrong Answer
+PASS: 043_op_priority1
+PASS: 044_op_priority2
+PASS: 045_op_priority3
+PASS: 046_op_priority4
+PASS: 047_op_priority5
+PASS: 048_stmt_expr
+PASS: 049_unary_op
+PASS: 050_unary_op2
+PASS: 051_logi_assign
+PASS: 052_comment1
+PASS: 053_comment2
+PASS: 054_hex_defn
+PASS: 055_hex_oct_add
+PASS: 056_assign_complex_expr
+PASS: 057_if_complex_expr
+PASS: 058_short_circuit
+PASS: 059_short_circuit2
+PASS: 060_scope
+PASS: 061_sort_test1
+PASS: 062_sort_test2
+FAIL: 063_sort_test3    Wrong Answer
+PASS: 064_sort_test4
+FAIL: 065_sort_test5    Wrong Answer
+PASS: 066_sort_test6
+FAIL: 067_sort_test7    Wrong Answer
+FAIL: 068_genealogical_tree     Wrong Answer
+PASS: 069_greatest_common_divisor
+FAIL: 070_multiplication_puzzle Wrong Answer
+PASS: 071_exchange_array
+FAIL: 072_percolation   Wrong Answer
+FAIL: 073_backpack      Wrong Answer
+FAIL: 074_matrix_add    Wrong Answer
+FAIL: 075_matrix_sub    Wrong Answer
+FAIL: 076_matrix_mul    Wrong Answer
+FAIL: 077_matrix_tran   Wrong Answer
+PASS: 078_big_int_mul
+FAIL: 079_calculator    Compile Timeout
+FAIL: 080_color Assemble Error
+FAIL: 081_exgcd Wrong Answer
+PASS: 082_reverse_output
+FAIL: 083_brainfk       Assemble Error
+FAIL: 084_expr_eval     Assemble Error
+FAIL: 085_dijkstra      Wrong Answer
+PASS: 086_full_conn
+PASS: 087_gcd
+PASS: 088_hanoi
+FAIL: 089_hidden_var    Wrong Answer
+FAIL: 090_int_io        Wrong Answer
+FAIL: 091_kmp   Assemble Error
+FAIL: 092_max_flow      Assemble Error
+FAIL: 093_n_queens      Wrong Answer
+FAIL: 094_substr        Assemble Error
+PASS: 095_empty_stmt
+PASS: 096_side_effect
+PASS: 097_var_name
+FAIL: 098_chaos_token   Assemble Error
+PASS: 099_skip_spaces
+PASS: 100_int_literal
+PASS: 101_scope2
+PASS: 102_short_circuit3
+FAIL: 103_long_func     Compile Timeout
+FAIL: 104_long_array    Assemble Error
+FAIL: 105_long_array2   Compile Timeout
+PASS: 1066_go_upstairs
+PASS: 1067_remove_duplicate_element
+PASS: 1068_accumulate
+PASS: 1069_last_word_length
+FAIL: 106_long_code     Assemble Error
+PASS: 1070_multi
+PASS: 1071_max_subsequence_sum
+PASS: 1072_enum
+PASS: 1073_exchange_value
+PASS: 1074_itera_sqrt
+PASS: 1075_max_container
+PASS: 1076_int_factor_sum
+PASS: 1077_unique_path
+PASS: 1078_decbinoct
+FAIL: 107_long_code2    Compile Timeout
+PASS: 1080_lcm
+PASS: 1081_jump_game
+PASS: 1082_int_split
+PASS: 1083_enc_dec
+PASS: 1084_palindrome_number
+PASS: 1086_bin_search
+PASS: 1088_array_concat
+FAIL: 108_many_params   Compile Timeout
+FAIL: 1090_insert_order Wrong Answer
+PASS: 1091_line_search
+FAIL: 109_many_params2  Compile Timeout
+FAIL: 110_many_params3  Compile Timeout
+FAIL: 111_many_globals  Compile Timeout
+PASS: 112_many_locals
+PASS: 113_many_locals2
+PASS: 114_register_alloc
+PASS: 115_nested_calls
+PASS: 116_nested_calls2
+FAIL: 117_nested_loops  Wrong Answer
+FAIL: 196_float Compile Error
+FAIL: 198_matrix_add    Wrong Answer
+FAIL: 199_matrix_sub    Wrong Answer
+FAIL: 200_matrix_mul    Wrong Answer
+FAIL: 201_matrix_tran   Wrong Answer
+PASS: 202_register_realloc
+FAIL: 35_math   Compile Error
+FAIL: 36_rotate Compile Error
+FAIL: 37_dct    Compile Error
+FAIL: 38_light2d        Compile Error
+FAIL: 39_fp_params      Compile Error

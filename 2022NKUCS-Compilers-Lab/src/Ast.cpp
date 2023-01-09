@@ -114,23 +114,21 @@ void FunctionDef::genCode() {
     }
     
     for (auto basicblock = func->begin(); basicblock != func->end(); basicblock++) {
-        if ((*basicblock)->empty()) {
-            for (auto bb = (*basicblock)->pred_begin(); bb != (*basicblock)->pred_end(); bb++) {
-                //(*basicblock)->removePred(*bb);
-                if ((*bb)->rbegin()->isUncond())
-                {
-                    (*bb)->removeSucc(*basicblock);
-                    (*bb)->remove((*bb)->rbegin());
-                }
-            }
-        }
-        for (auto inst = (*basicblock)->begin(); inst != (*basicblock)->end()->getPrev(); inst = inst->getNext())
-        {
+        for (auto inst = (*basicblock)->begin(); inst != (*basicblock)->end()->getPrev(); inst = inst->getNext()) {
             if (inst->isCond()) {
                 BasicBlock* truebb = dynamic_cast<CondBrInstruction*>(inst)->getTrueBranch();
                 //BasicBlock* falsebb = dynamic_cast<CondBrInstruction*>(inst)->getFalseBranch();
                 if (func->inBlockList(truebb) == false)
                     (*basicblock)->remove(inst);
+            }
+        }
+        if ((*basicblock)->empty()) {
+            for (auto bb = (*basicblock)->pred_begin(); bb != (*basicblock)->pred_end(); bb++) {
+                //(*basicblock)->removePred(*bb);
+                if ((*bb)->rbegin()->isUncond()) {
+                    (*bb)->removeSucc(*basicblock);
+                    (*bb)->remove((*bb)->rbegin());
+                }
             }
         }
     }
@@ -535,9 +533,23 @@ void DeclStmt::genCode() {
                 Operand* src = initval->getOperand();
                 new StoreInstruction(addr, src, bb);
             } else {
-                // initval->genCode();
-                // Operand* src = initval->getOperand();
-                // new StoreInstruction(addr, src, bb);
+                InitValue* init_node = dynamic_cast<InitValue*>(initval);
+                ValueType offset_val;
+                offset_val.i = 0;
+                while (init_node) {
+                    init_node->getVal()->genCode();
+                    Operand* src = init_node->getVal()->getOperand();
+
+                    Operand* offset_op = new Operand(new ConstantSymbolEntry(TypeSystem::constintType, offset_val));
+
+                    TemporarySymbolEntry* final_offset_se = new TemporarySymbolEntry(se->getType(), SymbolTable::getLabel());
+                    Operand* final_offset_op = new Operand(final_offset_se);
+
+                    new BinaryInstruction(BinaryInstruction::ADD, final_offset_op, offset_op, addr, builder->getInsertBB());
+                    new StoreInstruction(final_offset_op, src, builder->getInsertBB());
+                    init_node = dynamic_cast<InitValue*>(init_node->GetSibling());
+                    offset_val.i += 4;
+                }
             }
         }
     }
@@ -729,7 +741,7 @@ void NullStmt::genCode() {
 }
 
 void InitValue::genCode() {
-    // [TODO]
+    // do nothing
 }
 
 void Ast::typeCheck() {
@@ -1133,7 +1145,7 @@ void InitValue::flatten(std::vector<int> dims, uint32_t level, ExprNode*& begin,
         next_level->setVal(val);
 
         this->val = next_level;
-        
+
         uint32_t sub_n = 0;
         dynamic_cast<InitValue*>(val)->flatten(dims, level + 1, begin, end, sub_n, is_float);
         n += sub_n;

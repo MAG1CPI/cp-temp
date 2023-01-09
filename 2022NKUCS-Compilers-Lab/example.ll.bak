@@ -1,0 +1,263 @@
+@a = global i32 0, align 4
+@b = global i32 0, align 4
+@d = global i32 0, align 4
+
+define i32 @set_a(i32 %t151) {
+B150:
+  %t152 = alloca i32, align 4
+  store i32 %t151, i32* %t152, align 4
+  %t10 = load i32, i32* %t152, align 4
+  store i32 %t10, i32* @a, align 4
+  %t11 = load i32, i32* @a, align 4
+  ret i32 %t11
+}
+define i32 @set_b(i32 %t154) {
+B153:
+  %t155 = alloca i32, align 4
+  store i32 %t154, i32* %t155, align 4
+  %t16 = load i32, i32* %t155, align 4
+  store i32 %t16, i32* @b, align 4
+  %t17 = load i32, i32* @b, align 4
+  ret i32 %t17
+}
+define i32 @set_d(i32 %t157) {
+B156:
+  %t158 = alloca i32, align 4
+  store i32 %t157, i32* %t158, align 4
+  %t22 = load i32, i32* %t158, align 4
+  store i32 %t22, i32* @d, align 4
+  %t23 = load i32, i32* @d, align 4
+  ret i32 %t23
+}
+define i32 @main() {
+B159:
+  %t234 = alloca i32, align 4
+  %t233 = alloca i32, align 4
+  %t232 = alloca i32, align 4
+  %t231 = alloca i32, align 4
+  %t230 = alloca i32, align 4
+  %t178 = alloca i32, align 4
+  store i32 2, i32* @a, align 4
+  store i32 3, i32* @b, align 4
+  %t27 = call i32 @set_a(i32 0)
+  %t163 = icmp ne i32 %t27, 0
+  br i1 %t163, label %B162, label %B161
+B162:                               	; preds = %B159
+  %t28 = call i32 @set_b(i32 1)
+  %t166 = icmp ne i32 %t28, 0
+  br i1 %t166, label %B160, label %B161
+B161:                               	; preds = %B159, %B160, %B162
+  %t31 = load i32, i32* @a, align 4
+  call void @putint(i32 %t31)
+  call void @putch(i32 32)
+  %t34 = load i32, i32* @b, align 4
+  call void @putint(i32 %t34)
+  call void @putch(i32 32)
+  store i32 2, i32* @a, align 4
+  store i32 3, i32* @b, align 4
+  %t38 = call i32 @set_a(i32 0)
+  %t172 = icmp ne i32 %t38, 0
+  br i1 %t172, label %B171, label %B170
+B160:                               	; preds = %B162
+  br label %B161
+B171:                               	; preds = %B161
+  %t39 = call i32 @set_b(i32 1)
+  %t175 = icmp ne i32 %t39, 0
+  br i1 %t175, label %B169, label %B170
+B170:                               	; preds = %B161, %B169, %B171
+  %t42 = load i32, i32* @a, align 4
+  call void @putint(i32 %t42)
+  call void @putch(i32 32)
+  %t45 = load i32, i32* @b, align 4
+  call void @putint(i32 %t45)
+  call void @putch(i32 10)
+  store i32 1, i32* %t178, align 4
+  store i32 2, i32* @d, align 4
+  %t50 = load i32, i32* %t178, align 4
+  %t51 = icmp sge i32 %t50, 1
+  br i1 %t51, label %B181, label %B180
+B169:                               	; preds = %B171
+  br label %B170
+B181:                               	; preds = %B170
+  %t52 = call i32 @set_d(i32 3)
+  %t184 = icmp ne i32 %t52, 0
+  br i1 %t184, label %B179, label %B180
+B180:                               	; preds = %B170, %B179, %B181
+  %t55 = load i32, i32* @d, align 4
+  call void @putint(i32 %t55)
+  call void @putch(i32 32)
+  %t57 = load i32, i32* %t178, align 4
+  %t58 = icmp sle i32 %t57, 1
+  br i1 %t58, label %B187, label %B189
+B179:                               	; preds = %B181
+  br label %B180
+B187:                               	; preds = %B180, %B189
+  br label %B188
+B189:                               	; preds = %B180
+  %t59 = call i32 @set_d(i32 4)
+  %t192 = icmp ne i32 %t59, 0
+  br i1 %t192, label %B187, label %B188
+B188:                               	; preds = %B187, %B189
+  %t62 = load i32, i32* @d, align 4
+  call void @putint(i32 %t62)
+  call void @putch(i32 10)
+  %t64 = add i32 2, 1
+  %t65 = sub i32 3, %t64
+  %t66 = icmp sge i32 16, %t65
+  br i1 %t66, label %B195, label %B196
+B195:                               	; preds = %B188
+  call void @putch(i32 65)
+  br label %B196
+B196:                               	; preds = %B188, %B195
+  %t68 = sub i32 25, 7
+  %t69 = mul i32 6, 3
+  %t70 = sub i32 36, %t69
+  %t71 = icmp ne i32 %t68, %t70
+  br i1 %t71, label %B199, label %B200
+B199:                               	; preds = %B196
+  call void @putch(i32 66)
+  br label %B200
+B200:                               	; preds = %B196, %B199
+  %t73 = icmp slt i32 1, 8
+  br i1 %t73, label %B205, label %B206
+  %t207 = zext i1 %t73 to i32
+  %t74 = srem i32 7, 2
+  %t75 = icmp ne i32 %t207, %t74
+  br i1 %t75, label %B203, label %B204
+B203:                               	; preds = %B200
+  call void @putch(i32 67)
+  br label %B204
+B204:                               	; preds = %B200, %B203
+  %t77 = icmp sgt i32 3, 4
+  br i1 %t77, label %B212, label %B213
+  %t214 = zext i1 %t77 to i32
+  %t78 = icmp eq i32 %t214, 0
+  br i1 %t78, label %B210, label %B211
+B210:                               	; preds = %B204
+  call void @putch(i32 68)
+  br label %B211
+B211:                               	; preds = %B204, %B210
+  %t80 = icmp sle i32 102, 63
+  br i1 %t80, label %B219, label %B220
+  %t221 = zext i1 %t80 to i32
+  %t81 = icmp eq i32 1, %t221
+  br i1 %t81, label %B217, label %B218
+B217:                               	; preds = %B211
+  call void @putch(i32 69)
+  br label %B218
+B218:                               	; preds = %B211, %B217
+  %t83 = sub i32 5, 6
+  %t226 = icmp ne i32 0, 0
+  %t84 = xor i1 %t226, true
+  %t227 = zext i1 %t84 to i32
+  %t85 = sub i32 0, %t227
+  %t86 = icmp eq i32 %t83, %t85
+  br i1 %t86, label %B224, label %B225
+B224:                               	; preds = %B218
+  call void @putch(i32 70)
+  br label %B225
+B225:                               	; preds = %B218, %B224
+  call void @putch(i32 10)
+  store i32 0, i32* %t230, align 4
+  store i32 1, i32* %t231, align 4
+  store i32 2, i32* %t232, align 4
+  store i32 3, i32* %t233, align 4
+  store i32 4, i32* %t234, align 4
+  br label %B235
+B235:                               	; preds = %B225
+  %t99 = load i32, i32* %t230, align 4
+  %t239 = icmp ne i32 %t99, 0
+  br i1 %t239, label %B238, label %B237
+B238:                               	; preds = %B235, %B236
+  %t100 = load i32, i32* %t231, align 4
+  %t242 = icmp ne i32 %t100, 0
+  br i1 %t242, label %B236, label %B237
+B237:                               	; preds = %B235, %B238
+  %t103 = load i32, i32* %t230, align 4
+  %t248 = icmp ne i32 %t103, 0
+  br i1 %t248, label %B245, label %B247
+B236:                               	; preds = %B238
+  call void @putch(i32 32)
+  br label %B238
+B245:                               	; preds = %B237, %B247
+  call void @putch(i32 67)
+  br label %B246
+B247:                               	; preds = %B237
+  %t104 = load i32, i32* %t231, align 4
+  %t251 = icmp ne i32 %t104, 0
+  br i1 %t251, label %B245, label %B246
+B246:                               	; preds = %B245, %B247
+  %t107 = load i32, i32* %t230, align 4
+  %t108 = load i32, i32* %t231, align 4
+  %t109 = icmp sge i32 %t107, %t108
+  br i1 %t109, label %B254, label %B256
+B254:                               	; preds = %B246, %B256
+  call void @putch(i32 72)
+  br label %B255
+B256:                               	; preds = %B246
+  %t110 = load i32, i32* %t231, align 4
+  %t111 = load i32, i32* %t230, align 4
+  %t112 = icmp sle i32 %t110, %t111
+  br i1 %t112, label %B254, label %B255
+B255:                               	; preds = %B254, %B256
+  %t115 = load i32, i32* %t232, align 4
+  %t116 = load i32, i32* %t231, align 4
+  %t117 = icmp sge i32 %t115, %t116
+  br i1 %t117, label %B263, label %B262
+B263:                               	; preds = %B255
+  %t118 = load i32, i32* %t234, align 4
+  %t119 = load i32, i32* %t233, align 4
+  %t120 = icmp ne i32 %t118, %t119
+  br i1 %t120, label %B261, label %B262
+B262:                               	; preds = %B255, %B261, %B263
+  %t123 = load i32, i32* %t230, align 4
+  %t124 = load i32, i32* %t231, align 4
+  %t272 = icmp ne i32 %t124, 0
+  %t125 = xor i1 %t272, true
+  %t273 = zext i1 %t125 to i32
+  %t126 = icmp eq i32 %t123, %t273
+  br i1 %t126, label %B271, label %B270
+B261:                               	; preds = %B263
+  call void @putch(i32 73)
+  br label %B262
+B271:                               	; preds = %B262
+  %t127 = load i32, i32* %t233, align 4
+  %t128 = load i32, i32* %t233, align 4
+  %t129 = icmp slt i32 %t127, %t128
+  br i1 %t129, label %B268, label %B270
+B270:                               	; preds = %B262, %B271
+  %t131 = load i32, i32* %t234, align 4
+  %t132 = load i32, i32* %t234, align 4
+  %t133 = icmp sge i32 %t131, %t132
+  br i1 %t133, label %B268, label %B269
+B268:                               	; preds = %B270, %B271
+  call void @putch(i32 74)
+  br label %B269
+B269:                               	; preds = %B268, %B270
+  %t136 = load i32, i32* %t230, align 4
+  %t137 = load i32, i32* %t231, align 4
+  %t283 = icmp ne i32 %t137, 0
+  %t138 = xor i1 %t283, true
+  %t284 = zext i1 %t138 to i32
+  %t139 = icmp eq i32 %t136, %t284
+  br i1 %t139, label %B280, label %B282
+B280:                               	; preds = %B269, %B287
+  call void @putch(i32 75)
+  br label %B281
+B282:                               	; preds = %B269
+  %t140 = load i32, i32* %t233, align 4
+  %t141 = load i32, i32* %t233, align 4
+  %t142 = icmp slt i32 %t140, %t141
+  br i1 %t142, label %B287, label %B281
+B281:                               	; preds = %B280, %B282, %B287
+  call void @putch(i32 10)
+  ret i32 0
+B287:                               	; preds = %B282
+  %t143 = load i32, i32* %t234, align 4
+  %t144 = load i32, i32* %t234, align 4
+  %t145 = icmp sge i32 %t143, %t144
+  br i1 %t145, label %B280, label %B281
+}
+
+declare void @putint(i32)
+declare void @putch(i32)

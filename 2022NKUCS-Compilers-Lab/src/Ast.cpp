@@ -898,6 +898,7 @@ void SeqNode::output(int level) {
 void DeclStmt::output(int level) {
     fprintf(yyout, "%*cDeclStmt\n", level, ' ');
     id->output(level + 4);
+    fprintf(yyout, "%*cInitValue\n", level + 4, ' ');
     if (initval != nullptr)
         initval->output(level + 4);
     if (HaveSibling()) {
@@ -1091,6 +1092,65 @@ double Id::getValue() {
     return 0;
 }
 
+void InitValue::flatten(std::vector<int> dims, uint32_t level, ExprNode*& begin, ExprNode*& end, uint32_t& n, bool is_float) {
+    //[TODO] {}所在的维数
+    // 低维展平
+    if (val == nullptr) {
+        SymbolEntry* se;
+        if (is_float) {
+            se = new ConstantSymbolEntry(TypeSystem::floatType, kZERO);
+        } else {
+            se = new ConstantSymbolEntry(TypeSystem::intType, kZERO);
+        }
+        val = new Constant(se);
+
+        InitValue* next_level = new InitValue();
+        next_level->setVal(val);
+
+        this->val = next_level;
+        
+        uint32_t sub_n = 0;
+        dynamic_cast<InitValue*>(val)->flatten(dims, level + 1, begin, end, sub_n, is_float);
+        n += sub_n;
+    } else if (val->isInitList()) {
+        uint32_t sub_n = 0;
+        dynamic_cast<InitValue*>(val)->flatten(dims, level + 1, begin, end, sub_n, is_float);
+        n += sub_n;
+    } else {
+        begin = end = this;
+        n++;
+    }
+    // 同维展平
+    ExprNode *next_begin = nullptr,
+             *next_end = nullptr;
+    // uint32_t next_n = 0;
+    if (GetSibling()) {
+        dynamic_cast<InitValue*>(GetSibling())->flatten(dims, level, next_begin, next_end, n, is_float);
+        end->SetSibling(next_begin);
+        end = next_end;
+    }
+    // 填充
+    uint32_t len = 1;
+    for (uint32_t i = level; i < dims.size(); i++) {
+        len *= dims[i];
+    }
+    InitValue* padding_node;
+    SymbolEntry* se;
+    ExprNode* const_val_node;
+    while (n < len) {
+        padding_node = new InitValue();
+        if (is_float) {
+            se = new ConstantSymbolEntry(TypeSystem::floatType, kZERO);
+        } else {
+            se = new ConstantSymbolEntry(TypeSystem::intType, kZERO);
+        }
+        const_val_node = new Constant(se);
+        padding_node->setVal(const_val_node);
+        end->SetSibling(padding_node);
+        end = padding_node;
+        n++;
+    }
+}
 /******************************
     type:
         1:UnaryExpr

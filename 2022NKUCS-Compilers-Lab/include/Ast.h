@@ -45,13 +45,16 @@ class ExprNode : public Node {
    protected:
     SymbolEntry* symbolEntry;
     Operand* dst;  // The result of the subtree is stored into dst.
+    bool is_init_list;
+
    public:
     ExprNode(SymbolEntry* symbolEntry = nullptr)
-        : symbolEntry(symbolEntry){};
+        : symbolEntry(symbolEntry), is_init_list(false){};
     Operand* getOperand() { return dst; };
     Type* getOperandType() { return dst->getType(); };
     SymbolEntry* getSymPtr() { return symbolEntry; };
 
+    bool isInitList() { return is_init_list; }
     virtual double getValue() { return 0.0; };
 
     void int2bool(BasicBlock* insert_bb);
@@ -136,10 +139,15 @@ class InitValue : public ExprNode {
     ExprNode* val;
 
    public:
-    InitValue() { val = nullptr; }
+    InitValue() {
+        val = nullptr;
+        is_init_list = true;
+    }
 
     void setVal(ExprNode* val) { this->val = val; }
     ExprNode* getVal() { return val; }
+
+    void flatten(std::vector<int> dims, uint32_t level, ExprNode*& begin, ExprNode*& end, uint32_t& n, bool is_float=false);
 
     void output(int level);
     void typeCheck();

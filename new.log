@@ -5,7 +5,7 @@ PASS: 003_var_defn3
 PASS: 004_arr_defn
 PASS: 005_arr_defn2
 PASS: 006_arr_defn3
-FAIL: 007_arr_defn4     Compile Error
+PASS: 007_arr_defn4
 PASS: 008_const_var_defn
 PASS: 009_const_var_defn2
 PASS: 010_const_var_defn3
@@ -87,7 +87,7 @@ PASS: 085_dijkstra
 PASS: 086_full_conn
 PASS: 087_gcd
 PASS: 088_hanoi
-FAIL: 089_hidden_var    Wrong Answer
+PASS: 089_hidden_var
 PASS: 090_int_io
 FAIL: 091_kmp   Assemble Error
 FAIL: 092_max_flow      Assemble Error

@@ -70,7 +70,7 @@ FAIL: 068_genealogical_tree     Wrong Answer
 PASS: 069_greatest_common_divisor
 FAIL: 070_multiplication_puzzle Wrong Answer
 PASS: 071_exchange_array
-FAIL: 072_percolation   Wrong Answer
+FAIL: 072_percolation   Execute Error
 FAIL: 073_backpack      Wrong Answer
 FAIL: 074_matrix_add    Wrong Answer
 FAIL: 075_matrix_sub    Wrong Answer
@@ -88,7 +88,7 @@ PASS: 086_full_conn
 PASS: 087_gcd
 PASS: 088_hanoi
 FAIL: 089_hidden_var    Wrong Answer
-FAIL: 090_int_io        Wrong Answer
+PASS: 090_int_io
 FAIL: 091_kmp   Assemble Error
 FAIL: 092_max_flow      Assemble Error
 FAIL: 093_n_queens      Wrong Answer

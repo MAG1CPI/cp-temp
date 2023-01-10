@@ -10,6 +10,7 @@ extern Unit unit;
 extern FILE* yyout;
 int Node::counter = 0;
 IRBuilder* Node::builder = nullptr;
+bool is_cond_expr = false;
 
 Node::Node() {
     seq = counter++;
@@ -157,8 +158,11 @@ void UnaryExpr::genCode() {
     BasicBlock* bb = builder->getInsertBB();
     // Function *func = bb->getParent();
     if (op == ADD || op == SUB) {
+        bool cond_expr_state = is_cond_expr;
+        is_cond_expr = false;
         //[TODO]FLOAT
         expr->genCode();
+        is_cond_expr = cond_expr_state;
         if (expr->getOperandType()->toStr() == "i1")
             expr->bool2int(bb);
         SymbolEntry* se = new ConstantSymbolEntry(dst->getType(), kZERO);
@@ -171,23 +175,36 @@ void UnaryExpr::genCode() {
             opcode = BinaryInstruction::SUB;
         new BinaryInstruction(opcode, dst, src1, src2, bb);
     } else if (op == NOT) {
+        bool cond_expr_state = is_cond_expr;
+        is_cond_expr = false;
         expr->genCode();
+        is_cond_expr = cond_expr_state;
         //[TODO]FLOAT
         // swapList(expr->trueList(), expr->falseList());
+
+        // if (!is_cond_expr) {
         if (expr->getOperandType()->toStr() == "i32")
             expr->int2bool(bb);
         new NEGInstruction(dst, expr->getOperand(), bb);
-
+        //[TODO] 优化
+        if (is_cond_expr)
+            expr->bool2int(bb);
         /*
-        Function* func = bb->getParent();
-        BasicBlock *truebranch, *falsebranch;
-        truebranch = new BasicBlock(func);
-        falsebranch = new BasicBlock(func);
+        } else {
+            Operand* new_dst = new Operand(new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel()));
+            Operand* zero = new Operand(new ConstantSymbolEntry(TypeSystem::intType, kZERO));
+            new CmpInstruction(CmpInstruction::EQ, new_dst, dst, zero, bb);
+            dst = new_dst;
 
-        Instruction* branch = new CondBrInstruction(truebranch, falsebranch, dst, bb);
-        trueList().push_back(branch);
-        falseList().push_back(branch);
-        */
+            Function* func = bb->getParent();
+            BasicBlock *truebranch, *falsebranch;
+            truebranch = new BasicBlock(func);
+            falsebranch = new BasicBlock(func);
+
+            Instruction* branch = new CondBrInstruction(truebranch, falsebranch, dst, bb);
+            trueList().push_back(branch);
+            falseList().push_back(branch);
+        }  //*/
     }
 }
 
@@ -280,6 +297,8 @@ void BinaryExpr::genCode() {
 
     } else if (op >= ADD && op <= MOD) {
         //[TODO]FLOAT
+        bool cond_expr_state = is_cond_expr;
+        is_cond_expr = false;
         expr1->genCode();
         if (expr1->getOperandType()->toStr() == "i1")
             expr1->bool2int(bb);
@@ -288,6 +307,7 @@ void BinaryExpr::genCode() {
         if (expr2->getOperandType()->toStr() == "i1")
             expr2->bool2int(bb);
 
+        is_cond_expr = cond_expr_state;
         Operand* src1 = expr1->getOperand();
         Operand* src2 = expr2->getOperand();
         int opcode;
@@ -406,7 +426,9 @@ void IfStmt::genCode() {
     then_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
 
+    is_cond_expr = true;
     cond->genCode();
+    is_cond_expr = false;
     cond_bb = builder->getInsertBB();
     //[TODO]FLOAT
     if (cond->getOperandType()->toStr() == "i32") {
@@ -435,7 +457,9 @@ void IfElseStmt::genCode() {
     else_bb = new BasicBlock(func);
     end_bb = new BasicBlock(func);
 
+    is_cond_expr = true;
     cond->genCode();
+    is_cond_expr = false;
     cond_bb = builder->getInsertBB();
     //[TODO]FLOAT
     if (cond->getOperandType()->toStr() == "i32") {
@@ -655,7 +679,9 @@ void WhileStmt::genCode() {
     new UncondBrInstruction(cond_bb, now_bb);
 
     builder->setInsertBB(cond_bb);
+    is_cond_expr = true;
     cond->genCode();
+    is_cond_expr = false;
     cond_bb = builder->getInsertBB();
     //[TODO]FLOAT
     if (cond->getOperandType()->toStr() == "i32") {

@@ -46,14 +46,16 @@ class ExprNode : public Node {
     SymbolEntry* symbolEntry;
     Operand* dst;  // The result of the subtree is stored into dst.
     bool is_init_list;
+    bool is_cond_op;
 
    public:
     ExprNode(SymbolEntry* symbolEntry = nullptr)
-        : symbolEntry(symbolEntry), is_init_list(false){};
+        : symbolEntry(symbolEntry), is_init_list(false), is_cond_op(false){};
     Operand* getOperand() { return dst; };
     Type* getOperandType() { return dst->getType(); };
     SymbolEntry* getSymPtr() { return symbolEntry; };
 
+    bool isCondOp() { return is_cond_op; }
     bool isInitList() { return is_init_list; }
     virtual double getValue() { return 0.0; };
 
@@ -71,7 +73,11 @@ class UnaryExpr : public ExprNode {
            SUB,
            NOT };
     UnaryExpr(SymbolEntry* se, int op, ExprNode* expr)
-        : ExprNode(se), op(op), expr(expr) { dst = new Operand(se); };
+        : ExprNode(se), op(op), expr(expr) {
+        dst = new Operand(se);
+        if (op == NOT)
+            is_cond_op = true;
+    };
     double getValue();
     void output(int level);
     void typeCheck();
@@ -97,8 +103,14 @@ class BinaryExpr : public ExprNode {
            LESSEQ,
            GREATER,
            GREATEREQ };
+
     BinaryExpr(SymbolEntry* se, int op, ExprNode* expr1, ExprNode* expr2)
-        : ExprNode(se), op(op), expr1(expr1), expr2(expr2) { dst = new Operand(se); };
+        : ExprNode(se), op(op), expr1(expr1), expr2(expr2) {
+        dst = new Operand(se);
+        if (op >= AND)
+            is_cond_op = true;
+    };
+
     double getValue();
     void output(int level);
     void typeCheck();

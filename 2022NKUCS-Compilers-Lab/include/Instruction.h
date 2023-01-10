@@ -50,6 +50,7 @@ class Instruction {
     void setPrev(Instruction* inst) { prev = inst; }
 
     MachineOperand* genMachineOperand(Operand*);
+    MachineOperand* genFloatMachineOperand(Operand*);
     MachineOperand* genMachineReg(int reg);
     MachineOperand* genMachineVReg();
     MachineOperand* genMachineImm(int val);

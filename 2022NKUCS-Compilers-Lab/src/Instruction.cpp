@@ -484,6 +484,40 @@ MachineOperand* Instruction::genMachineOperand(Operand* ope) {
     return mope;
 }
 
+MachineOperand* Instruction::genFloatMachineOperand(Operand* ope) {
+    auto se = ope->getEntry();
+    MachineOperand* mope = nullptr;
+    bool is_float = true;
+    if (se->isConstant()) {
+        mope = new MachineOperand(MachineOperand::IMM, dynamic_cast<ConstantSymbolEntry*>(se)->getValue().f, is_float);
+    } else if (se->isTemporary()) {
+        Function* func = this->parent->getParent();
+        auto temp_se = dynamic_cast<TemporarySymbolEntry*>(se);
+        if (func->haveFParam(temp_se)) {
+            int reg_no = find(func->getFParams().begin(), func->getFParams().end(), temp_se) - func->getFParams().begin();
+            if (reg_no < 4) {
+                mope = new MachineOperand(MachineOperand::REG, reg_no + 16, is_float);
+            } else  // TODO fparams more than 4
+            {
+                mope = new MachineOperand(MachineOperand::REG, 20, is_float);
+                mope->setStackParam();
+            }
+        } else if (se->getType()->isPtr()) {
+            if (dynamic_cast<PointerType*>(se->getType())->getValueType()->isArray()) {
+                mope = new MachineOperand(MachineOperand::IMM, dynamic_cast<TemporarySymbolEntry*>(se)->getOffset());
+            }
+        } else
+            mope = new MachineOperand(MachineOperand::VREG, temp_se->getLabel(), is_float);
+    } else if (se->isVariable()) {
+        auto id_se = dynamic_cast<IdentifierSymbolEntry*>(se);
+        if (id_se->isGlobal())
+            mope = new MachineOperand(id_se->toStr().c_str());
+        else
+            exit(0);
+    }
+    return mope;
+}
+
 MachineOperand* Instruction::genMachineReg(int reg) {
     return new MachineOperand(MachineOperand::REG, reg);
 }
@@ -953,7 +987,7 @@ void CallInstruction::genMachineCode(AsmBuilder* builder) {
     // std::cout << reg_arg_num << "\n";
     std::vector<MachineOperand*> stack_arg;
     for (i = 1; i < reg_arg_num; i++) {
-        dst = new MachineOperand(MachineOperand::REG, i - 1);
+        dst = new MachineOperand(MachineOperand::REG, int(i - 1));
         if (operands[i]->isArrayPointer()) {
             //operands[i]->setArrayPointer(false);
             //Type* temp_type = operands[i]->getEntry()->getType();

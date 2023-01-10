@@ -63,14 +63,14 @@ PASS: 061_sort_test1
 PASS: 062_sort_test2
 FAIL: 063_sort_test3    Wrong Answer
 PASS: 064_sort_test4
-FAIL: 065_sort_test5    Wrong Answer
+PASS: 065_sort_test5
 PASS: 066_sort_test6
 FAIL: 067_sort_test7    Wrong Answer
 PASS: 068_genealogical_tree
 PASS: 069_greatest_common_divisor
-FAIL: 070_multiplication_puzzle Wrong Answer
+PASS: 070_multiplication_puzzle
 PASS: 071_exchange_array
-FAIL: 072_percolation   Wrong Answer
+PASS: 072_percolation
 FAIL: 073_backpack      Assemble Error
 FAIL: 074_matrix_add    Wrong Answer
 FAIL: 075_matrix_sub    Wrong Answer
@@ -79,7 +79,7 @@ FAIL: 077_matrix_tran   Wrong Answer
 PASS: 078_big_int_mul
 FAIL: 079_calculator    Compile Timeout
 FAIL: 080_color Assemble Error
-FAIL: 081_exgcd Wrong Answer
+PASS: 081_exgcd
 PASS: 082_reverse_output
 FAIL: 083_brainfk       Assemble Error
 FAIL: 084_expr_eval     Assemble Error
@@ -91,7 +91,7 @@ PASS: 089_hidden_var
 PASS: 090_int_io
 FAIL: 091_kmp   Assemble Error
 FAIL: 092_max_flow      Assemble Error
-FAIL: 093_n_queens      Wrong Answer
+PASS: 093_n_queens
 FAIL: 094_substr        Assemble Error
 PASS: 095_empty_stmt
 PASS: 096_side_effect

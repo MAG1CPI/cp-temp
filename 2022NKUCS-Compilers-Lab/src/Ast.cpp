@@ -412,6 +412,7 @@ void Id::genCode() {
         } else {  // 数组指针的函数实参
             Operand* zero_op = new Operand(new ConstantSymbolEntry(TypeSystem::constintType, kZERO));
             new BinaryInstruction(BinaryInstruction::ADD, dst, addr, zero_op, bb, true);
+            dst->setArrayPointer(dims[0] == -1);
         }
     } else {
         new LoadInstruction(dst, addr, bb);

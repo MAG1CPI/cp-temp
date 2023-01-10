@@ -14,10 +14,11 @@ class Operand {
     std::vector<Instruction*> uses;  // Intructions that use this operand.
 
     SymbolEntry* se;                // The symbol entry of this operand.
+    bool is_array_pointer_in_rparam;          // 在函数参数是数组指针时使用
 
    public:
     Operand(SymbolEntry* se)
-        : se(se) { def = nullptr; }
+        : se(se) { def = nullptr; is_array_pointer_in_rparam = false; }
 
     int usersNum() const { return uses.size(); }
     SymbolEntry* getEntry() { return se; }
@@ -27,6 +28,9 @@ class Operand {
     void setDef(Instruction* inst) { def = inst; }
     void addUse(Instruction* inst) { uses.push_back(inst); }
     void removeUse(Instruction* inst);
+
+    void setArrayPointer(bool is_array_pointer_in_rparam){ this->is_array_pointer_in_rparam = is_array_pointer_in_rparam; }
+    bool isArrayPointer(){ return is_array_pointer_in_rparam; }
 
     std::string toStr() const;
 

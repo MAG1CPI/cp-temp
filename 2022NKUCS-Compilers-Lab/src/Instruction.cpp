@@ -896,8 +896,15 @@ void CallInstruction::genMachineCode(AsmBuilder* builder) {
     std::vector<MachineOperand*> stack_arg;
     for (i = 1; i < reg_arg_num; i++) {
         dst = new MachineOperand(MachineOperand::REG, i - 1);
-        cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, genMachineOperand(operands[i]));
-        cur_block->InsertInst(cur_inst);
+        if (operands[i]->isArrayPointer()) {
+            //operands[i]->setArrayPointer(false);
+            Type* temp_type = operands[i]->getEntry()->getType();
+            cur_inst = new LoadMInstruction(cur_block, dst, genMachineOperand(operands[i]));
+            cur_block->InsertInst(cur_inst);
+        } else {
+            cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, genMachineOperand(operands[i]));
+            cur_block->InsertInst(cur_inst);
+        }
     }
     // std::cout << "i M\n";
     for (; i < operands.size(); i++) {

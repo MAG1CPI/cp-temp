@@ -188,7 +188,7 @@ void UnaryExpr::genCode() {
         new NEGInstruction(dst, expr->getOperand(), bb);
         //[TODO] 优化
         if (is_cond_expr)
-            expr->bool2int(bb);
+            bool2int(bb);
         /*
         } else {
             Operand* new_dst = new Operand(new TemporarySymbolEntry(TypeSystem::boolType, SymbolTable::getLabel()));

@@ -210,10 +210,6 @@ class NEGInstruction : public Instruction {
 };
 
 class Float2IntInstruction : public Instruction {
-   private:
-    Operand* dst;
-    Operand* src;
-
    public:
     Float2IntInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr);
     ~Float2IntInstruction();
@@ -223,10 +219,6 @@ class Float2IntInstruction : public Instruction {
 };
 
 class Int2FloatInstruction : public Instruction {
-   private:
-    Operand* dst;
-    Operand* src;
-
    public:
     Int2FloatInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr);
     ~Int2FloatInstruction();

@@ -393,7 +393,7 @@ void NEGInstruction::output() const {
     // more
 }
 
-Float2IntInstruction::Float2IntInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr)
+Float2IntInstruction::Float2IntInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb)
     : Instruction(FLOAT2INT, insert_bb) {
     operands.push_back(dst);
     operands.push_back(src);
@@ -422,7 +422,7 @@ void Float2IntInstruction::output() const {
     fprintf(yyout, "  %s = fptosi %s %s to %s\n", dst_str.c_str(), src_type.c_str(), src_str.c_str(), dst_type.c_str());
 }
 
-Int2FloatInstruction::Int2FloatInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr)
+Int2FloatInstruction::Int2FloatInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb)
     : Instruction(INT2FLOAT, insert_bb) {
     operands.push_back(dst);
     operands.push_back(src);
@@ -956,7 +956,7 @@ void CallInstruction::genMachineCode(AsmBuilder* builder) {
         dst = new MachineOperand(MachineOperand::REG, i - 1);
         if (operands[i]->isArrayPointer()) {
             //operands[i]->setArrayPointer(false);
-            Type* temp_type = operands[i]->getEntry()->getType();
+            //Type* temp_type = operands[i]->getEntry()->getType();
             cur_inst = new LoadMInstruction(cur_block, dst, genMachineOperand(operands[i]));
             cur_block->InsertInst(cur_inst);
         } else {
@@ -1018,4 +1018,12 @@ void NEGInstruction::genMachineCode(AsmBuilder* builder) {
     cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, genMachineImm(0), MachineInstruction::NE);
     cur_block->InsertInst(cur_inst);
     // std::cout << "i NEG E\n";
+}
+
+void Float2IntInstruction::genMachineCode(AsmBuilder* builder) {
+
+}
+
+void Int2FloatInstruction::genMachineCode(AsmBuilder* builder) {
+    
 }

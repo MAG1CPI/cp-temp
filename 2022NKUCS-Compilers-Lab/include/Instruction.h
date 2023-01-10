@@ -30,7 +30,9 @@ class Instruction {
            CMP,
            ALLOCA,
            UNSIGNEDEXT,
-           NEG };
+           NEG,
+           FLOAT2INT,
+           INT2FLOAT };
 
    public:
     Instruction(unsigned instType, BasicBlock* insert_bb = nullptr);
@@ -202,6 +204,32 @@ class NEGInstruction : public Instruction {
    public:
     NEGInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr);
     ~NEGInstruction();
+
+    void output() const;
+    void genMachineCode(AsmBuilder*);
+};
+
+class Float2IntInstruction : public Instruction {
+   private:
+    Operand* dst;
+    Operand* src;
+
+   public:
+    Float2IntInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr);
+    ~Float2IntInstruction();
+
+    void output() const;
+    void genMachineCode(AsmBuilder*);
+};
+
+class Int2FloatInstruction : public Instruction {
+   private:
+    Operand* dst;
+    Operand* src;
+
+   public:
+    Int2FloatInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr);
+    ~Int2FloatInstruction();
 
     void output() const;
     void genMachineCode(AsmBuilder*);

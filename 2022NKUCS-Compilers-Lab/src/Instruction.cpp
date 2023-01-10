@@ -393,6 +393,64 @@ void NEGInstruction::output() const {
     // more
 }
 
+Float2IntInstruction::Float2IntInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr)
+    : Instruction(FLOAT2INT, insert_bb) {
+    operands.push_back(dst);
+    operands.push_back(src);
+
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+Float2IntInstruction::~Float2IntInstruction() {
+    operands[0]->setDef(nullptr);
+    if (operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void Float2IntInstruction::output() const {
+    Operand* dst = operands[0];
+    Operand* src = operands[1];
+
+    std::string dst_str, src_str, src_type, dst_type;
+    dst_str = dst->toStr();
+    src_str = src->toStr();
+    src_type = src->getType()->toStr();
+    dst_type = dst->getType()->toStr();
+
+    fprintf(yyout, "  %s = fptosi %s %s to %s\n", dst_str.c_str(), src_type.c_str(), src_str.c_str(), dst_type.c_str());
+}
+
+Int2FloatInstruction::Int2FloatInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb = nullptr)
+    : Instruction(INT2FLOAT, insert_bb) {
+    operands.push_back(dst);
+    operands.push_back(src);
+
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+Int2FloatInstruction::~Int2FloatInstruction() {
+    operands[0]->setDef(nullptr);
+    if (operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void Int2FloatInstruction::output() const {
+    Operand* dst = operands[0];
+    Operand* src = operands[1];
+
+    std::string dst_str, src_str, src_type, dst_type;
+    dst_str = dst->toStr();
+    src_str = src->toStr();
+    src_type = src->getType()->toStr();
+    dst_type = dst->getType()->toStr();
+    
+    fprintf(yyout, "  %s = sitofp %s %s to %s\n", dst_str.c_str(), src_type.c_str(), src_str.c_str(), dst_type.c_str());
+}
+
 MachineOperand* Instruction::genMachineOperand(Operand* ope) {
     auto se = ope->getEntry();
     MachineOperand* mope = nullptr;

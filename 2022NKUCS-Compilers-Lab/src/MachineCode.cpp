@@ -592,8 +592,8 @@ void MachineBlock::output() {
     }
 
     fprintf(yyout, ".L%d:\n", this->no);
-    //int count = 0;
-    for(auto iter : inst_list) {
+    // int count = 0;
+    for (auto iter : inst_list) {
         iter->output();
         /*count++;
         if(count % 500 == 0) {
@@ -612,8 +612,7 @@ std::vector<MachineOperand*> MachineFunction::getSavedRegs() {
     return regs;
 }
 
-int MachineFunction::getInstNum()
-{
+int MachineFunction::getInstNum() {
     int inst_num = 0;
     for (auto block : block_list)
         inst_num += block->getInstNum();
@@ -644,14 +643,18 @@ void MachineFunction::output() {
     fprintf(yyout, "\tmov fp, sp\n");
 
     if (stack_size != 0) {
-        fprintf(yyout, "\tsub sp, sp, #%d\n", stack_size);
+        if (stack_size > 255) {
+            fprintf(yyout, "\tldr r4,=%d\n", stack_size);
+            fprintf(yyout, "\tsub sp, sp, r4\n");
+        } else {
+            fprintf(yyout, "\tsub sp, sp, #%d\n", stack_size);
+        }
     }
 
-
     // Traverse all the block in block_list to print assembly code.
-    //for (auto iter : block_list) {
+    // for (auto iter : block_list) {
     //    iter->output();
-    //int count = 0;
+    // int count = 0;
     for (auto iter : block_list) {
         iter->output();
         /*count += iter->getInstNum();
@@ -664,12 +667,16 @@ void MachineFunction::output() {
         }*/
     }
 
-
     // recover
     fprintf(yyout, ".L%s_END:\n", func_name.c_str());
 
     if (stack_size != 0) {
-        fprintf(yyout, "\tadd sp, sp, #%d\n", stack_size);
+        if (stack_size > 255) {
+            fprintf(yyout, "\tldr r4,=%d\n", stack_size);
+            fprintf(yyout, "\tadd sp, sp, r4\n");
+        } else {
+            fprintf(yyout, "\tadd sp, sp, #%d\n", stack_size);
+        }
     }
     fprintf(yyout, "\tpop {");
     for (auto reg : getSavedRegs()) {
@@ -687,72 +694,55 @@ void MachineUnit::PrintGlobalDecl() {
     if (globalvar_list.size() > 0) {
         fprintf(yyout, "\t.data\n");
         std::string globalvar_name;
-        for (auto id_se : globalvar_list)
-        {
-            if(id_se->getType()->isArray()) //array
+        for (auto id_se : globalvar_list) {
+            if (id_se->getType()->isArray())  // array
             {
                 globalvar_name = id_se->toStr().substr(1);
-                if(id_se->ArrayInitValueNum() != 0)
-                {
+                if (id_se->ArrayInitValueNum() != 0) {
                     fprintf(yyout, "\t.global %s\n", globalvar_name.c_str());
                     fprintf(yyout, "\t.align 4\n");
                     fprintf(yyout, "\t.size %s, %d\n", globalvar_name.c_str(), id_se->getType()->getSize() / 8);
                     fprintf(yyout, "%s:\n", globalvar_name.c_str());
-                    if(dynamic_cast<ArrayType *>(id_se->getType())->getElementType()->isInt())
-                    {
-                        for(int i = 0; i < id_se->ArrayInitValueNum(); i++)
-                        {
+                    if (dynamic_cast<ArrayType*>(id_se->getType())->getElementType()->isInt()) {
+                        for (int i = 0; i < id_se->ArrayInitValueNum(); i++) {
                             fprintf(yyout, "\t.word %d\n", id_se->getArrayValue(i).i);
                         }
-                        if(id_se->getType()->getSize() / 8 - id_se->ArrayInitValueNum() * 4 != 0)
+                        if (id_se->getType()->getSize() / 8 - id_se->ArrayInitValueNum() * 4 != 0)
                             fprintf(yyout, "\t.space %d\n", id_se->getType()->getSize() / 8 - id_se->ArrayInitValueNum() * 4);
-                    }
-                    else if (dynamic_cast<ArrayType *>(id_se->getType())->getElementType()->isFloat())
-                    {
-                        for(int i = 0; i < id_se->ArrayInitValueNum(); i++)
-                        {
+                    } else if (dynamic_cast<ArrayType*>(id_se->getType())->getElementType()->isFloat()) {
+                        for (int i = 0; i < id_se->ArrayInitValueNum(); i++) {
                             float value = id_se->getArrayValue(i).f;
                             uint32_t print_value = reinterpret_cast<uint32_t&>(value);
                             fprintf(yyout, "\t.word %u\n", print_value);
                         }
-                        if(id_se->getType()->getSize() / 8 - id_se->ArrayInitValueNum() * 4 != 0)
+                        if (id_se->getType()->getSize() / 8 - id_se->ArrayInitValueNum() * 4 != 0)
                             fprintf(yyout, "\t.space %d\n", id_se->getType()->getSize() / 8 - id_se->ArrayInitValueNum() * 4);
-                    }
-                    else
+                    } else
                         assert(0);
-                }
-                else
-                {
+                } else {
                     fprintf(yyout, "\t.comm\t%s,%d,4\n", globalvar_name.c_str(), id_se->getType()->getSize() / 8);
                 }
-            }
-            else //var
+            } else  // var
             {
                 globalvar_name = id_se->toStr().substr(1);
                 fprintf(yyout, "\t.global %s\n", globalvar_name.c_str());
                 fprintf(yyout, "\t.align 4\n");
                 fprintf(yyout, "\t.size %s, %d\n", globalvar_name.c_str(), id_se->getType()->getSize() / 8);
                 fprintf(yyout, "%s:\n", globalvar_name.c_str());
-                if (id_se->getType()->isInt())
-                {
+                if (id_se->getType()->isInt()) {
                     fprintf(yyout, "\t.word %d\n", id_se->getValue().i);
-                }
-                else if (id_se->getType()->isFloat())
-                {
+                } else if (id_se->getType()->isFloat()) {
                     float value = id_se->getValue().f;
                     uint32_t print_value = reinterpret_cast<uint32_t&>(value);
                     fprintf(yyout, "\t.word %u\n", print_value);
-                }
-                else
+                } else
                     assert(0);
             }
-            
         }
     }
 }
 
-void MachineUnit::PrintGlobalLabel()
-{
+void MachineUnit::PrintGlobalLabel() {
     std::string globalvar_name;
     for (auto id_se : globalvar_list) {
         globalvar_name = id_se->toStr().substr(1);
@@ -774,9 +764,9 @@ void MachineUnit::output() {
 
     PrintGlobalDecl();
     fprintf(yyout, "\t.text\n");
-    //for (auto iter : func_list)
-    //    iter->output();
-    //int count = 0;
+    // for (auto iter : func_list)
+    //     iter->output();
+    // int count = 0;
     for (auto iter : func_list) {
         iter->output();
         /*count += iter->getInstNum();

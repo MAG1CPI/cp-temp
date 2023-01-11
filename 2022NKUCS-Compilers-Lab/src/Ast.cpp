@@ -417,14 +417,24 @@ void Id::genCode() {
                 new BinaryInstruction(BinaryInstruction::ADD, final_offset, offset2_op, addr, bb);
 
                 new LoadInstruction(dst, final_offset, bb);
-            } else {    // 数组指针的函数实参
+            } else {  // 数组指针的函数实参
                 new BinaryInstruction(BinaryInstruction::ADD, dst, offset2_op, addr, bb);
                 dst->setArrayPointer(dims[0] == -1);
             }
         } else {  // 数组指针的函数实参
-            Operand* zero_op = new Operand(new ConstantSymbolEntry(TypeSystem::constintType, kZERO));
-            new BinaryInstruction(BinaryInstruction::ADD, dst, addr, zero_op, bb, true);
-            dst->setArrayPointer(dims[0] == -1);
+            // 全局变量地址
+            if (dynamic_cast<IdentifierSymbolEntry*>(symbolEntry)->isGlobal()) {
+                TemporarySymbolEntry* temp_se = new TemporarySymbolEntry(type, SymbolTable::getLabel());
+                Operand* new_addr = new Operand(temp_se);
+                new LoadInstruction(new_addr, addr, bb);  // 不能直接load到dst, 会重复load
+                addr = new_addr;
+                Operand* zero_op = new Operand(new ConstantSymbolEntry(TypeSystem::constintType, kZERO));
+                new BinaryInstruction(BinaryInstruction::ADD, dst, addr, zero_op, bb, false);
+            } else {
+                Operand* zero_op = new Operand(new ConstantSymbolEntry(TypeSystem::constintType, kZERO));
+                new BinaryInstruction(BinaryInstruction::ADD, dst, addr, zero_op, bb, true);
+                dst->setArrayPointer(dims[0] == -1);
+            }
         }
     } else {
         new LoadInstruction(dst, addr, bb);

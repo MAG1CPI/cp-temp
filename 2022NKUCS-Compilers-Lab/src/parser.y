@@ -147,7 +147,7 @@ ReturnStmt
             /*TODO: clean*/
             $$ = new ReturnStmt(); }
         else{
-            $$ = new ReturnStmt($2); } }
+            $$ = new ReturnStmt($2, func_ret_type); } }
     | RETURN SEMI {
         no_ret = false;
         /* CHECK: return not in function - replace with NullStmt */
@@ -928,6 +928,8 @@ FuncDef
             if(func_ret_type == TypeSystem::voidType)
                 fprintf(stderr, "[CHECKINFO][L%d]function %s has no return statement! add return;\n", yylineno, se->toStr().c_str());
             else if(func_ret_type == TypeSystem::intType)
+                fprintf(stderr, "[CHECKINFO][L%d]function %s has no return statement! add return 0;\n", yylineno, se->toStr().c_str());
+            else if(func_ret_type == TypeSystem::floatType)
                 fprintf(stderr, "[CHECKINFO][L%d]function %s has no return statement! add return 0;\n", yylineno, se->toStr().c_str());
         }
         SymbolTable *top = identifiers;

@@ -61,6 +61,9 @@ class ExprNode : public Node {
 
     void int2bool(BasicBlock* insert_bb);
     void bool2int(BasicBlock* insert_bb);
+
+    void float2int(BasicBlock* insert_bb);
+    void int2float(BasicBlock* insert_bb);
 };
 
 class UnaryExpr : public ExprNode {
@@ -249,12 +252,15 @@ class IfElseStmt : public StmtNode {
 class ReturnStmt : public StmtNode {
    private:
     ExprNode* retValue;
+    Type* retType;
 
    public:
-    ReturnStmt(ExprNode* retValue)
-        : retValue(retValue){};
+    ReturnStmt(ExprNode* retValue, Type* retType = nullptr)
+        : retValue(retValue), retType(retType){};
     ReturnStmt()
         : retValue(nullptr){};
+    //void setRetType(Type* ret_type) { retType = ret_type; }
+    //Type* getRetType() { return retType; }
     void output(int level);
     void typeCheck();
     void genCode();

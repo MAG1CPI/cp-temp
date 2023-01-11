@@ -62,7 +62,16 @@ void MachineOperand::PrintReg() {
             fprintf(yyout, "pc");
             break;
         default:
-            fprintf(yyout, "r%d", reg_no);
+            if (reg_no >= 16)
+            {
+                int float_reg_no = reg_no - 16;
+                if (float_reg_no <= 31)
+                    fprintf(yyout, "s%d", float_reg_no);
+                else if (float_reg_no == 32)
+                    fprintf(yyout, "FPSCR");
+            }
+            else
+                fprintf(yyout, "r%d", reg_no);
             break;
     }
 }
@@ -75,7 +84,13 @@ void MachineOperand::output() {
      * lable addr_a -> print addr_a; */
     switch (this->type) {
         case IMM:
-            fprintf(yyout, "#%d", this->val);
+            if (is_float)
+            {
+                uint32_t value = reinterpret_cast<uint32_t&>(this->float_val);
+                fprintf(yyout, "#%u", value);
+            }
+            else
+                fprintf(yyout, "#%d", this->val);
             break;
         case VREG:
             fprintf(yyout, "v%d", this->reg_no);
@@ -192,10 +207,11 @@ LoadMInstruction::LoadMInstruction(MachineBlock* p,
                                    MachineOperand* dst,
                                    MachineOperand* src1,
                                    MachineOperand* src2,
+                                   int op,
                                    int cond) {
     this->parent = p;
     this->type = MachineInstruction::LOAD;
-    this->op = -1;
+    this->op = op;
     this->cond = cond;
     this->def_list.push_back(dst);
     this->use_list.push_back(src1);
@@ -208,13 +224,27 @@ LoadMInstruction::LoadMInstruction(MachineBlock* p,
 }
 
 void LoadMInstruction::output() {
-    fprintf(yyout, "\tldr ");
+    if (this->op == LoadMInstruction::LDR)
+        fprintf(yyout, "\tldr ");
+    else if (this->op == LoadMInstruction::VLDR)
+        fprintf(yyout, "\tvldr.32 ");
+    else
+        assert(0);
+    
     this->def_list[0]->output();
     fprintf(yyout, ", ");
 
     // Load immediate num, eg: ldr r1, =8
     if (this->use_list[0]->isImm()) {
-        fprintf(yyout, "=%d\n", this->use_list[0]->getVal());
+        if (this->use_list[0]->isFloat())
+        {
+            float float_val = this->use_list[0]->getFloatVal();
+            uint32_t value = reinterpret_cast<uint32_t&>(float_val);
+            fprintf(yyout, "=%u\n", value);
+        }
+        else
+            fprintf(yyout, "=%d\n", this->use_list[0]->getVal());
+        
         return;
     }
 
@@ -237,10 +267,11 @@ StoreMInstruction::StoreMInstruction(MachineBlock* p,
                                      MachineOperand* src1,
                                      MachineOperand* src2,
                                      MachineOperand* src3,
+                                     int op,
                                      int cond) {
     this->parent = p;
     this->type = MachineInstruction::STORE;
-    this->op = -1;
+    this->op = op;
     this->cond = cond;
     this->use_list.push_back(src1);
     this->use_list.push_back(src2);
@@ -254,7 +285,13 @@ StoreMInstruction::StoreMInstruction(MachineBlock* p,
 
 void StoreMInstruction::output() {
     // TODO
-    fprintf(yyout, "\tstr ");
+    if (this->op == StoreMInstruction::STR)
+        fprintf(yyout, "\tstr ");
+    else if (this->op == StoreMInstruction::VSTR)
+        fprintf(yyout, "\tvstr.32 ");
+    else
+        assert(0);
+
     this->use_list[0]->output();
     fprintf(yyout, ", ");
 
@@ -291,7 +328,19 @@ MovMInstruction::MovMInstruction(MachineBlock* p,
 
 void MovMInstruction::output() {
     // TODO
-    fprintf(yyout, "\tmov");
+    switch(this->op)
+    {
+        case MOV:
+            fprintf(yyout, "\tmov");
+            break;
+        case VMOV:
+            fprintf(yyout, "\tvmov");
+            break;
+        //add more if need
+        default:
+            break;
+    }
+
     PrintCond();
     fprintf(yyout, " ");
     this->def_list[0]->output();
@@ -339,11 +388,12 @@ void BranchMInstruction::output() {
 CmpMInstruction::CmpMInstruction(MachineBlock* p,
                                  MachineOperand* src1,
                                  MachineOperand* src2,
-                                 int cond) {
+                                 int cond,
+                                 int op) {
     // TODO
     this->parent = p;
     this->type = MachineInstruction::CMP;
-    this->op = CmpMInstruction::CMP;
+    this->op = op;
     this->cond = cond;
     p->setCmpCond(cond);
     this->use_list.push_back(src1);
@@ -357,10 +407,10 @@ void CmpMInstruction::output() {
     // Jsut for reg alloca test
     // delete it after test
     switch (this->op) {
-        case CmpMInstruction::CMP:
+        case CMP:
             fprintf(yyout, "\tcmp ");
             break;
-        case CmpMInstruction::VCMP:
+        case VCMP:
             fprintf(yyout, "\tvcmp.f32 ");
             break;
         default:
@@ -398,6 +448,7 @@ StackMInstruction::StackMInstruction(MachineBlock* p,
     for (auto src : srcs)
         src->setParent(this);
 }
+
 void StackMInstruction::output() {
     // TODO
     if (!use_list.empty()) {
@@ -408,16 +459,98 @@ void StackMInstruction::output() {
             case POP:
                 fprintf(yyout, "\tpop ");
                 break;
-        }
-        fprintf(yyout, "{");
-        auto reg = use_list.begin();
-        (*reg)->output();
-        for (reg++; reg < use_list.end(); reg++) {
-            fprintf(yyout, ", ");
+            case VPUSH:
+                fprintf(yyout, "\tvpush ");
+                break;
+            case VPOP:
+                fprintf(yyout, "\tvpop ");
+                break;
+            }
+            fprintf(yyout, "{");
+        if(use_list.size() > 16)
+        {
+            auto reg = use_list.begin();
             (*reg)->output();
+            reg++;
+            int count = 1;
+            while(count < 16)
+            {
+                fprintf(yyout, ", ");
+                (*reg)->output();
+                reg++;
+                count++;
+            }
+            fprintf(yyout, "}\n");
+
+            if (op == VPUSH)
+                fprintf(yyout, "\tvpush ");
+            else if (op == VPOP)
+                fprintf(yyout, "\tvpop ");
+            else
+                assert(0);
+            
+            fprintf(yyout, "{");
+            (*reg)->output();
+            for (reg++; reg < use_list.end(); reg++)
+            {
+                fprintf(yyout, ", ");
+                (*reg)->output();
+            }
         }
+        else
+        {
+            auto reg = use_list.begin();
+            (*reg)->output();
+            for (reg++; reg < use_list.end(); reg++)
+            {
+                fprintf(yyout, ", ");
+                (*reg)->output();
+            }
+        }
+
         fprintf(yyout, "}\n");
     }
+}
+
+//[TODO] vcvt vmrs
+VcvtMInstruction::VcvtMInstruction(MachineBlock* p,
+                                   int op,
+                                   MachineOperand* dst,
+                                   MachineOperand* src,
+                                   int cond) {
+    this->parent = p;
+    this->type = MachineInstruction::VCVT;
+    this->op = op;
+    this->cond = cond;
+    this->def_list.push_back(dst);
+    this->use_list.push_back(src);
+    dst->setParent(this);
+    src->setParent(this);
+}
+
+void VcvtMInstruction::output() {
+    if (this->op == VcvtMInstruction::F2I)
+        fprintf(yyout, "\tvcvt.s32.f32 ");
+    else if (this->op == VcvtMInstruction::I2F)
+        fprintf(yyout, "\tvcvt.f32.s32 ");
+    else
+        assert(0);
+    
+    PrintCond();
+    fprintf(yyout, " ");
+    this->def_list[0]->output();
+    fprintf(yyout, ", ");
+    this->use_list[0]->output();
+    fprintf(yyout, "\n");
+}
+
+VmrsMInstruction::VmrsMInstruction(MachineBlock* p) {
+    this->parent = p;
+    this->type = MachineInstruction::VMRS;
+}
+
+void VmrsMInstruction::output() {
+    fprintf(yyout, "\tvmrs APSR_nzcv, FPSCR\n");
 }
 
 MachineFunction::MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr) {
@@ -425,8 +558,6 @@ MachineFunction::MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr) {
     this->sym_ptr = sym_ptr;
     this->stack_size = 0;
 };
-
-//[TODO] vcvt vmrs
 
 void MachineBlock::insertBefore(MachineInstruction* before, MachineInstruction* cur) {
     std::vector<MachineInstruction*>::iterator position;

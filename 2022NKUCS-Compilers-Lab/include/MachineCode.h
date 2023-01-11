@@ -98,7 +98,9 @@ class MachineInstruction {
                     MOV,
                     BRANCH,
                     CMP,
-                    STACK };
+                    STACK,
+                    VCVT,
+                    VMRS };
 
    public:
     enum condType { EQ,
@@ -143,20 +145,28 @@ class BinaryMInstruction : public MachineInstruction {
 
 class LoadMInstruction : public MachineInstruction {
    public:
+    enum opType { LDR,
+                  VLDR };
+    //'op' is the penult param
     LoadMInstruction(MachineBlock* p,
                      MachineOperand* dst,
                      MachineOperand* src1,
                      MachineOperand* src2 = nullptr,
+                     int op = LoadMInstruction::LDR,
                      int cond = MachineInstruction::NONE);
     void output();
 };
 
 class StoreMInstruction : public MachineInstruction {
    public:
+    enum opType{ STR,
+                 VSTR };
+    //'op' is the penult param
     StoreMInstruction(MachineBlock* p,
                       MachineOperand* src1,
                       MachineOperand* src2,
                       MachineOperand* src3 = nullptr,
+                      int op = StoreMInstruction::STR,
                       int cond = MachineInstruction::NONE);
     void output();
 };
@@ -164,7 +174,8 @@ class StoreMInstruction : public MachineInstruction {
 class MovMInstruction : public MachineInstruction {
    public:
     enum opType { MOV,
-                  MVN };
+                  MVN, 
+                  VMOV };
     MovMInstruction(MachineBlock* p, int op, MachineOperand* dst, MachineOperand* src, int cond = MachineInstruction::NONE);
     void output();
 };
@@ -182,19 +193,37 @@ class CmpMInstruction : public MachineInstruction {
    public:
     enum opType { CMP,
                   VCMP };
+    //note that 'op' is the last param, different from load and store
     CmpMInstruction(MachineBlock* p,
                     MachineOperand* src1,
                     MachineOperand* src2,
-                    int cond = MachineInstruction::NONE);
+                    int cond = MachineInstruction::NONE,
+                    int op = CmpMInstruction::CMP);
     void output();
 };
 
 class StackMInstruction : public MachineInstruction {
    public:
     enum opType { PUSH,
-                  POP };
+                  POP,
+                  VPUSH,
+                  VPOP };
     StackMInstruction(MachineBlock* p, int op, MachineOperand* src, int cond = MachineInstruction::NONE);
     StackMInstruction(MachineBlock* p, int op, std::vector<MachineOperand*>& src, int cond = MachineInstruction::NONE);
+    void output();
+};
+
+class VcvtMInstruction : public MachineInstruction {
+   public:
+    enum opType { F2I,
+                  I2F };
+    VcvtMInstruction(MachineBlock* p, int op, MachineOperand* dst, MachineOperand* src, int cond = MachineInstruction::NONE);
+    void output();
+};
+
+class VmrsMInstruction : public MachineInstruction {
+   public:
+    VmrsMInstruction(MachineBlock* p);
     void output();
 };
 

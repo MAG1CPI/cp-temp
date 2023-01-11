@@ -820,6 +820,19 @@ ConstDef
         uint32_t n=0;
         dynamic_cast<InitValue*>($5)->flatten((dynamic_cast<ArrayType*>(type))->getDim(), 0, new_init_node_begin, new_init_node_end, n, false);
 
+        ExprNode* iter_node = new_init_node_begin;
+        ValueType init_value;
+        while(iter_node){
+            if (decl_type == TypeSystem::constintType){
+                init_value.i = (dynamic_cast<InitValue*>(iter_node))->getVal()->getValue();
+            }
+            else if (decl_type == TypeSystem::constfloatType){
+                init_value.f = (dynamic_cast<InitValue*>(iter_node))->getVal()->getValue();
+            }
+            (dynamic_cast<IdentifierSymbolEntry*>(se))->pushArrayValue(init_value);
+            iter_node =  dynamic_cast<ExprNode*>(iter_node->GetSibling());
+        }
+
         $$ = new DeclStmt(id, new_init_node_begin);
         delete []$1; }
     ;
@@ -843,11 +856,11 @@ ConstInitVal
         ExprNode* init_node;
         if (decl_type == TypeSystem::constintType||decl_type == TypeSystem::intType){
             init_value.i = $1->getValue();
-            init_se = new ConstantSymbolEntry(TypeSystem::intType, init_value);
+            init_se = new ConstantSymbolEntry(TypeSystem::constintType, init_value);
         }
         else if (decl_type == TypeSystem::constfloatType||decl_type == TypeSystem::floatType){
             init_value.f = $1->getValue();
-            init_se = new ConstantSymbolEntry(TypeSystem::floatType, init_value);
+            init_se = new ConstantSymbolEntry(TypeSystem::constfloatType, init_value);
         }
         else{
             assert(0);

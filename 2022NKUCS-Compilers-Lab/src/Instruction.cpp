@@ -447,7 +447,7 @@ void Int2FloatInstruction::output() const {
     src_str = src->toStr();
     src_type = src->getType()->toStr();
     dst_type = dst->getType()->toStr();
-    
+
     fprintf(yyout, "  %s = sitofp %s %s to %s\n", dst_str.c_str(), src_type.c_str(), src_str.c_str(), dst_type.c_str());
 }
 
@@ -766,6 +766,13 @@ void BinaryInstruction::genMachineCode(AsmBuilder* builder) {
         src1 = genMachineOperand(operands[1]);
 
         if (is_array_pointer) {
+            if (src1->getVal() > 255 || src1->getVal() < -256) {
+                internal_reg = genMachineVReg();
+                cur_inst = new LoadMInstruction(cur_block, internal_reg, src1);
+                cur_block->InsertInst(cur_inst);
+
+                src1 = new MachineOperand(*internal_reg);
+            }
             MachineOperand* fp = genMachineReg(11);
             cur_inst = new BinaryMInstruction(cur_block, BinaryMInstruction::ADD, dst, fp, src1);
             cur_block->InsertInst(cur_inst);
@@ -1001,12 +1008,15 @@ void CallInstruction::genMachineCode(AsmBuilder* builder) {
     // std::cout << "i M\n";
     for (; i < operands.size(); i++) {
         stack_arg.push_back(genMachineOperand(operands[i]));
+        cur_inst = new StackMInstruction(cur_block, StackMInstruction::PUSH, genMachineOperand(operands[i]));
+        cur_block->InsertInst(cur_inst);
     }
+    /*
     if (stack_arg.size()) {
         std::reverse(stack_arg.begin(), stack_arg.end());
         cur_inst = new StackMInstruction(cur_block, StackMInstruction::PUSH, stack_arg);
         cur_block->InsertInst(cur_inst);
-    }
+    }*/
 
     std::string func_name = ((IdentifierSymbolEntry*)func)->toStr().substr(1);
     cur_inst = new BranchMInstruction(cur_block, BranchMInstruction::BL, new MachineOperand(func_name, true));

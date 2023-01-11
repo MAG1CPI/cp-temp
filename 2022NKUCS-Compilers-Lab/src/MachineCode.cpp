@@ -332,7 +332,7 @@ CmpMInstruction::CmpMInstruction(MachineBlock* p,
     // TODO
     this->parent = p;
     this->type = MachineInstruction::CMP;
-    this->op = op;
+    this->op = CmpMInstruction::CMP;
     this->cond = cond;
     p->setCmpCond(cond);
     this->use_list.push_back(src1);
@@ -441,7 +441,7 @@ void MachineBlock::output() {
     for (auto iter = store_list.begin(); iter != store_list.end(); iter++) {
         MachineOperand* fp = new MachineOperand(MachineOperand::REG, 11);
         MachineOperand* r3 = new MachineOperand(MachineOperand::REG, 3);
-        int offset = base_offset + 4 * (store_list.size() - (iter - store_list.begin()));
+        int offset = base_offset + 4 * (store_list.size() - (iter - store_list.begin()) - 1);
         MachineOperand* stack_offset = new MachineOperand(MachineOperand::IMM, offset);
         LoadMInstruction* load_minst = new LoadMInstruction(this, r3, fp, stack_offset);
         this->insertBefore(load_minst, (*iter));

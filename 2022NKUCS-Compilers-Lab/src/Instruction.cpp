@@ -897,8 +897,8 @@ void CallInstruction::genMachineCode(AsmBuilder* builder) {
     for (i = 1; i < reg_arg_num; i++) {
         dst = new MachineOperand(MachineOperand::REG, i - 1);
         if (operands[i]->isArrayPointer()) {
-            //operands[i]->setArrayPointer(false);
-            Type* temp_type = operands[i]->getEntry()->getType();
+            // operands[i]->setArrayPointer(false);
+            // Type* temp_type = operands[i]->getEntry()->getType();
             cur_inst = new LoadMInstruction(cur_block, dst, genMachineOperand(operands[i]));
             cur_block->InsertInst(cur_inst);
         } else {

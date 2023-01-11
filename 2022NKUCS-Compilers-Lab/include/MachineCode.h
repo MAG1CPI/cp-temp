@@ -48,12 +48,16 @@ class MachineOperand {
     bool isReg() { return this->type == REG; };
     bool isVReg() { return this->type == VREG; };
     bool isLabel() { return this->type == LABEL; };
+
     int getVal() { return this->val; };
+    void setVal(int val) { this->val = val; };
+
     int getReg() { return this->reg_no; };
     void setReg(int regno) {
         this->type = REG;
         this->reg_no = regno;
     };
+
     std::string getLabel() { return this->label; };
     void setParent(MachineInstruction* p) { this->parent = p; };
     MachineInstruction* getParent() { return this->parent; };

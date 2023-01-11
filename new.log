@@ -61,20 +61,20 @@ PASS: 059_short_circuit2
 PASS: 060_scope
 PASS: 061_sort_test1
 PASS: 062_sort_test2
-FAIL: 063_sort_test3    Wrong Answer
+PASS: 063_sort_test3
 PASS: 064_sort_test4
 PASS: 065_sort_test5
 PASS: 066_sort_test6
-FAIL: 067_sort_test7    Wrong Answer
+PASS: 067_sort_test7
 PASS: 068_genealogical_tree
 PASS: 069_greatest_common_divisor
 PASS: 070_multiplication_puzzle
 PASS: 071_exchange_array
 PASS: 072_percolation
-FAIL: 073_backpack      Assemble Error
-FAIL: 074_matrix_add    Wrong Answer
-FAIL: 075_matrix_sub    Wrong Answer
-FAIL: 076_matrix_mul    Wrong Answer
+PASS: 073_backpack
+PASS: 074_matrix_add
+PASS: 075_matrix_sub
+PASS: 076_matrix_mul
 FAIL: 077_matrix_tran   Wrong Answer
 PASS: 078_big_int_mul
 FAIL: 079_calculator    Compile Timeout
@@ -127,7 +127,7 @@ PASS: 1084_palindrome_number
 PASS: 1086_bin_search
 PASS: 1088_array_concat
 FAIL: 108_many_params   Compile Timeout
-FAIL: 1090_insert_order Wrong Answer
+PASS: 1090_insert_order
 PASS: 1091_line_search
 FAIL: 109_many_params2  Compile Timeout
 FAIL: 110_many_params3  Compile Timeout
@@ -139,9 +139,9 @@ PASS: 115_nested_calls
 PASS: 116_nested_calls2
 FAIL: 117_nested_loops  Wrong Answer
 FAIL: 196_float Compile Error
-FAIL: 198_matrix_add    Wrong Answer
-FAIL: 199_matrix_sub    Wrong Answer
-FAIL: 200_matrix_mul    Wrong Answer
+PASS: 198_matrix_add
+PASS: 199_matrix_sub
+PASS: 200_matrix_mul
 FAIL: 201_matrix_tran   Wrong Answer
 PASS: 202_register_realloc
 FAIL: 35_math   Compile Error
@@ -149,3 +149,4 @@ FAIL: 36_rotate Compile Error
 FAIL: 37_dct    Compile Error
 FAIL: 38_light2d        Compile Error
 FAIL: 39_fp_params      Compile Error
+Total: 151      Accept: 125     Fail: 26

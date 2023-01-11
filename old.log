@@ -5,11 +5,11 @@ PASS: 003_var_defn3
 PASS: 004_arr_defn
 PASS: 005_arr_defn2
 PASS: 006_arr_defn3
-FAIL: 007_arr_defn4     Compile Error
+PASS: 007_arr_defn4
 PASS: 008_const_var_defn
 PASS: 009_const_var_defn2
 PASS: 010_const_var_defn3
-FAIL: 011_const_array_defn      Wrong Answer
+PASS: 011_const_array_defn
 PASS: 012_func_defn
 PASS: 013_var_defn_func
 PASS: 014_add
@@ -40,7 +40,7 @@ PASS: 038_continue
 PASS: 039_while_if_test1
 PASS: 040_while_if_test2
 PASS: 041_while_if_test3
-FAIL: 042_arr_expr_len  Wrong Answer
+PASS: 042_arr_expr_len
 PASS: 043_op_priority1
 PASS: 044_op_priority2
 PASS: 045_op_priority3
@@ -63,15 +63,15 @@ PASS: 061_sort_test1
 PASS: 062_sort_test2
 FAIL: 063_sort_test3    Wrong Answer
 PASS: 064_sort_test4
-FAIL: 065_sort_test5    Wrong Answer
+PASS: 065_sort_test5
 PASS: 066_sort_test6
 FAIL: 067_sort_test7    Wrong Answer
-FAIL: 068_genealogical_tree     Wrong Answer
+PASS: 068_genealogical_tree
 PASS: 069_greatest_common_divisor
-FAIL: 070_multiplication_puzzle Wrong Answer
+PASS: 070_multiplication_puzzle
 PASS: 071_exchange_array
-FAIL: 072_percolation   Execute Error
-FAIL: 073_backpack      Wrong Answer
+PASS: 072_percolation
+FAIL: 073_backpack      Assemble Error
 FAIL: 074_matrix_add    Wrong Answer
 FAIL: 075_matrix_sub    Wrong Answer
 FAIL: 076_matrix_mul    Wrong Answer
@@ -79,19 +79,19 @@ FAIL: 077_matrix_tran   Wrong Answer
 PASS: 078_big_int_mul
 FAIL: 079_calculator    Compile Timeout
 FAIL: 080_color Assemble Error
-FAIL: 081_exgcd Wrong Answer
+PASS: 081_exgcd
 PASS: 082_reverse_output
 FAIL: 083_brainfk       Assemble Error
 FAIL: 084_expr_eval     Assemble Error
-FAIL: 085_dijkstra      Wrong Answer
+PASS: 085_dijkstra
 PASS: 086_full_conn
 PASS: 087_gcd
 PASS: 088_hanoi
-FAIL: 089_hidden_var    Wrong Answer
+PASS: 089_hidden_var
 PASS: 090_int_io
 FAIL: 091_kmp   Assemble Error
 FAIL: 092_max_flow      Assemble Error
-FAIL: 093_n_queens      Wrong Answer
+PASS: 093_n_queens
 FAIL: 094_substr        Assemble Error
 PASS: 095_empty_stmt
 PASS: 096_side_effect

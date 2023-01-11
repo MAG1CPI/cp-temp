@@ -353,7 +353,7 @@ void Id::genCode() {
             index = index->GetSibling();
         }
 
-        int i = 1;
+        uint32_t i = 1;
         ValueType dim_value;
         ConstantSymbolEntry* dim_se;
         Operand* dim_op;
@@ -387,7 +387,14 @@ void Id::genCode() {
                 index = index->GetSibling();
                 i++;
             }
-
+            if (i < dims.size()) {
+                dim_value.i = dims[i];
+                dim_op = new Operand(new ConstantSymbolEntry(TypeSystem::constintType, dim_value));
+                offset2_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
+                offset2_op = new Operand(offset2_se);
+                new BinaryInstruction(BinaryInstruction::MUL, offset2_op, offset1_op, dim_op, bb);  // offset1 = offset * dimensions[i]
+                offset1_op = offset2_op;
+            }
             ValueType align_value;
             offset2_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
             offset2_op = new Operand(offset2_se);
@@ -406,9 +413,14 @@ void Id::genCode() {
                 final_offset_se->setGlobalArray(true);
             }
 
-            new BinaryInstruction(BinaryInstruction::ADD, final_offset, offset2_op, addr, bb);
+            if (i == dims.size()) {
+                new BinaryInstruction(BinaryInstruction::ADD, final_offset, offset2_op, addr, bb);
 
-            new LoadInstruction(dst, final_offset, bb);
+                new LoadInstruction(dst, final_offset, bb);
+            } else {    // 数组指针的函数实参
+                new BinaryInstruction(BinaryInstruction::ADD, dst, offset2_op, addr, bb);
+                dst->setArrayPointer(dims[0] == -1);
+            }
         } else {  // 数组指针的函数实参
             Operand* zero_op = new Operand(new ConstantSymbolEntry(TypeSystem::constintType, kZERO));
             new BinaryInstruction(BinaryInstruction::ADD, dst, addr, zero_op, bb, true);
@@ -683,11 +695,11 @@ void WhileStmt::genCode() {
     is_cond_expr = true;
     cond->genCode();
     is_cond_expr = false;
-    cond_bb = builder->getInsertBB();
+    BasicBlock* cond_end_bb = builder->getInsertBB();
     //[TODO]FLOAT
     if (cond->getOperandType()->toStr() == "i32") {
-        cond->int2bool(cond_bb);
-        insertCondBrInst(func, cond, cond_bb);
+        cond->int2bool(cond_end_bb);
+        insertCondBrInst(func, cond, cond_end_bb);
     }
 
     backPatch(cond->trueList(), stmt_bb, true);

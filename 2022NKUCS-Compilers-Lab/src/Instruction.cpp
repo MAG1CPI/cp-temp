@@ -393,6 +393,64 @@ void NEGInstruction::output() const {
     // more
 }
 
+Float2IntInstruction::Float2IntInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb)
+    : Instruction(FLOAT2INT, insert_bb) {
+    operands.push_back(dst);
+    operands.push_back(src);
+
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+Float2IntInstruction::~Float2IntInstruction() {
+    operands[0]->setDef(nullptr);
+    if (operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void Float2IntInstruction::output() const {
+    Operand* dst = operands[0];
+    Operand* src = operands[1];
+
+    std::string dst_str, src_str, src_type, dst_type;
+    dst_str = dst->toStr();
+    src_str = src->toStr();
+    src_type = src->getType()->toStr();
+    dst_type = dst->getType()->toStr();
+
+    fprintf(yyout, "  %s = fptosi %s %s to %s\n", dst_str.c_str(), src_type.c_str(), src_str.c_str(), dst_type.c_str());
+}
+
+Int2FloatInstruction::Int2FloatInstruction(Operand* dst, Operand* src, BasicBlock* insert_bb)
+    : Instruction(INT2FLOAT, insert_bb) {
+    operands.push_back(dst);
+    operands.push_back(src);
+
+    dst->setDef(this);
+    src->addUse(this);
+}
+
+Int2FloatInstruction::~Int2FloatInstruction() {
+    operands[0]->setDef(nullptr);
+    if (operands[0]->usersNum() == 0)
+        delete operands[0];
+    operands[1]->removeUse(this);
+}
+
+void Int2FloatInstruction::output() const {
+    Operand* dst = operands[0];
+    Operand* src = operands[1];
+
+    std::string dst_str, src_str, src_type, dst_type;
+    dst_str = dst->toStr();
+    src_str = src->toStr();
+    src_type = src->getType()->toStr();
+    dst_type = dst->getType()->toStr();
+    
+    fprintf(yyout, "  %s = sitofp %s %s to %s\n", dst_str.c_str(), src_type.c_str(), src_str.c_str(), dst_type.c_str());
+}
+
 MachineOperand* Instruction::genMachineOperand(Operand* ope) {
     auto se = ope->getEntry();
     MachineOperand* mope = nullptr;
@@ -416,6 +474,40 @@ MachineOperand* Instruction::genMachineOperand(Operand* ope) {
             }
         } else
             mope = new MachineOperand(MachineOperand::VREG, temp_se->getLabel());
+    } else if (se->isVariable()) {
+        auto id_se = dynamic_cast<IdentifierSymbolEntry*>(se);
+        if (id_se->isGlobal())
+            mope = new MachineOperand(id_se->toStr().c_str());
+        else
+            exit(0);
+    }
+    return mope;
+}
+
+MachineOperand* Instruction::genFloatMachineOperand(Operand* ope) {
+    auto se = ope->getEntry();
+    MachineOperand* mope = nullptr;
+    bool is_float = true;
+    if (se->isConstant()) {
+        mope = new MachineOperand(MachineOperand::IMM, dynamic_cast<ConstantSymbolEntry*>(se)->getValue().f, is_float);
+    } else if (se->isTemporary()) {
+        Function* func = this->parent->getParent();
+        auto temp_se = dynamic_cast<TemporarySymbolEntry*>(se);
+        if (func->haveFParam(temp_se)) {
+            int reg_no = find(func->getFParams().begin(), func->getFParams().end(), temp_se) - func->getFParams().begin();
+            if (reg_no < 4) {
+                mope = new MachineOperand(MachineOperand::REG, reg_no + 16, is_float);
+            } else  // TODO fparams more than 4
+            {
+                mope = new MachineOperand(MachineOperand::REG, 20, is_float);
+                mope->setStackParam();
+            }
+        } else if (se->getType()->isPtr()) {
+            if (dynamic_cast<PointerType*>(se->getType())->getValueType()->isArray()) {
+                mope = new MachineOperand(MachineOperand::IMM, dynamic_cast<TemporarySymbolEntry*>(se)->getOffset());
+            }
+        } else
+            mope = new MachineOperand(MachineOperand::VREG, temp_se->getLabel(), is_float);
     } else if (se->isVariable()) {
         auto id_se = dynamic_cast<IdentifierSymbolEntry*>(se);
         if (id_se->isGlobal())
@@ -895,7 +987,7 @@ void CallInstruction::genMachineCode(AsmBuilder* builder) {
     // std::cout << reg_arg_num << "\n";
     std::vector<MachineOperand*> stack_arg;
     for (i = 1; i < reg_arg_num; i++) {
-        dst = new MachineOperand(MachineOperand::REG, i - 1);
+        dst = new MachineOperand(MachineOperand::REG, int(i - 1));
         if (operands[i]->isArrayPointer()) {
             // operands[i]->setArrayPointer(false);
             // Type* temp_type = operands[i]->getEntry()->getType();
@@ -960,4 +1052,12 @@ void NEGInstruction::genMachineCode(AsmBuilder* builder) {
     cur_inst = new MovMInstruction(cur_block, MovMInstruction::MOV, dst, genMachineImm(0), MachineInstruction::NE);
     cur_block->InsertInst(cur_inst);
     // std::cout << "i NEG E\n";
+}
+
+void Float2IntInstruction::genMachineCode(AsmBuilder* builder) {
+
+}
+
+void Int2FloatInstruction::genMachineCode(AsmBuilder* builder) {
+    
 }

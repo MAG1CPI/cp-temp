@@ -1,12 +1,23 @@
 #include "MachineCode.h"
 extern FILE* yyout;
 
+int MachineBlock::label_no = 0;
+
 MachineOperand::MachineOperand(int tp, int val) {
     this->type = tp;
     if (tp == MachineOperand::IMM)
         this->val = val;
     else
         this->reg_no = val;
+}
+
+MachineOperand::MachineOperand(int tp, float float_val, bool is_float) {
+    this->is_float = is_float;
+    this->type = tp;
+    if (tp == MachineOperand::IMM)
+        this->float_val = float_val;
+    else
+        assert(0);
 }
 
 MachineOperand::MachineOperand(std::string label, bool is_func) {
@@ -51,7 +62,7 @@ void MachineOperand::PrintReg() {
             fprintf(yyout, "pc");
             break;
         default:
-            fprintf(yyout, "r%d", reg_no);
+                fprintf(yyout, "r%d", reg_no);
             break;
     }
 }
@@ -78,9 +89,9 @@ void MachineOperand::output() {
             else {
                 // TODO
                 if (this->label[0] == '@')
-                    fprintf(yyout, "addr_%s", this->label.substr(1).c_str());
+                    fprintf(yyout, "addr_%s_%d", this->label.substr(1).c_str(), parent->getParent()->getParent()->getParent()->getLabelNo());
                 else
-                    fprintf(yyout, "addr_%s", this->label.c_str());
+                    fprintf(yyout, "addr_%s_%d", this->label.c_str(), parent->getParent()->getParent()->getParent()->getLabelNo());
             }
         default:
             break;
@@ -203,7 +214,7 @@ void LoadMInstruction::output() {
 
     // Load immediate num, eg: ldr r1, =8
     if (this->use_list[0]->isImm()) {
-        fprintf(yyout, "=%d\n", this->use_list[0]->getVal());
+            fprintf(yyout, "=%d\n", this->use_list[0]->getVal());
         return;
     }
 
@@ -397,14 +408,14 @@ void StackMInstruction::output() {
             case POP:
                 fprintf(yyout, "\tpop ");
                 break;
-        }
-        fprintf(yyout, "{");
-        auto reg = use_list.begin();
-        (*reg)->output();
-        for (reg++; reg < use_list.end(); reg++) {
-            fprintf(yyout, ", ");
+            }
+            fprintf(yyout, "{");
+            auto reg = use_list.begin();
             (*reg)->output();
-        }
+        for (reg++; reg < use_list.end(); reg++) {
+                fprintf(yyout, ", ");
+                (*reg)->output();
+            }
         fprintf(yyout, "}\n");
     }
 }
@@ -414,6 +425,8 @@ MachineFunction::MachineFunction(MachineUnit* p, SymbolEntry* sym_ptr) {
     this->sym_ptr = sym_ptr;
     this->stack_size = 0;
 };
+
+//[TODO] vcvt vmrs
 
 void MachineBlock::insertBefore(MachineInstruction* before, MachineInstruction* cur) {
     std::vector<MachineInstruction*>::iterator position;
@@ -448,14 +461,32 @@ void MachineBlock::output() {
     }
 
     fprintf(yyout, ".L%d:\n", this->no);
-    for (auto iter : inst_list)
+    int count = 0;
+    for(auto iter : inst_list) {
         iter->output();
+        count++;
+        if(count % 500 == 0) {
+            fprintf(yyout, "\tb .B%d\n", label_no);
+            fprintf(yyout, ".LTORG\n");
+            parent->getParent()->PrintGlobalLabel();
+            fprintf(yyout, ".B%d:\n", label_no + 1);
+            label_no++;
+        }
+    }
 }
 std::vector<MachineOperand*> MachineFunction::getSavedRegs() {
     std::vector<MachineOperand*> regs;
     for (auto reg_no : saved_regs)
         regs.push_back(new MachineOperand(MachineOperand::REG, reg_no));
     return regs;
+}
+
+int MachineFunction::getInstNum()
+{
+    int inst_num = 0;
+    for (auto block : block_list)
+        inst_num += block->getInstNum();
+    return inst_num;
 }
 
 void MachineFunction::output() {
@@ -485,9 +516,23 @@ void MachineFunction::output() {
         fprintf(yyout, "\tsub sp, sp, #%d\n", stack_size);
     }
 
+
     // Traverse all the block in block_list to print assembly code.
-    for (auto iter : block_list)
+    //for (auto iter : block_list) {
+    //    iter->output();
+    int count = 0;
+    for (auto iter : block_list) {
         iter->output();
+        count += iter->getInstNum();
+        if (count > 160) {
+            fprintf(yyout, "\tb .F%d\n", parent->getLabelNo());
+            fprintf(yyout, ".LTORG\n");
+            parent->PrintGlobalLabel();
+            fprintf(yyout, ".F%d:\n", parent->getLabelNo() - 1);
+            count = 0;
+        }
+    }
+
 
     // recover
     fprintf(yyout, ".L%s_END:\n", func_name.c_str());
@@ -547,7 +592,7 @@ void MachineUnit::PrintGlobalDecl() {
                 }
                 else
                 {
-                    fprintf(yyout, "\t.comm\t%s,%d,4\n", globalvar_name.c_str(), id_se->getType()->getSize()/8);
+                    fprintf(yyout, "\t.comm\t%s,%d,4\n", globalvar_name.c_str(), id_se->getType()->getSize() / 8);
                 }
             }
             else //var
@@ -575,6 +620,17 @@ void MachineUnit::PrintGlobalDecl() {
     }
 }
 
+void MachineUnit::PrintGlobalLabel()
+{
+    std::string globalvar_name;
+    for (auto id_se : globalvar_list) {
+        globalvar_name = id_se->toStr().substr(1);
+        fprintf(yyout, "addr_%s_%d:\n", globalvar_name.c_str(), label_no);
+        fprintf(yyout, "\t.word %s\n", globalvar_name.c_str());
+    }
+    label_no++;
+}
+
 void MachineUnit::output() {
     // TODO
     /* Hint:
@@ -587,13 +643,26 @@ void MachineUnit::output() {
 
     PrintGlobalDecl();
     fprintf(yyout, "\t.text\n");
-    for (auto iter : func_list)
+    //for (auto iter : func_list)
+    //    iter->output();
+    int count = 0;
+    for (auto iter : func_list) {
         iter->output();
-
+        count += iter->getInstNum();
+        if (count > 600) {
+            fprintf(yyout, "\tb .F%d\n", label_no);
+            fprintf(yyout, ".LTORG\n");
+            PrintGlobalLabel();
+            fprintf(yyout, ".F%d:\n", label_no - 1);
+            count = 0;
+        }
+    }
+    /*
     std::string globalvar_name;
     for (auto id_se : globalvar_list) {
         globalvar_name = id_se->toStr().substr(1);
         fprintf(yyout, "addr_%s:\n", globalvar_name.c_str());
         fprintf(yyout, "\t.word %s\n", globalvar_name.c_str());
-    }
+    }*/
+    PrintGlobalLabel();
 }

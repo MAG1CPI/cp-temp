@@ -33,6 +33,10 @@ class MachineOperand {
     std::string label;  // address label
     bool is_func;
 
+    //float
+    bool is_float = false;
+    float float_val;
+
     bool stack_param = false;
 
    public:
@@ -41,6 +45,7 @@ class MachineOperand {
            REG,
            LABEL };
     MachineOperand(int tp, int val);
+    MachineOperand(int tp, float float_val, bool is_float = true);
     MachineOperand(std::string label, bool is_func = false);
     bool operator==(const MachineOperand&) const;
     bool operator<(const MachineOperand&) const;
@@ -65,6 +70,11 @@ class MachineOperand {
 
     void setStackParam() { stack_param = true; }
     bool isStackParam() { return stack_param; }
+
+    //float
+    bool isFloat() { return this->is_float; }
+    float getFloatVal() { return this->float_val; }
+
     void output();
 };
 
@@ -198,6 +208,7 @@ class MachineBlock {
     std::set<MachineOperand*> live_out;
 
     int cmp_cond;
+    static int label_no;
 
    public:
     std::vector<MachineInstruction*>& getInsts() { return inst_list; };
@@ -219,6 +230,8 @@ class MachineBlock {
 
     void setCmpCond(int cond) { cmp_cond = cond; }
     int getCmpCond() const { return cmp_cond; }
+    MachineFunction* getParent() { return this->parent; }
+    int getInstNum() { return inst_list.size(); }
 
     void insertBefore(MachineInstruction* before, MachineInstruction* cur);
     void insertAfter(MachineInstruction* after, MachineInstruction* cur);
@@ -252,6 +265,8 @@ class MachineFunction {
 
     void addSavedRegs(int regno) { saved_regs.insert(regno); }
     std::vector<MachineOperand*> getSavedRegs();
+    MachineUnit* getParent() { return parent; }
+    int getInstNum();
 
     void output();
 };
@@ -261,6 +276,7 @@ class MachineUnit {
     std::vector<MachineFunction*> func_list;
     std::vector<IdentifierSymbolEntry*> globalvar_list;
     void PrintGlobalDecl();
+    int label_no = 0;
 
    public:
     std::vector<MachineFunction*>& getFuncs() { return func_list; }
@@ -269,6 +285,9 @@ class MachineUnit {
 
     void insertGlobalVar(IdentifierSymbolEntry* sym_ptr) { globalvar_list.push_back(sym_ptr); }
     void InsertFunc(MachineFunction* func) { func_list.push_back(func); }
+
+    void PrintGlobalLabel();
+    int getLabelNo() { return label_no; }
 
     void output();
 };

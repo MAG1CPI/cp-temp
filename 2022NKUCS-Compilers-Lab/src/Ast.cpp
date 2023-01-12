@@ -894,7 +894,7 @@ void UnaryExpr::output(int level) {
             op_str = "not";
             break;
     }
-    fprintf(yyout, "%*cUnaryExpr\top: %s\n", level, ' ', op_str.c_str());
+    fprintf(yyout, "%*cUnaryExpr\top: %s\ttype: %s\n", level, ' ', op_str.c_str(), symbolEntry->getType()->toStr().c_str());
     expr->output(level + 4);
 }
 
@@ -941,7 +941,7 @@ void BinaryExpr::output(int level) {
             op_str = "not_equal";
             break;
     }
-    fprintf(yyout, "%*cBinaryExpr\top: %s\n", level, ' ', op_str.c_str());
+    fprintf(yyout, "%*cBinaryExpr\top: %s\ttype: %s\n", level, ' ', op_str.c_str(), symbolEntry->getType()->toStr().c_str());
     expr1->output(level + 4);
     expr2->output(level + 4);
 }
@@ -982,9 +982,10 @@ void SeqNode::output(int level) {
 void DeclStmt::output(int level) {
     fprintf(yyout, "%*cDeclStmt\n", level, ' ');
     id->output(level + 4);
-    fprintf(yyout, "%*cInitValue\n", level + 4, ' ');
-    if (initval != nullptr)
+    if (initval != nullptr) {
+        fprintf(yyout, "%*cInitValue\n", level + 4, ' ');
         initval->output(level + 4);
+    }
     if (HaveSibling()) {
         DeclStmt* sibdeclstmt = dynamic_cast<DeclStmt*>(GetSibling());
         sibdeclstmt->output(level);
@@ -1247,7 +1248,8 @@ TemporarySymbolEntry* NewTempSE(int type, ExprNode* expr1, ExprNode* expr2 /* =n
         return nullptr;
     switch (type) {
         case 1: /*UnaryExpr*/
-            if (expr1->getOperandType() == TypeSystem::floatType)
+            if (expr1->getOperandType()->isFloat() ||
+                (expr1->getOperandType()->isArray() && dynamic_cast<ArrayType*>(expr1->getOperandType())->getElementType()->isFloat()))
                 return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
             else
                 return new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
@@ -1257,7 +1259,11 @@ TemporarySymbolEntry* NewTempSE(int type, ExprNode* expr1, ExprNode* expr2 /* =n
             if (expr2->getOperand() == nullptr)
                 return nullptr;
 
-            if (expr1->getOperandType() == TypeSystem::floatType || expr2->getOperandType() == TypeSystem::floatType)
+            if (expr1->getOperandType()->isFloat() ||
+                (expr1->getOperandType()->isArray() && dynamic_cast<ArrayType*>(expr1->getOperandType())->getElementType()->isFloat()))
+                return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            else if (expr2->getOperandType()->isFloat() ||
+                     (expr2->getOperandType()->isArray() && dynamic_cast<ArrayType*>(expr2->getOperandType())->getElementType()->isFloat()))
                 return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
             else
                 return new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());

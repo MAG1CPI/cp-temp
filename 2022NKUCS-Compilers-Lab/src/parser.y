@@ -260,19 +260,21 @@ UnaryExp
             while(true){
                 rparam = $3;
                 for(auto& fparam_type: *fparams_type){
+                    fparam_type->isArray();// 解除warning
                     if(rparam == nullptr){
                         // rparam too less
                         //fprintf(stderr, "[CHECKINFO][L%d]%srparam too less!\n", yylineno,func_se->getType()->toStr().c_str());
                         goto NextFunction_UnaryExp;
-                    } else if(!(fparam_type->isArray())&& !(rparam->getOperandType()->isArray())
-                                &&fparam_type->toStr() != rparam->getOperandType()->toStr()){
+                    }/* else if(!(fparam_type->isArray())&& !(rparam->getOperandType()->isArray()) && 
+                            (fparam_type->toStr() != rparam->getOperandType()->toStr() &&
+                            (fparam_type->toStr()!="i32" && rparam->getOperandType()->toStr()!="i1"))){
                         // rparam not match
                         //fprintf(stderr, "[CHECKINFO][L%d]%s not match %s!\n",
                         //        yylineno, 
                         //        rparam->getOperandType()->toStr().c_str(), 
                         //        fparam_type->toStr().c_str());
                         goto NextFunction_UnaryExp;
-                    }
+                    }*/
                     //[TODO]array type check
                     rparam = dynamic_cast<ExprNode*>(rparam->GetSibling());
                 }
@@ -587,7 +589,8 @@ VarDef
         /*数组展平*/
         ExprNode* new_init_node_begin,* new_init_node_end;
         uint32_t n=0;
-        dynamic_cast<InitValue*>(init_node)->flatten((dynamic_cast<ArrayType*>(type))->getDim(), 0, new_init_node_begin, new_init_node_end, n, false);
+        bool is_float_array = dynamic_cast<ArrayType*>(type)->getElementType()->isFloat();
+        dynamic_cast<InitValue*>(init_node)->flatten((dynamic_cast<ArrayType*>(type))->getDim(), 0, new_init_node_begin, new_init_node_end, n, is_float_array);
 
         $$ = new DeclStmt(id, new_init_node_begin);
         delete []$1; }
@@ -637,7 +640,8 @@ VarDef
         /*数组展平*/
         ExprNode* new_init_node_begin,* new_init_node_end;
         uint32_t n=0;
-        dynamic_cast<InitValue*>($5)->flatten((dynamic_cast<ArrayType*>(type))->getDim(), 0, new_init_node_begin, new_init_node_end, n, false);
+        bool is_float_array = dynamic_cast<ArrayType*>(type)->getElementType()->isFloat();
+        dynamic_cast<InitValue*>($5)->flatten((dynamic_cast<ArrayType*>(type))->getDim(), 0, new_init_node_begin, new_init_node_end, n, is_float_array);
 
         $$ = new DeclStmt(id, new_init_node_begin);
         delete []$1; }
@@ -764,7 +768,8 @@ ConstDef
         /*数组展平*/
         ExprNode* new_init_node_begin,* new_init_node_end;
         uint32_t n=0;
-        dynamic_cast<InitValue*>(init_node)->flatten((dynamic_cast<ArrayType*>(type))->getDim(), 0, new_init_node_begin, new_init_node_end, n, false);
+        bool is_float_array = dynamic_cast<ArrayType*>(type)->getElementType()->isFloat();
+        dynamic_cast<InitValue*>(init_node)->flatten((dynamic_cast<ArrayType*>(type))->getDim(), 0, new_init_node_begin, new_init_node_end, n, is_float_array);
 
         $$ = new DeclStmt(id, new_init_node_begin);
         delete []$1; }
@@ -818,7 +823,8 @@ ConstDef
         /*数组展平*/
         ExprNode* new_init_node_begin,* new_init_node_end;
         uint32_t n=0;
-        dynamic_cast<InitValue*>($5)->flatten((dynamic_cast<ArrayType*>(type))->getDim(), 0, new_init_node_begin, new_init_node_end, n, false);
+        bool is_float_array = dynamic_cast<ArrayType*>(type)->getElementType()->isFloat();
+        dynamic_cast<InitValue*>($5)->flatten((dynamic_cast<ArrayType*>(type))->getDim(), 0, new_init_node_begin, new_init_node_end, n, is_float_array);
 
         ExprNode* iter_node = new_init_node_begin;
         ValueType init_value;
@@ -899,14 +905,14 @@ FuncDef
                     //param num not match
                     goto NextFunction_FuncDef_New;
                 }
-                for(uint32_t i = 0; i < fparams_type->size(); i++) {
+                /*for(uint32_t i = 0; i < fparams_type->size(); i++) {
                     if(!((*fparams_type)[i]->isArray())&& !(paramstype[i]->isArray())
                         &&(*fparams_type)[i] != paramstype[i]){
                         //param type not match
                         goto NextFunction_FuncDef_New;
                     }
                     //[TODO]array type check
-                }
+                }*/
                 fprintf(stderr, "[CHECKINFO][L%d]function duplicate defined!\n", yylineno);
                 assert(0);
                 NextFunction_FuncDef_New:

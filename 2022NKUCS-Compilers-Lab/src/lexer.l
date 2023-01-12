@@ -16,6 +16,7 @@ Decimial            ([1-9][0-9]*|0)
 Octonary            (0[oO]?[0-7]+)
 Hexadecimal         (0[xX][0-9A-Fa-f]+)
 Float               (([0-9]*(\.[0-9]+)|[0-9]+\.?)([eE][+-]?[0-9]+)?)
+HexadecimalFloat    (0[xX](([0-9A-Fa-f]*[.][0-9A-Fa-f]*([pP][+-]?[0-9]+)?)|([0-9A-Fa-f]+[pP][+-]?[0-9]+))[fLlL]?)
 
 Ident               ([a-zA-Z_][a-zA-Z_0-9]*)
 
@@ -206,7 +207,9 @@ CommentBody         (\||[^\r\n|\n|\r])
     }
     std::vector<Type*> paramstype;
     paramstype.push_back(TypeSystem::intType);
-    paramstype.push_back(new ArrayType(TypeSystem::intType, -1));
+    ArrayType* array_type = new ArrayType(TypeSystem::intType);
+    array_type->pushDim(-1);
+    paramstype.push_back(array_type);
     Type* funcType = new FunctionType(TypeSystem::voidType, paramstype);
     SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
     global->install(yytext, se);
@@ -226,7 +229,9 @@ CommentBody         (\||[^\r\n|\n|\r])
         global = global->getPrev();
     }
     std::vector<Type*> paramstype;
-    paramstype.push_back(new ArrayType(TypeSystem::intType, -1));
+    ArrayType* array_type = new ArrayType(TypeSystem::intType);
+    array_type->pushDim(-1);
+    paramstype.push_back(array_type);
     Type* funcType = new FunctionType(TypeSystem::intType, paramstype);
     SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
     global->install(yytext, se);
@@ -246,8 +251,10 @@ CommentBody         (\||[^\r\n|\n|\r])
         global = global->getPrev();
     }
     std::vector<Type*> paramstype;
-    paramstype.push_back(TypeSystem::floatType);
-    paramstype.push_back(new ArrayType(TypeSystem::floatType, -1));
+    paramstype.push_back(TypeSystem::intType);
+    ArrayType* array_type = new ArrayType(TypeSystem::floatType);
+    array_type->pushDim(-1);
+    paramstype.push_back(array_type);
     Type* funcType = new FunctionType(TypeSystem::voidType, paramstype);
     SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
     global->install(yytext, se);
@@ -267,7 +274,9 @@ CommentBody         (\||[^\r\n|\n|\r])
         global = global->getPrev();
     }
     std::vector<Type*> paramstype;
-    paramstype.push_back(new ArrayType(TypeSystem::floatType, -1));
+    ArrayType* array_type = new ArrayType(TypeSystem::floatType);
+    array_type->pushDim(-1);
+    paramstype.push_back(array_type);
     Type* funcType = new FunctionType(TypeSystem::floatType, paramstype);
     SymbolEntry *se = new IdentifierSymbolEntry(funcType, yytext, global->getLevel());
     global->install(yytext, se);
@@ -330,6 +339,12 @@ CommentBody         (\||[^\r\n|\n|\r])
     return INT_NUM;
 }
 {Float} {
+    float num;
+    sscanf(yytext, "%f", &num);
+    yylval.vtype.f = num;
+    return FLOAT_NUM;
+}
+{HexadecimalFloat} {
     float num;
     sscanf(yytext, "%f", &num);
     yylval.vtype.f = num;

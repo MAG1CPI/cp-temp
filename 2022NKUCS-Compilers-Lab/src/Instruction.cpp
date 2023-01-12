@@ -618,7 +618,7 @@ void LoadInstruction::genMachineCode(AsmBuilder* builder) {
             int off = dynamic_cast<TemporarySymbolEntry*>(operands[1]->getEntry())->getOffset();
             MachineOperand* src2 = genMachineImm(off);
             // 合法立即数的简单判定
-            if (off > 255 || off < -255) {
+            if (off > 255 || off < -256) {
                 MachineOperand* temp_operand = genMachineVReg();
                 cur_inst = new LoadMInstruction(cur_block, temp_operand, src2);
                 cur_block->InsertInst(cur_inst);
@@ -697,7 +697,7 @@ void StoreInstruction::genMachineCode(AsmBuilder* builder) {
             int off = dynamic_cast<TemporarySymbolEntry*>(operands[0]->getEntry())->getOffset();
             MachineOperand* dst2 = genMachineImm(off);
             // 合法立即数的简单判定
-            if (off > 255 || off < -255) {
+            if (off > 255 || off < -256) {
                 MachineOperand* temp_operand = genMachineVReg();
                 cur_block->InsertInst((new LoadMInstruction(cur_block, temp_operand, dst2)));
                 dst2 = temp_operand;
@@ -890,8 +890,8 @@ void CmpInstruction::genMachineCode(AsmBuilder* builder) {
 
             src1 = new MachineOperand(*internal_reg);
         }
-        // 合法立即数的简单判定: 255以上均load, 不考虑负数
-        if (src2->isImm() && src2->getVal() > 255) {
+        // 合法立即数的简单判定: 255以上均load
+        if (src2->isImm() && (src2->getVal() > 255 || src2->getVal() < -256)) {
             internal_reg = genMachineVReg();
             cur_inst = new LoadMInstruction(cur_block, internal_reg, src2);
             cur_block->InsertInst(cur_inst);

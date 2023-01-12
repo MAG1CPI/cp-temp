@@ -709,7 +709,6 @@ void AssignStmt::genCode() {
     BasicBlock* bb = builder->getInsertBB();
     expr->genCode();
     Operand* addr = dynamic_cast<IdentifierSymbolEntry*>(lval->getSymPtr())->getAddr();
-    Operand* src = expr->getOperand();
     /***
      * We haven't implemented array yet, the lval can only be ID. So we just store the result of the `expr` to the addr of the id.
      * If you want to implement array, you have to caculate the address first and then store the result into it.
@@ -778,6 +777,11 @@ void AssignStmt::genCode() {
         }
 
         new BinaryInstruction(BinaryInstruction::ADD, final_offset, offset2_op, addr, bb);
+        if (lval->getSymPtr()->getType()->isInt() && expr->getOperandType()->isFloat())
+            expr->float2int(bb);
+        else if (lval->getSymPtr()->getType()->isFloat() && expr->getOperandType()->isInt())
+            expr->int2float(bb);
+        Operand* src = expr->getOperand();
         new StoreInstruction(final_offset, src, bb);
     } else {  //*/
         //[TODO] FLOAT
@@ -785,6 +789,7 @@ void AssignStmt::genCode() {
             expr->float2int(bb);
         else if (lval->getSymPtr()->getType()->isFloat() && expr->getOperandType()->isInt())
             expr->int2float(bb);
+        Operand* src = expr->getOperand();
 
         new StoreInstruction(addr, src, bb);
     }
@@ -1374,10 +1379,10 @@ TemporarySymbolEntry* NewTempSE(int type, ExprNode* expr1, ExprNode* expr2 /* =n
             if (expr2->getOperand() == nullptr)
                 return nullptr;
 
-            if (expr1->getOperandType()->isFloat()) // ||
+            if (expr1->getOperandType()->isFloat())  // ||
                 // (expr1->getOperandType()->isArray() && dynamic_cast<ArrayType*>(expr1->getOperandType())->getElementType()->isFloat()))
                 return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
-            else if (expr2->getOperandType()->isFloat())// ||
+            else if (expr2->getOperandType()->isFloat())  // ||
                      // (expr2->getOperandType()->isArray() && dynamic_cast<ArrayType*>(expr2->getOperandType())->getElementType()->isFloat()))
                 return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
             else

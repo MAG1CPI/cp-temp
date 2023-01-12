@@ -258,7 +258,7 @@ class ReturnStmt : public StmtNode {
     ReturnStmt(ExprNode* retValue, Type* retType = nullptr)
         : retValue(retValue), retType(retType){};
     ReturnStmt()
-        : retValue(nullptr){};
+        : retValue(nullptr), retType(nullptr){};
     //void setRetType(Type* ret_type) { retType = ret_type; }
     //Type* getRetType() { return retType; }
     void output(int level);

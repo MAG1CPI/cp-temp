@@ -40,6 +40,15 @@ void Unit::output() const {
             int value = id_se->getValue().i;
             fprintf(yyout, "%s = global %s %d, align 4\n", name.c_str(), type.c_str(), value);
         }
+        else if (id_se->getType()->isFloat()) {
+            std::string name, type;
+            name = id_se->toStr();
+            type = id_se->getType()->toStr();
+            float value = ((IdentifierSymbolEntry*)id_se)->getValue().f;
+            uint64_t val = reinterpret_cast<uint64_t&>(value);
+            fprintf(yyout, "%s = global %s 0x%lX, align 4\n", name.c_str(), type.c_str(), val);
+            //std::cout << "value:" << value << std::endl;
+        }
     }
     fprintf(yyout, "\n");
 

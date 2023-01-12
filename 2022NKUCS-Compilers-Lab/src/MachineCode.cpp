@@ -722,7 +722,8 @@ void MachineUnit::PrintGlobalDecl() {
                 } else {
                     fprintf(yyout, "\t.comm\t%s,%d,4\n", globalvar_name.c_str(), id_se->getType()->getSize() / 8);
                 }
-            } else  // var
+            }
+            else  // var
             {
                 globalvar_name = id_se->toStr().substr(1);
                 fprintf(yyout, "\t.global %s\n", globalvar_name.c_str());

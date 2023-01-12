@@ -64,7 +64,7 @@ void ExprNode::bool2int(BasicBlock* insert_bb) {
     this->dst = new_dst;
 }
 
-//float
+// float
 void ExprNode::float2int(BasicBlock* insert_bb) {
     Operand* new_dst = new Operand(new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel()));
     new Float2IntInstruction(new_dst, this->dst, insert_bb);
@@ -181,7 +181,7 @@ void UnaryExpr::genCode() {
             expr->bool2int(bb);
         else if (expr->getOperandType()->toStr() == "i32" && this->getOperandType()->isFloat())
             expr->int2float(bb);
-        else if(expr->getOperandType()->toStr() == "i1" && this->getOperandType()->isFloat()) {
+        else if (expr->getOperandType()->toStr() == "i1" && this->getOperandType()->isFloat()) {
             expr->bool2int(bb);
             expr->int2float(bb);
         }
@@ -245,8 +245,7 @@ void BinaryExpr::genCode() {
         if (expr1->getOperandType()->toStr() == "i32") {
             expr1->int2bool(expr1_bb);
             insertCondBrInst(func, expr1, expr1_bb);
-        }
-        else if (expr1->getOperandType()->isFloat()) {
+        } else if (expr1->getOperandType()->isFloat()) {
             expr1->float2int(expr1_bb);
             expr1->int2bool(expr1_bb);
             insertCondBrInst(func, expr1, expr1_bb);
@@ -259,8 +258,7 @@ void BinaryExpr::genCode() {
         if (expr2->getOperandType()->toStr() == "i32") {
             expr2->int2bool(expr2_bb);
             insertCondBrInst(func, expr2, expr2_bb);
-        }
-        else if (expr2->getOperandType()->isFloat()) {
+        } else if (expr2->getOperandType()->isFloat()) {
             expr2->float2int(expr2_bb);
             expr2->int2bool(expr2_bb);
             insertCondBrInst(func, expr2, expr2_bb);
@@ -277,8 +275,7 @@ void BinaryExpr::genCode() {
         if (expr1->getOperandType()->toStr() == "i32") {
             expr1->int2bool(expr1_bb);
             insertCondBrInst(func, expr1, expr1_bb);
-        }
-        else if (expr1->getOperandType()->isFloat()) {
+        } else if (expr1->getOperandType()->isFloat()) {
             expr1->float2int(expr1_bb);
             expr1->int2bool(expr1_bb);
             insertCondBrInst(func, expr1, expr1_bb);
@@ -291,8 +288,7 @@ void BinaryExpr::genCode() {
         if (expr2->getOperandType()->toStr() == "i32") {
             expr2->int2bool(expr2_bb);
             insertCondBrInst(func, expr2, expr2_bb);
-        }
-        else if (expr2->getOperandType()->isFloat()) {
+        } else if (expr2->getOperandType()->isFloat()) {
             expr2->float2int(expr2_bb);
             expr2->int2bool(expr2_bb);
             insertCondBrInst(func, expr2, expr2_bb);
@@ -527,8 +523,7 @@ void IfStmt::genCode() {
     if (cond->getOperandType()->toStr() == "i32") {
         cond->int2bool(cond_bb);
         insertCondBrInst(func, cond, cond_bb);
-    }
-    else if (cond->getOperandType()->isFloat()) {
+    } else if (cond->getOperandType()->isFloat()) {
         cond->float2int(cond_bb);
         cond->int2bool(cond_bb);
         insertCondBrInst(func, cond, cond_bb);
@@ -563,8 +558,7 @@ void IfElseStmt::genCode() {
     if (cond->getOperandType()->toStr() == "i32") {
         cond->int2bool(cond_bb);
         insertCondBrInst(func, cond, cond_bb);
-    }
-    else if (cond->getOperandType()->isFloat()) {
+    } else if (cond->getOperandType()->isFloat()) {
         cond->float2int(cond_bb);
         cond->int2bool(cond_bb);
         insertCondBrInst(func, cond, cond_bb);
@@ -634,8 +628,7 @@ void DeclStmt::genCode() {
                     dynamic_cast<IdentifierSymbolEntry*>(se)->pushArrayValue(value);
                     next_initval = dynamic_cast<ExprNode*>(next_initval->GetSibling());
                 }
-            }
-            else
+            } else
                 assert(0);
             // std::cout << "add a global var value:" << value << std::endl;
         } else {
@@ -669,7 +662,7 @@ void DeclStmt::genCode() {
                 Operand* src = initval->getOperand();
                 new StoreInstruction(addr, src, bb);
             } else {
-                //may need deal with float
+                // may need deal with float
                 InitValue* init_node = dynamic_cast<InitValue*>(initval);
                 ValueType offset_val;
                 offset_val.i = 0;
@@ -716,7 +709,6 @@ void AssignStmt::genCode() {
     BasicBlock* bb = builder->getInsertBB();
     expr->genCode();
     Operand* addr = dynamic_cast<IdentifierSymbolEntry*>(lval->getSymPtr())->getAddr();
-    Operand* src = expr->getOperand();
     /***
      * We haven't implemented array yet, the lval can only be ID. So we just store the result of the `expr` to the addr of the id.
      * If you want to implement array, you have to caculate the address first and then store the result into it.
@@ -724,7 +716,7 @@ void AssignStmt::genCode() {
     ///*
     Type* type = lval->getSymPtr()->getType();
     if (type->isArray()) {
-        //may need deal with float
+        // may need deal with float
         Node* index = dynamic_cast<Id*>(lval)->getIndex();
         std::vector<int> dims = dynamic_cast<ArrayType*>(type)->getDim();
         while (index) {
@@ -785,6 +777,11 @@ void AssignStmt::genCode() {
         }
 
         new BinaryInstruction(BinaryInstruction::ADD, final_offset, offset2_op, addr, bb);
+        if (lval->getSymPtr()->getType()->isInt() && expr->getOperandType()->isFloat())
+            expr->float2int(bb);
+        else if (lval->getSymPtr()->getType()->isFloat() && expr->getOperandType()->isInt())
+            expr->int2float(bb);
+        Operand* src = expr->getOperand();
         new StoreInstruction(final_offset, src, bb);
     } else {  //*/
         //[TODO] FLOAT
@@ -792,6 +789,7 @@ void AssignStmt::genCode() {
             expr->float2int(bb);
         else if (lval->getSymPtr()->getType()->isFloat() && expr->getOperandType()->isInt())
             expr->int2float(bb);
+        Operand* src = expr->getOperand();
 
         new StoreInstruction(addr, src, bb);
     }
@@ -819,8 +817,7 @@ void WhileStmt::genCode() {
     if (cond->getOperandType()->toStr() == "i32") {
         cond->int2bool(cond_end_bb);
         insertCondBrInst(func, cond, cond_end_bb);
-    }
-    else if (cond->getOperandType()->isFloat()) {
+    } else if (cond->getOperandType()->isFloat()) {
         cond->float2int(cond_bb);
         cond->int2bool(cond_bb);
         insertCondBrInst(func, cond, cond_bb);
@@ -1017,7 +1014,7 @@ void UnaryExpr::output(int level) {
             op_str = "not";
             break;
     }
-    fprintf(yyout, "%*cUnaryExpr\top: %s\n", level, ' ', op_str.c_str());
+    fprintf(yyout, "%*cUnaryExpr\top: %s\ttype: %s\n", level, ' ', op_str.c_str(), symbolEntry->getType()->toStr().c_str());
     expr->output(level + 4);
 }
 
@@ -1064,7 +1061,7 @@ void BinaryExpr::output(int level) {
             op_str = "not_equal";
             break;
     }
-    fprintf(yyout, "%*cBinaryExpr\top: %s\n", level, ' ', op_str.c_str());
+    fprintf(yyout, "%*cBinaryExpr\top: %s\ttype: %s\n", level, ' ', op_str.c_str(), symbolEntry->getType()->toStr().c_str());
     expr1->output(level + 4);
     expr2->output(level + 4);
 }
@@ -1105,9 +1102,10 @@ void SeqNode::output(int level) {
 void DeclStmt::output(int level) {
     fprintf(yyout, "%*cDeclStmt\n", level, ' ');
     id->output(level + 4);
-    fprintf(yyout, "%*cInitValue\n", level + 4, ' ');
-    if (initval != nullptr)
+    if (initval != nullptr) {
+        fprintf(yyout, "%*cInitValue\n", level + 4, ' ');
         initval->output(level + 4);
+    }
     if (HaveSibling()) {
         DeclStmt* sibdeclstmt = dynamic_cast<DeclStmt*>(GetSibling());
         sibdeclstmt->output(level);
@@ -1370,7 +1368,8 @@ TemporarySymbolEntry* NewTempSE(int type, ExprNode* expr1, ExprNode* expr2 /* =n
         return nullptr;
     switch (type) {
         case 1: /*UnaryExpr*/
-            if (expr1->getOperandType() == TypeSystem::floatType)
+            if (expr1->getOperandType()->isFloat())  // ||
+                //(expr1->getOperandType()->isArray() && dynamic_cast<ArrayType*>(expr1->getOperandType())->getElementType()->isFloat()))
                 return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
             else
                 return new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
@@ -1380,7 +1379,11 @@ TemporarySymbolEntry* NewTempSE(int type, ExprNode* expr1, ExprNode* expr2 /* =n
             if (expr2->getOperand() == nullptr)
                 return nullptr;
 
-            if (expr1->getOperandType() == TypeSystem::floatType || expr2->getOperandType() == TypeSystem::floatType)
+            if (expr1->getOperandType()->isFloat())  // ||
+                // (expr1->getOperandType()->isArray() && dynamic_cast<ArrayType*>(expr1->getOperandType())->getElementType()->isFloat()))
+                return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
+            else if (expr2->getOperandType()->isFloat())  // ||
+                     // (expr2->getOperandType()->isArray() && dynamic_cast<ArrayType*>(expr2->getOperandType())->getElementType()->isFloat()))
                 return new TemporarySymbolEntry(TypeSystem::floatType, SymbolTable::getLabel());
             else
                 return new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());

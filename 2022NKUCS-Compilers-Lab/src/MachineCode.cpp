@@ -592,17 +592,17 @@ void MachineBlock::output() {
     }
 
     fprintf(yyout, ".L%d:\n", this->no);
-    // int count = 0;
+    int count = 0;
     for (auto iter : inst_list) {
         iter->output();
-        /*count++;
+        count++;
         if(count % 500 == 0) {
             fprintf(yyout, "\tb .B%d\n", label_no);
             fprintf(yyout, ".LTORG\n");
             parent->getParent()->PrintGlobalLabel();
-            fprintf(yyout, ".B%d:\n", label_no + 1);
+            fprintf(yyout, ".B%d:\n", label_no);
             label_no++;
-        }*/
+        }
     }
 }
 std::vector<MachineOperand*> MachineFunction::getSavedRegs() {
@@ -654,17 +654,17 @@ void MachineFunction::output() {
     // Traverse all the block in block_list to print assembly code.
     // for (auto iter : block_list) {
     //    iter->output();
-    // int count = 0;
+    int count = 0;
     for (auto iter : block_list) {
         iter->output();
-        /*count += iter->getInstNum();
+        count += iter->getInstNum();
         if (count > 160) {
             fprintf(yyout, "\tb .F%d\n", parent->getLabelNo());
             fprintf(yyout, ".LTORG\n");
             parent->PrintGlobalLabel();
             fprintf(yyout, ".F%d:\n", parent->getLabelNo() - 1);
             count = 0;
-        }*/
+        }
     }
 
     // recover
@@ -767,17 +767,17 @@ void MachineUnit::output() {
     fprintf(yyout, "\t.text\n");
     // for (auto iter : func_list)
     //     iter->output();
-    // int count = 0;
+    int count = 0;
     for (auto iter : func_list) {
         iter->output();
-        /*count += iter->getInstNum();
+        count += iter->getInstNum();
         if (count > 600) {
             fprintf(yyout, "\tb .F%d\n", label_no);
             fprintf(yyout, ".LTORG\n");
             PrintGlobalLabel();
             fprintf(yyout, ".F%d:\n", label_no - 1);
             count = 0;
-        }*/
+        }
     }
     /*
     std::string globalvar_name;

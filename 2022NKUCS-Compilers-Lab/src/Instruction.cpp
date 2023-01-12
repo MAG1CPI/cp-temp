@@ -1008,7 +1008,14 @@ void CallInstruction::genMachineCode(AsmBuilder* builder) {
     // std::cout << "i M\n";
     for (; i < operands.size(); i++) {
         stack_arg.push_back(genMachineOperand(operands[i]));
-        cur_inst = new StackMInstruction(cur_block, StackMInstruction::PUSH, genMachineOperand(operands[i]));
+        MachineOperand* temp_operand = genMachineOperand(operands[i]);
+        if (temp_operand->isImm()) {
+            MachineOperand* internal_reg = genMachineVReg();
+            cur_inst = new LoadMInstruction(cur_block, internal_reg, temp_operand);
+            cur_block->InsertInst(cur_inst);
+            temp_operand = new MachineOperand(*internal_reg);
+        }
+        cur_inst = new StackMInstruction(cur_block, StackMInstruction::PUSH, temp_operand);
         cur_block->InsertInst(cur_inst);
     }
     /*

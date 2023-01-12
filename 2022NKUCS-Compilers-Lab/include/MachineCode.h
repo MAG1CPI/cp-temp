@@ -44,8 +44,8 @@ class MachineOperand {
            VREG,
            REG,
            LABEL };
-    MachineOperand(int tp, int val);
-    MachineOperand(int tp, float float_val, bool is_float = true);
+    MachineOperand(int tp, int val, bool is_float = false);
+    MachineOperand(int tp, float float_val);
     MachineOperand(std::string label, bool is_func = false);
     bool operator==(const MachineOperand&) const;
     bool operator<(const MachineOperand&) const;

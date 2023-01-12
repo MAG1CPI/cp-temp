@@ -1,5 +1,4 @@
-int a = 1;
-float b = 1.13;
+
 /*
 int test(int a)
 {
@@ -9,8 +8,11 @@ int test(int a)
 
 int main()
 {
-    if(b)
-        a = a + 1;
+    int a = 1;
+    float b = 1.13;
+    //if(b)
+    //    a = a + 1;
     float c = a + b;
-    return c;
+    //return c;
+    return 0;
 }

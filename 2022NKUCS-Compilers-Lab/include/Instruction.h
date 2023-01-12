@@ -53,6 +53,7 @@ class Instruction {
     MachineOperand* genFloatMachineOperand(Operand*);
     MachineOperand* genMachineReg(int reg);
     MachineOperand* genMachineVReg();
+    MachineOperand* genFloatMachineVReg();
     MachineOperand* genMachineImm(int val);
     MachineOperand* genMachineLabel(int block_no);
 

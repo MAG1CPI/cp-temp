@@ -7,6 +7,8 @@ LinearScan::LinearScan(MachineUnit* unit) {
     this->unit = unit;
     for (int i = 4; i < 11; i++)
         regs.push_back(i);
+    for (int i = 21; i < 48; i++)
+        float_regs.push_back(i);
 }
 
 void LinearScan::allocateRegisters() {
@@ -65,7 +67,7 @@ void LinearScan::computeLiveIntervals() {
         int t = -1;
         for (auto& use : du_chain.second)
             t = std::max(t, use->getParent()->getNo());
-        Interval* interval = new Interval({du_chain.first->getParent()->getNo(), t, false, 0, 0, {du_chain.first}, du_chain.second});
+        Interval* interval = new Interval({du_chain.first->getParent()->getNo(), t, false, 0, 0, du_chain.first->isFloat(), {du_chain.first}, du_chain.second});
         intervals.push_back(interval);
     }
     for (auto& interval : intervals) {
@@ -149,23 +151,45 @@ bool LinearScan::linearScanRegisterAllocation() {
     bool no_spill = true;
     active.clear();
     regs.clear();
+    float_regs.clear();
+
     for (int i = 4; i < 11; i++)
         regs.push_back(i);
+    for (int i = 21; i < 48; i++)
+        float_regs.push_back(i);
 
     for (auto& i : intervals)
     {
         expireOldIntervals(i);
-        if (regs.empty())
+        if (i->is_float == false)
         {
-            spillAtInterval(i);
-            no_spill = false;
+            if (regs.empty())
+            {
+                spillAtInterval(i);
+                no_spill = false;
+            }
+            else
+            {
+                i->rreg = *(regs.begin());
+                regs.erase(regs.begin());
+                active.push_back(i);
+                sort(active.begin(), active.end(), [](Interval *x, Interval *y) { return x->end < y->end; });
+            }
         }
         else
         {
-            i->rreg = *(regs.begin());
-            regs.erase(regs.begin());
-            active.push_back(i);
-            sort(active.begin(), active.end(), [](Interval *x, Interval *y) { return x->end < y->end; });
+            if (float_regs.empty())
+            {
+                spillAtInterval(i);
+                no_spill = false;
+            }
+            else
+            {
+                i->rreg = *(float_regs.begin());
+                float_regs.erase(float_regs.begin());
+                active.push_back(i);
+                sort(active.begin(), active.end(), [](Interval *x, Interval *y) { return x->end < y->end; });
+            }
         }
     }
     return no_spill;
@@ -201,7 +225,11 @@ void LinearScan::genSpillCode() {
         {
             MachineBlock* mblock = use->getParent()->getParent();
             MachineInstruction *cur_minst = use->getParent();
-            LoadMInstruction *load_minst = new LoadMInstruction(mblock, new MachineOperand(*use), fp, stack_offset);
+            LoadMInstruction *load_minst = nullptr;
+            if (use->isFloat() == false)
+                load_minst = new LoadMInstruction(mblock, new MachineOperand(*use), fp, stack_offset);
+            else
+                load_minst = new LoadMInstruction(mblock, new MachineOperand(*use), fp, stack_offset, LoadMInstruction::VLDR);
 
             mblock->insertBefore(load_minst, cur_minst);
         }
@@ -209,7 +237,11 @@ void LinearScan::genSpillCode() {
         {
             MachineBlock* mblock = def->getParent()->getParent();
             MachineInstruction *cur_minst = def->getParent();
-            StoreMInstruction *store_minst = new StoreMInstruction(mblock, new MachineOperand(*def), fp, stack_offset);
+            StoreMInstruction *store_minst = nullptr;
+            if (def->isFloat() == false)
+                store_minst = new StoreMInstruction(mblock, new MachineOperand(*def), fp, stack_offset);
+            else
+                store_minst = new StoreMInstruction(mblock, new MachineOperand(*def), fp, stack_offset, StoreMInstruction::VSTR);
             
             mblock->insertAfter(store_minst, cur_minst);
         }
@@ -225,10 +257,20 @@ void LinearScan::expireOldIntervals(Interval* interval) {
             return;
         else
         {
-            regs.push_back((*iter)->rreg);
-            iter = active.erase(iter);
-            //不排序每次还是用新的reg，而不是回收的reg
-            sort(regs.begin(), regs.end());
+            if ((*iter)->rreg < 11)
+            {
+                regs.push_back((*iter)->rreg);
+                iter = active.erase(iter);
+                //不排序每次还是用新的reg，而不是回收的reg
+                sort(regs.begin(), regs.end());
+            }
+            else if ((*iter)->rreg >= 20 && (*iter)->rreg < 48)
+            {
+                float_regs.push_back((*iter)->rreg);
+                iter = active.erase(iter);
+                sort(float_regs.begin(), float_regs.end());
+            }
+            
         }
     }
 }

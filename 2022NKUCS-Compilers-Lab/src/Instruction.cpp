@@ -1080,49 +1080,9 @@ void NEGInstruction::genMachineCode(AsmBuilder* builder) {
 }
 
 void Float2IntInstruction::genMachineCode(AsmBuilder* builder) {
-    MachineBlock* cur_block = builder->getBlock();
-    MachineInstruction* cur_inst = nullptr;
-    MachineOperand* dst = genMachineOperand(operands[0]);
-    MachineOperand* src = genFloatMachineOperand(operands[1]);
-
-    if (src->isImm()) {
-        MachineOperand* float_value = genMachineVReg();
-        cur_inst = new LoadMInstruction(cur_block, float_value, src);
-        cur_block->InsertInst(cur_inst);
-
-        float_value = new MachineOperand(*float_value);
-        MachineOperand* new_src = genFloatMachineVReg();
-        cur_inst = new MovMInstruction(cur_block, MovMInstruction::VMOV, new_src, float_value);
-        cur_block->InsertInst(cur_inst);
-        src = new_src;
-    }
-    
-    MachineOperand* int_value = genFloatMachineVReg();
-    cur_inst = new VcvtMInstruction(cur_block, VcvtMInstruction::F2I, int_value, src);
-    cur_block->InsertInst(cur_inst);
-    int_value = new MachineOperand(*int_value);
-    cur_inst = new MovMInstruction(cur_block, MovMInstruction::VMOV, dst, int_value);
-    cur_block->InsertInst(cur_inst);
+    //todo
 }
 
 void Int2FloatInstruction::genMachineCode(AsmBuilder* builder) {
-    MachineBlock* cur_block = builder->getBlock();
-    MachineInstruction* cur_inst = nullptr;
-    MachineOperand* dst = genFloatMachineOperand(operands[0]);
-    MachineOperand* src = genMachineOperand(operands[1]);
-
-    if (src->isImm()) {
-        MachineOperand* int_value = genMachineVReg();
-        cur_inst = new LoadMInstruction(cur_block, int_value, src);
-        cur_block->InsertInst(cur_inst);
-        MachineOperand* new_src = new MachineOperand(*int_value);
-        src = new_src;
-    }
-
-    MachineOperand* float_value = genFloatMachineVReg();
-    cur_inst = new MovMInstruction(cur_block, MovMInstruction::VMOV, float_value, src);
-    cur_block->InsertInst(cur_inst);
-    float_value = new MachineOperand(*float_value);
-    cur_inst = new VcvtMInstruction(cur_block, VcvtMInstruction::I2F, dst, float_value);
-    cur_block->InsertInst(cur_inst);
+    //todo
 }

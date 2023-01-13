@@ -3,7 +3,8 @@ extern FILE* yyout;
 
 int MachineBlock::label_no = 0;
 
-MachineOperand::MachineOperand(int tp, int val) {
+MachineOperand::MachineOperand(int tp, int val, bool is_float) {
+    this->is_float = is_float;
     this->type = tp;
     if (tp == MachineOperand::IMM)
         this->val = val;
@@ -11,8 +12,7 @@ MachineOperand::MachineOperand(int tp, int val) {
         this->reg_no = val;
 }
 
-MachineOperand::MachineOperand(int tp, float float_val, bool is_float) {
-    this->is_float = is_float;
+MachineOperand::MachineOperand(int tp, float float_val) {
     this->type = tp;
     if (tp == MachineOperand::IMM)
         this->float_val = float_val;

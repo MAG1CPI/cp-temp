@@ -21,12 +21,14 @@ class LinearScan {
         bool spill;  // whether this vreg should be spilled to memory
         int disp;    // displacement in stack
         int rreg;    // the real register mapped from virtual register if the vreg is not spilled to memory
+        bool is_float;
         std::set<MachineOperand*> defs;
         std::set<MachineOperand*> uses;
     };
     MachineUnit* unit;
     MachineFunction* func;
     std::vector<int> regs;
+    std::vector<int> float_regs;
     std::map<MachineOperand*, std::set<MachineOperand*>> du_chains;
     std::vector<Interval*> intervals;
     std::vector<Interval*> active;

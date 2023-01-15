@@ -16,7 +16,7 @@ Decimial            ([1-9][0-9]*|0)
 Octonary            (0[oO]?[0-7]+)
 Hexadecimal         (0[xX][0-9A-Fa-f]+)
 Float               (([0-9]*(\.[0-9]+)|[0-9]+\.?)([eE][+-]?[0-9]+)?)
-HexadecimalFloat    (0[xX](([0-9A-Fa-f]*[.][0-9A-Fa-f]*([pP][+-]?[0-9]+)?)|([0-9A-Fa-f]+[pP][+-]?[0-9]+))[fLlL]?)
+HexadecimalFloat    (0[xX](([0-9A-Fa-f]*\.[0-9A-Fa-f]*([pP][+-]?[0-9]+)?)|([0-9A-Fa-f]+[pP][+-]?[0-9]+))[fLlL]?)
 
 Ident               ([a-zA-Z_][a-zA-Z_0-9]*)
 

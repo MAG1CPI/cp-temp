@@ -630,9 +630,7 @@ void LoadInstruction::genMachineCode(AsmBuilder* builder) {
             }
             cur_inst = new LoadMInstruction(cur_block, dst, src1, src2);
             cur_block->InsertInst(cur_inst);
-        }
-        // Load operand from temporary variable
-        else if (operands[1]->getEntry()->getType()->isArray()) {
+        } else if (operands[1]->getEntry()->getType()->isArray()) {
             std::vector<int> dims = dynamic_cast<ArrayType*>(operands[1]->getType())->getDim();
             if (dims[0] == -1 || dynamic_cast<TemporarySymbolEntry*>(operands[1]->getEntry())->isGlobalArray()) {
                 auto dst = genMachineOperand(operands[0]);
@@ -650,7 +648,10 @@ void LoadInstruction::genMachineCode(AsmBuilder* builder) {
                 cur_inst = new LoadMInstruction(cur_block, dst, src_addr);
                 cur_block->InsertInst(cur_inst);
             }
-        } else {
+
+        }
+        // Load operand from temporary variable
+        else {
             // example: load r1, [r0]
             MachineOperand* src = genMachineOperand(operands[1]);
             cur_inst = new LoadMInstruction(cur_block, dst, src);

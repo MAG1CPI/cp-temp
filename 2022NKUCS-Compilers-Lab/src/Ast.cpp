@@ -458,7 +458,7 @@ void Id::genCode() {
                 dim_op = new Operand(new ConstantSymbolEntry(TypeSystem::constintType, dim_value));
                 offset2_se = new TemporarySymbolEntry(TypeSystem::intType, SymbolTable::getLabel());
                 offset2_op = new Operand(offset2_se);
-                new BinaryInstruction(BinaryInstruction::MUL, offset2_op, offset1_op, dim_op, bb);  // offset1 = offset * dimensions[i]
+                new BinaryInstruction(BinaryInstruction::MUL, offset2_op, offset1_op, dim_op, bb);
                 offset1_op = offset2_op;
             }
             ValueType align_value;
